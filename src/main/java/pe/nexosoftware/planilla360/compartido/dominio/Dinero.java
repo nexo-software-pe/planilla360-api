@@ -11,11 +11,15 @@ import java.util.Objects;
  */
 public record Dinero(BigDecimal monto) implements Comparable<Dinero> {
 
+    private static final int ESCALA = 2;
+    private static final RoundingMode REDONDEO = RoundingMode.HALF_UP;
+    private static final BigDecimal CIEN = BigDecimal.valueOf(100);
+
     public static final Dinero CERO = new Dinero(BigDecimal.ZERO);
 
     public Dinero {
         Objects.requireNonNull(monto, "El monto es obligatorio");
-        monto = monto.setScale(2, RoundingMode.HALF_UP);
+        monto = monto.setScale(ESCALA, REDONDEO);
     }
 
     public static Dinero de(String valor) {
@@ -52,7 +56,7 @@ public record Dinero(BigDecimal monto) implements Comparable<Dinero> {
 
     /** Calcula {@code porcentaje} % del monto (por ejemplo 13 para el 13 %), redondeando una sola vez. */
     public Dinero porcentaje(BigDecimal porcentaje) {
-        return new Dinero(monto.multiply(porcentaje).divide(BigDecimal.valueOf(100), 2, RoundingMode.HALF_UP));
+        return new Dinero(dividir(monto.multiply(porcentaje), CIEN));
     }
 
     /** Calcula {@code monto x numerador / denominador}: multiplica primero y redondea una sola vez. */
@@ -60,8 +64,11 @@ public record Dinero(BigDecimal monto) implements Comparable<Dinero> {
         if (denominador <= 0) {
             throw new IllegalArgumentException("El denominador debe ser positivo: " + denominador);
         }
-        return new Dinero(monto.multiply(BigDecimal.valueOf(numerador))
-                .divide(BigDecimal.valueOf(denominador), 2, RoundingMode.HALF_UP));
+        return new Dinero(dividir(monto.multiply(BigDecimal.valueOf(numerador)), BigDecimal.valueOf(denominador)));
+    }
+
+    private static BigDecimal dividir(BigDecimal dividendo, BigDecimal divisor) {
+        return dividendo.divide(divisor, ESCALA, REDONDEO);
     }
 
     public Dinero max(Dinero otro) {
