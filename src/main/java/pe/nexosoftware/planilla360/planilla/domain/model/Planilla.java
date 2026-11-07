@@ -8,10 +8,12 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 import pe.nexosoftware.planilla360.compartido.dominio.Dinero;
 import pe.nexosoftware.planilla360.compartido.dominio.Periodo;
 import pe.nexosoftware.planilla360.planilla.domain.event.PlanillaCerrada;
 import pe.nexosoftware.planilla360.planilla.domain.excepcion.ReglaDePlanillaException;
+import pe.nexosoftware.planilla360.planilla.domain.validation.Incidencia;
 import pe.nexosoftware.planilla360.planilla.domain.validation.ResultadoValidacion;
 
 /** Agregado Planilla de una empresa y un periodo: sus líneas solo cambian mientras no esté cerrada. */
@@ -23,6 +25,8 @@ public final class Planilla {
     private final TipoPlanilla tipo;
     private EstadoPlanilla estado = EstadoPlanilla.BORRADOR;
     private List<LineaPlanilla> lineas = List.of();
+    private String claveIdempotencia;
+    private Instant cerradaEn;
 
     private Planilla(UUID id, UUID empresaId, Periodo periodo, TipoPlanilla tipo) {
         this.id = Objects.requireNonNull(id, "El identificador es obligatorio");
@@ -81,20 +85,42 @@ public final class Planilla {
     }
 
     public Optional<String> claveIdempotencia() {
-        throw new UnsupportedOperationException("pendiente");
+        return Optional.ofNullable(claveIdempotencia);
     }
 
     public Optional<Instant> cerradaEn() {
-        throw new UnsupportedOperationException("pendiente");
+        return Optional.ofNullable(cerradaEn);
     }
 
     /**
-     * Cierra la planilla de forma idempotente. Esqueleto: se construye test-first.
+     * Cierra la planilla de forma idempotente: repetir el cierre con la misma clave no hace nada; con otra clave es un
+     * conflicto. Solo cierra si la validación previa no tiene incidencias.
      *
      * @return el evento {@link PlanillaCerrada}, o vacío si es la repetición de un cierre ya hecho con la misma clave
      */
-    public Optional<PlanillaCerrada> cerrar(String claveIdempotencia, ResultadoValidacion validacion, Instant ahora) {
-        throw new UnsupportedOperationException("pendiente");
+    public Optional<PlanillaCerrada> cerrar(String clave, ResultadoValidacion validacion, Instant ahora) {
+        Objects.requireNonNull(clave, "La clave de idempotencia es obligatoria");
+        Objects.requireNonNull(validacion, "El resultado de la validación es obligatorio");
+        Objects.requireNonNull(ahora, "La fecha de cierre es obligatoria");
+        if (clave.isBlank()) {
+            throw new IllegalArgumentException("La clave de idempotencia no puede estar vacía");
+        }
+        if (estado == EstadoPlanilla.CERRADA) {
+            if (clave.equals(claveIdempotencia)) {
+                return Optional.empty();
+            }
+            throw new ReglaDePlanillaException("La planilla ya está cerrada con otra clave de idempotencia");
+        }
+        EstadoPlanilla siguiente = estado.alCerrar();
+        if (!validacion.esValida()) {
+            String detalle = validacion.incidencias().stream().map(Incidencia::mensaje)
+                    .collect(Collectors.joining("; "));
+            throw new ReglaDePlanillaException("No se puede cerrar la planilla: " + detalle);
+        }
+        this.estado = siguiente;
+        this.claveIdempotencia = clave;
+        this.cerradaEn = ahora;
+        return Optional.of(new PlanillaCerrada(id, empresaId, periodo, tipo, ahora, lineas.size(), totalNeto()));
     }
 
     public Dinero totalIngresos() {
