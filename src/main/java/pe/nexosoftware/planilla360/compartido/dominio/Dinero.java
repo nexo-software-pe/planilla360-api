@@ -72,11 +72,11 @@ public record Dinero(BigDecimal monto) implements Comparable<Dinero> {
     }
 
     public Dinero max(Dinero otro) {
-        return compareTo(otro) >= 0 ? this : otro;
+        return new Dinero(monto.max(otro.monto));
     }
 
     public Dinero min(Dinero otro) {
-        return compareTo(otro) <= 0 ? this : otro;
+        return new Dinero(monto.min(otro.monto));
     }
 
     public boolean esNegativo() {

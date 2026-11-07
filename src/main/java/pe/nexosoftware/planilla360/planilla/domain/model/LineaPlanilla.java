@@ -160,9 +160,10 @@ public record LineaPlanilla(
             exigirNoNegativo(otrosDescuentos, "Los otros descuentos");
 
             Dinero asegurable = basico.sumar(asignacionFamiliar).sumar(horasExtra).sumar(bonos);
-            Gratificacion premio = gratificacion == null ? new Gratificacion(Dinero.CERO, Dinero.CERO) : gratificacion;
-            return new LineaPlanilla(empleadoId, basico, asignacionFamiliar, horasExtra, bonos, premio.monto(),
-                    premio.bonificacionExtraordinaria(), regimenPensionario,
+            Gratificacion semestral = gratificacion == null ? new Gratificacion(Dinero.CERO, Dinero.CERO)
+                    : gratificacion;
+            return new LineaPlanilla(empleadoId, basico, asignacionFamiliar, horasExtra, bonos, semestral.monto(),
+                    semestral.bonificacionExtraordinaria(), regimenPensionario,
                     regimenPensionario.calcular(asegurable, parametros), retencion5ta, descuentoAsistencia,
                     otrosDescuentos, asegurable.porcentaje(parametros.pctEssalud()));
         }

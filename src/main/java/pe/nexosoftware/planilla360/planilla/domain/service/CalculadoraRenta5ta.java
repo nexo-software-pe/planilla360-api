@@ -39,9 +39,6 @@ public final class CalculadoraRenta5ta {
                     : uit.multiplicar(BigDecimal.valueOf(tramo.hastaUit())).min(rentaNeta);
             impuesto = impuesto.sumar(limite.restar(limiteAnterior).porcentaje(tramo.tasaPct()));
             limiteAnterior = limite;
-            if (limite.compareTo(rentaNeta) >= 0) {
-                break;
-            }
         }
         return impuesto;
     }
