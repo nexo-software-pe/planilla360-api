@@ -1,1 +1,6 @@
 # Perfil staging: los valores sensibles llegan por variables de entorno (nunca en este archivo).
+# Requeridas: DB_URL, DB_USER, DB_PASSWORD, JWT_SECRET, CORS_ALLOWED_ORIGINS.
+# Opcionales: CACHE_TYPE=redis + REDIS_HOST/REDIS_PORT/REDIS_PASSWORD.
+server:
+  # Render termina TLS en un proxy: respeta X-Forwarded-* (IP real del cliente para el rate limit).
+  forward-headers-strategy: native

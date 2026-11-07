@@ -1,0 +1,73 @@
+# Infraestructura local de Planilla360. Se levanta por perfiles para usar solo lo necesario:
+#   docker compose --profile core up -d        # PostgreSQL
+#   docker compose --profile messaging up -d   # PostgreSQL + Redis + RabbitMQ
+#   docker compose --profile app up -d --build # PostgreSQL + la API en contenedor
+#   docker compose --profile full up -d        # todo lo disponible
+# Las contraseñas de abajo son solo para desarrollo en tu máquina (puertos expuestos únicamente en
+# 127.0.0.1) y se pueden cambiar en .env (ver .env.example).
+name: planilla360
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    profiles: [core, messaging, app, full]
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-planilla360}
+      POSTGRES_USER: ${POSTGRES_USER:-planilla360}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-planilla360}
+    ports:
+      - "127.0.0.1:${POSTGRES_PORT:-5432}:5432"
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  redis:
+    image: redis:7-alpine
+    profiles: [messaging, full]
+    ports:
+      - "127.0.0.1:${REDIS_PORT:-6379}:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  rabbitmq:
+    image: rabbitmq:3.13-management-alpine
+    profiles: [messaging, full]
+    environment:
+      RABBITMQ_DEFAULT_USER: ${RABBITMQ_USER:-planilla360}
+      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_PASSWORD:-planilla360}
+    ports:
+      - "127.0.0.1:5672:5672"
+      - "127.0.0.1:15672:15672" # consola web: http://localhost:15672
+    volumes:
+      - rabbitmq-data:/var/lib/rabbitmq
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "-q", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  api:
+    build: .
+    profiles: [app]
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      SPRING_PROFILES_ACTIVE: local
+      DB_URL: jdbc:postgresql://postgres:5432/${POSTGRES_DB:-planilla360}
+      DB_USER: ${POSTGRES_USER:-planilla360}
+      DB_PASSWORD: ${POSTGRES_PASSWORD:-planilla360}
+      JWT_SECRET: ${JWT_SECRET:-}
+    ports:
+      - "127.0.0.1:${PORT:-8080}:8080"
+
+volumes:
+  postgres-data:
+  rabbitmq-data:

@@ -1,4 +1,23 @@
+# Perfil local: PostgreSQL de docker-compose (perfil "core"). Los valores por defecto son solo para
+# desarrollo en tu máquina; cualquier valor se puede sobrescribir con variables de entorno o .env.
+spring:
+  datasource:
+    url: ${DB_URL:jdbc:postgresql://localhost:5432/planilla360}
+    username: ${DB_USER:planilla360}
+    password: ${DB_PASSWORD:planilla360}
+  flyway:
+    # Además de las migraciones, carga los datos ficticios de desarrollo.
+    locations: classpath:db/migration,classpath:db/seed/local
+
 management:
   endpoint:
     health:
       show-details: always
+
+app:
+  cors:
+    allowed-origins: ${CORS_ALLOWED_ORIGINS:http://localhost:4200}
+  security:
+    jwt:
+      # Sin JWT_SECRET se genera uno efímero al arrancar (los tokens caducan al reiniciar).
+      generar-si-falta: true
