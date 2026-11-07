@@ -1,16 +1,26 @@
 package pe.nexosoftware.planilla360.planilla.domain.validation;
 
-/** Cadena estándar de validaciones previas al cierre. Esqueleto. */
+import java.util.Objects;
+
+/** Cadena estándar de validaciones previas al cierre, en el orden en que se muestran al usuario. */
 public final class ValidadorCierre {
 
-    private ValidadorCierre() {
+    private final EslabonValidacion cadena;
+
+    private ValidadorCierre(EslabonValidacion cadena) {
+        this.cadena = Objects.requireNonNull(cadena);
     }
 
     public static ValidadorCierre estandar() {
-        throw new UnsupportedOperationException("pendiente");
+        EslabonValidacion primero = new TrabajadoresConRegimenPensionario();
+        primero.luego(new AsistenciaDelMesCompleta())
+                .luego(new SinVacacionesPendientes())
+                .luego(new SinOtraPlanillaCerrada())
+                .luego(new NetosNoNegativos());
+        return new ValidadorCierre(primero);
     }
 
     public ResultadoValidacion validar(ContextoCierre contexto) {
-        throw new UnsupportedOperationException("pendiente");
+        return new ResultadoValidacion(cadena.validar(contexto));
     }
 }
