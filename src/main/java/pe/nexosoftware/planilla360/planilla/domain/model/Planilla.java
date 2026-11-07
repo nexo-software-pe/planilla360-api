@@ -1,14 +1,18 @@
 package pe.nexosoftware.planilla360.planilla.domain.model;
 
+import java.time.Instant;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 import java.util.function.Function;
 import pe.nexosoftware.planilla360.compartido.dominio.Dinero;
 import pe.nexosoftware.planilla360.compartido.dominio.Periodo;
+import pe.nexosoftware.planilla360.planilla.domain.event.PlanillaCerrada;
 import pe.nexosoftware.planilla360.planilla.domain.excepcion.ReglaDePlanillaException;
+import pe.nexosoftware.planilla360.planilla.domain.validation.ResultadoValidacion;
 
 /** Agregado Planilla de una empresa y un periodo: sus líneas solo cambian mientras no esté cerrada. */
 public final class Planilla {
@@ -74,6 +78,23 @@ public final class Planilla {
 
     public void anular() {
         this.estado = estado.alAnular();
+    }
+
+    public Optional<String> claveIdempotencia() {
+        throw new UnsupportedOperationException("pendiente");
+    }
+
+    public Optional<Instant> cerradaEn() {
+        throw new UnsupportedOperationException("pendiente");
+    }
+
+    /**
+     * Cierra la planilla de forma idempotente. Esqueleto: se construye test-first.
+     *
+     * @return el evento {@link PlanillaCerrada}, o vacío si es la repetición de un cierre ya hecho con la misma clave
+     */
+    public Optional<PlanillaCerrada> cerrar(String claveIdempotencia, ResultadoValidacion validacion, Instant ahora) {
+        throw new UnsupportedOperationException("pendiente");
     }
 
     public Dinero totalIngresos() {
