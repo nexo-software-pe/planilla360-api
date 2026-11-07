@@ -54,8 +54,11 @@ class CalculadoraAsignacionFamiliarTests {
         "2008-11-07, false, false",
         "2000-01-01, false, false",
         "2008-11-07, true, true",
-        "1998-11-08, true, true",
-        "1998-11-07, true, false",
+        "2003-11-07, true, true",
+        "2002-11-07, true, true",
+        "2001-11-08, true, true",
+        "2001-11-07, true, false",
+        "2001-11-07, false, false",
         "1990-01-01, true, false"
     })
     void evaluaLaEdadYLosEstudios(String nacimiento, boolean estudia, boolean elegible) {
