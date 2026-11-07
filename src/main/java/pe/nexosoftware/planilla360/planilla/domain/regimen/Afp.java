@@ -31,12 +31,10 @@ public record Afp(String administradora, BigDecimal comisionPct) implements Regi
 
     @Override
     public DescuentoPension calcular(Dinero remuneracionAsegurable, ParametrosLegales parametros) {
-        if (remuneracionAsegurable.esNegativo()) {
-            throw new IllegalArgumentException("La remuneración asegurable no puede ser negativa");
-        }
+        Dinero base = BaseAsegurable.exigirValida(remuneracionAsegurable);
         return new DescuentoPension(
-                remuneracionAsegurable.porcentaje(parametros.pctAfpAporte()),
-                remuneracionAsegurable.porcentaje(parametros.pctAfpPrima()),
-                remuneracionAsegurable.porcentaje(comisionPct));
+                base.porcentaje(parametros.pctAfpAporte()),
+                base.porcentaje(parametros.pctAfpPrima()),
+                base.porcentaje(comisionPct));
     }
 }

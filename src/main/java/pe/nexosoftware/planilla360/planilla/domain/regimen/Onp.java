@@ -13,10 +13,7 @@ public record Onp() implements RegimenPensionario {
 
     @Override
     public DescuentoPension calcular(Dinero remuneracionAsegurable, ParametrosLegales parametros) {
-        if (remuneracionAsegurable.esNegativo()) {
-            throw new IllegalArgumentException("La remuneración asegurable no puede ser negativa");
-        }
-        return new DescuentoPension(
-                remuneracionAsegurable.porcentaje(parametros.pctOnp()), Dinero.CERO, Dinero.CERO);
+        Dinero base = BaseAsegurable.exigirValida(remuneracionAsegurable);
+        return new DescuentoPension(base.porcentaje(parametros.pctOnp()), Dinero.CERO, Dinero.CERO);
     }
 }
