@@ -42,6 +42,7 @@ Contraseña común: `Planilla360-Local1`
 ```bash
 ./mvnw verify
 ```
+Compila, ejecuta las pruebas (unitarias, de integración con Testcontainers, arquitectura y escenarios Cucumber), Checkstyle, Spotless, cobertura con JaCoCo (mínimo 80 % en el dominio) y mutation testing con PIT sobre el dominio. Los informes quedan en `target/site/jacoco/index.html` y `target/pit-reports/index.html`. Requiere Docker Desktop encendido.
 
 ## Perfiles de Spring
 `local` (por defecto), `staging`, `prod`. La configuración sensible se entrega por variables de entorno; ver `.env.example`.
