@@ -9,12 +9,12 @@ import pe.nexosoftware.planilla360.planilla.domain.model.ParametrosLegales;
 
 /**
  * Asignación familiar: un monto fijo por trabajador (porcentaje de la RMV) si tiene al menos un hijo elegible,
- * es decir menor de 18 años o, si estudia, menor de 28.
+ * es decir menor de 18 años o, si estudia, hasta los 24 años.
  */
 public final class CalculadoraAsignacionFamiliar {
 
     private static final int EDAD_MAYORIA = 18;
-    private static final int EDAD_LIMITE_ESTUDIANTE = 28;
+    private static final int EDAD_LIMITE_ESTUDIANTE = 25;
 
     public int hijosElegibles(List<Hijo> hijos, LocalDate al) {
         int elegibles = 0;
