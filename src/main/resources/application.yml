@@ -1,0 +1,20 @@
+spring:
+  application:
+    name: planilla360-api
+  profiles:
+    default: local
+
+server:
+  port: ${PORT:8080}
+  shutdown: graceful
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+  endpoint:
+    health:
+      probes:
+        enabled: true
+      show-details: never
