@@ -1,1 +1,11 @@
 # Perfil prod: los valores sensibles llegan por variables de entorno (nunca en este archivo).
+# Requeridas: DB_URL, DB_USER, DB_PASSWORD, JWT_SECRET, CORS_ALLOWED_ORIGINS.
+# Opcionales: CACHE_TYPE=redis + REDIS_HOST/REDIS_PORT/REDIS_PASSWORD.
+server:
+  forward-headers-strategy: native
+
+springdoc:
+  api-docs:
+    enabled: false
+  swagger-ui:
+    enabled: false
