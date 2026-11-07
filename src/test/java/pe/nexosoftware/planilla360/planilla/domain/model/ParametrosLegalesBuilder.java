@@ -41,6 +41,16 @@ public final class ParametrosLegalesBuilder {
         return this;
     }
 
+    public ParametrosLegalesBuilder conPctAfpAporte(String valor) {
+        this.pctAfpAporte = new BigDecimal(valor);
+        return this;
+    }
+
+    public ParametrosLegalesBuilder conPctAfpPrima(String valor) {
+        this.pctAfpPrima = new BigDecimal(valor);
+        return this;
+    }
+
     public ParametrosLegalesBuilder conPctAsignacionFamiliar(String valor) {
         this.pctAsignacionFamiliar = new BigDecimal(valor);
         return this;
