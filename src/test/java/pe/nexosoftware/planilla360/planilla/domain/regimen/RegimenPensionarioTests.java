@@ -93,6 +93,12 @@ class RegimenPensionarioTests {
         }
 
         @ParameterizedTest
+        @CsvSource({"0", "100"})
+        void aceptaComisionesEnLosLimites(String comision) {
+            assertThat(new Afp("Prima", new BigDecimal(comision)).comisionPct()).isEqualByComparingTo(comision);
+        }
+
+        @ParameterizedTest
         @CsvSource({"-0.1", "100.1"})
         void rechazaComisionesFueraDeRango(String comision) {
             assertThatThrownBy(() -> new Afp("Prima", new BigDecimal(comision)))

@@ -45,6 +45,14 @@ class CalculadoraDescuentoAsistenciaTests {
     }
 
     @Test
+    void laTardanzaRechazaUnBasicoNegativoYUnaJornadaNula() {
+        assertThatThrownBy(() -> calculadora.porTardanza(Dinero.de("-1"), 10, 8))
+                .isInstanceOf(IllegalArgumentException.class).hasMessageContaining("básico");
+        assertThatThrownBy(() -> calculadora.porTardanza(Dinero.de("3000"), 10, 0))
+                .isInstanceOf(IllegalArgumentException.class).hasMessageContaining("jornada");
+    }
+
+    @Test
     void rechazaValoresInvalidos() {
         Dinero basico = Dinero.de("3000");
         assertThatThrownBy(() -> calculadora.porTardanza(basico, -1, 8)).isInstanceOf(IllegalArgumentException.class);

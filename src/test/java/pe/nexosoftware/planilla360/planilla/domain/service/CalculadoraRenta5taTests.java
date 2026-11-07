@@ -63,6 +63,21 @@ class CalculadoraRenta5taTests {
     }
 
     @Test
+    void aceptaDesdeUnMesHastaDoceMeses() {
+        assertThat(calculadora.retencionMensual(Dinero.de("7000"), 1, Dinero.CERO, Dinero.CERO, referencia()))
+                .isEqualTo(Dinero.CERO);
+        assertThat(calculadora.retencionMensual(Dinero.de("7000"), 12, Dinero.CERO, Dinero.CERO, referencia()))
+                .isEqualTo(Dinero.de("409.33"));
+    }
+
+    @Test
+    void laRemuneracionNegativaSeRechazaAunqueLosOtrosMontosCompensen() {
+        assertThatThrownBy(() -> calculadora.retencionMensual(Dinero.de("-1"), 12, Dinero.CERO,
+                Dinero.de("1000"), referencia())).isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("remuneración mensual");
+    }
+
+    @Test
     void rechazaDatosInvalidos() {
         Dinero uno = Dinero.de("1");
         assertThatThrownBy(() -> calculadora.retencionMensual(uno, 0, uno, uno, referencia()))
