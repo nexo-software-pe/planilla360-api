@@ -14,3 +14,5 @@ app:
       ip-por-minuto: 10000
   cors:
     allowed-origins: http://localhost:4200
+  jobs:
+    habilitados: false

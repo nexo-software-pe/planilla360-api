@@ -1,0 +1,18 @@
+package pe.nexosoftware.planilla360.empleado;
+
+import java.time.LocalDate;
+import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
+
+/** API pública del módulo de empleados. Todas las consultas se limitan a la empresa del contexto. */
+public interface EmpleadoApi {
+
+    Optional<EmpleadoResumen> buscar(UUID id);
+
+    /** Empleado vinculado a una cuenta de usuario (el portal del empleado). */
+    Optional<EmpleadoResumen> deUsuario(UUID usuarioId);
+
+    /** Empleados vigentes (ingresados y no cesados) en la fecha indicada. */
+    List<EmpleadoResumen> vigentesEn(LocalDate fecha);
+}

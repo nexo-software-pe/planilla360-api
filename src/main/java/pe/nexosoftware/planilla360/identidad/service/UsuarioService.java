@@ -1,5 +1,6 @@
 package pe.nexosoftware.planilla360.identidad.service;
 
+import java.util.Optional;
 import java.util.UUID;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
@@ -18,6 +19,7 @@ import pe.nexosoftware.planilla360.compartido.seguridad.Rol;
 import pe.nexosoftware.planilla360.compartido.seguridad.UsuarioAutenticado;
 import pe.nexosoftware.planilla360.empresa.EmpresaApi;
 import pe.nexosoftware.planilla360.empresa.EmpresaResumen;
+import pe.nexosoftware.planilla360.identidad.IdentidadApi;
 import pe.nexosoftware.planilla360.identidad.dto.ActualizarUsuarioRequest;
 import pe.nexosoftware.planilla360.identidad.dto.ResetPasswordRequest;
 import pe.nexosoftware.planilla360.identidad.dto.UsuarioRequest;
@@ -33,7 +35,7 @@ import pe.nexosoftware.planilla360.identidad.repository.UsuarioRepository;
  */
 @Service
 @Transactional(readOnly = true)
-public class UsuarioService {
+public class UsuarioService implements IdentidadApi {
 
     private static final String ENTIDAD = "USUARIO";
 
@@ -57,6 +59,11 @@ public class UsuarioService {
         this.empresas = empresas;
         this.mapper = mapper;
         this.eventos = eventos;
+    }
+
+    @Override
+    public Optional<UUID> empleadoIdDe(UUID usuarioId) {
+        return usuarios.findById(usuarioId).map(Usuario::getEmpleadoId);
     }
 
     public Pagina<UsuarioResponse> listar(UUID tenantIdFiltro, Pageable pageable) {
