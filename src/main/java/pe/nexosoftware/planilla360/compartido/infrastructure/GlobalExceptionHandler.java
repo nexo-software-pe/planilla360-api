@@ -19,6 +19,7 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
+import pe.nexosoftware.planilla360.compartido.dominio.ReglaDeDominioException;
 import pe.nexosoftware.planilla360.compartido.excepcion.DemasiadosIntentosException;
 import pe.nexosoftware.planilla360.compartido.excepcion.PlanillaException;
 
@@ -37,6 +38,13 @@ class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
             respuesta.header(HttpHeaders.RETRY_AFTER, String.valueOf(intentos.reintentarEnSegundos()));
         }
         return respuesta.body(problema);
+    }
+
+    @ExceptionHandler(ReglaDeDominioException.class)
+    ResponseEntity<ProblemDetail> reglaDeDominio(ReglaDeDominioException ex) {
+        ProblemDetail problema = ProblemDetail.forStatusAndDetail(HttpStatus.UNPROCESSABLE_ENTITY, ex.getMessage());
+        problema.setTitle("Regla de negocio incumplida");
+        return ResponseEntity.unprocessableEntity().body(problema);
     }
 
     @ExceptionHandler(AccessDeniedException.class)
