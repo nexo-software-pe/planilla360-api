@@ -3,6 +3,7 @@ package pe.nexosoftware.planilla360.catalogo;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
+import java.util.UUID;
 
 /** API pública del módulo de catálogos: parámetros legales vigentes y AFP. */
 public interface CatalogoApi {
@@ -14,4 +15,14 @@ public interface CatalogoApi {
     BigDecimal valorParametro(String codigo, LocalDate fecha);
 
     List<AfpResumen> afps();
+
+    /** Indica si el área existe en la empresa del contexto. */
+    boolean existeArea(UUID id);
+
+    /** Indica si el cargo existe en la empresa del contexto. */
+    boolean existeCargo(UUID id);
+
+    boolean existeAfp(UUID id);
+
+    boolean esFeriado(LocalDate fecha);
 }

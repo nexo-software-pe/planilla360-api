@@ -1,5 +1,6 @@
 package pe.nexosoftware.planilla360.empresa.service;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import org.springframework.context.ApplicationEventPublisher;
@@ -48,6 +49,11 @@ public class EmpresaService implements EmpresaApi {
     @Override
     public Optional<EmpresaResumen> buscarPorId(UUID id) {
         return repository.findById(id).map(mapper::aResumen);
+    }
+
+    @Override
+    public List<UUID> idsActivas() {
+        return repository.findByActivaTrue().stream().map(Empresa::getId).toList();
     }
 
     @Transactional

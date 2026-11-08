@@ -13,6 +13,9 @@ import org.junit.jupiter.api.Test;
 import org.springframework.context.ApplicationEventPublisher;
 import pe.nexosoftware.planilla360.catalogo.dto.ParametroLegalResponse;
 import pe.nexosoftware.planilla360.catalogo.mapper.CatalogoMapper;
+import pe.nexosoftware.planilla360.catalogo.repository.AfpRepository;
+import pe.nexosoftware.planilla360.catalogo.repository.AreaRepository;
+import pe.nexosoftware.planilla360.catalogo.repository.CargoRepository;
 import pe.nexosoftware.planilla360.catalogo.repository.FeriadoRepository;
 import pe.nexosoftware.planilla360.catalogo.repository.ParametroLegalRepository;
 import pe.nexosoftware.planilla360.compartido.excepcion.RecursoNoEncontradoException;
@@ -22,6 +25,7 @@ class CatalogoServiceTests {
     private final CatalogoCache cache = mock(CatalogoCache.class);
     private final CatalogoService service = new CatalogoService(
             cache, mock(ParametroLegalRepository.class), mock(FeriadoRepository.class),
+            mock(AreaRepository.class), mock(CargoRepository.class), mock(AfpRepository.class),
             mock(CatalogoMapper.class), mock(ApplicationEventPublisher.class));
 
     private static ParametroLegalResponse rmv(String valor, String desde, String hasta) {
