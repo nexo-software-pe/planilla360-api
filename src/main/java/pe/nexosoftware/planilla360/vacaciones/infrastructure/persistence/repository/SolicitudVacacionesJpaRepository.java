@@ -23,5 +23,8 @@ public interface SolicitudVacacionesJpaRepository extends JpaRepository<Solicitu
 
     List<SolicitudVacacionesEntity> findByEstadoAndDesdeLessThanEqual(EstadoSolicitud estado, LocalDate fecha);
 
+    List<SolicitudVacacionesEntity> findByEstadoInAndDesdeLessThanEqualAndHastaGreaterThanEqual(
+            Collection<EstadoSolicitud> estados, LocalDate hasta, LocalDate desde);
+
     List<SolicitudVacacionesEntity> findByEstadoAndHastaLessThan(EstadoSolicitud estado, LocalDate fecha);
 }

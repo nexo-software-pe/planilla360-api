@@ -18,15 +18,21 @@ import pe.nexosoftware.planilla360.compartido.excepcion.RecursoNoEncontradoExcep
 import pe.nexosoftware.planilla360.compartido.excepcion.ReglaDeNegocioException;
 import pe.nexosoftware.planilla360.compartido.paginacion.Pagina;
 import pe.nexosoftware.planilla360.compartido.tenant.TenantContext;
+import pe.nexosoftware.planilla360.empleado.ContratoResumen;
 import pe.nexosoftware.planilla360.empleado.EmpleadoApi;
 import pe.nexosoftware.planilla360.empleado.EmpleadoResumen;
+import pe.nexosoftware.planilla360.empleado.HijoResumen;
 import pe.nexosoftware.planilla360.empleado.dto.CeseRequest;
 import pe.nexosoftware.planilla360.empleado.dto.EmpleadoRequest;
 import pe.nexosoftware.planilla360.empleado.dto.EmpleadoResponse;
 import pe.nexosoftware.planilla360.empleado.dto.FiltroEmpleados;
 import pe.nexosoftware.planilla360.empleado.entity.Empleado;
+import pe.nexosoftware.planilla360.empleado.entity.Contrato;
 import pe.nexosoftware.planilla360.empleado.mapper.EmpleadoMapper;
+import pe.nexosoftware.planilla360.empleado.model.Parentesco;
+import pe.nexosoftware.planilla360.empleado.repository.ContratoRepository;
 import pe.nexosoftware.planilla360.empleado.repository.EmpleadoRepository;
+import pe.nexosoftware.planilla360.empleado.repository.FamiliarRepository;
 import pe.nexosoftware.planilla360.identidad.IdentidadApi;
 
 @Service
@@ -39,6 +45,8 @@ public class EmpleadoService implements EmpleadoApi {
     private static final int PROFUNDIDAD_MAXIMA_JERARQUIA = 50;
 
     private final EmpleadoRepository empleados;
+    private final ContratoRepository contratos;
+    private final FamiliarRepository familiares;
     private final EmpleadoMapper mapper;
     private final CatalogoApi catalogo;
     private final IdentidadApi identidad;
@@ -46,11 +54,15 @@ public class EmpleadoService implements EmpleadoApi {
 
     public EmpleadoService(
             EmpleadoRepository empleados,
+            ContratoRepository contratos,
+            FamiliarRepository familiares,
             EmpleadoMapper mapper,
             CatalogoApi catalogo,
             IdentidadApi identidad,
             ApplicationEventPublisher eventos) {
         this.empleados = empleados;
+        this.contratos = contratos;
+        this.familiares = familiares;
         this.mapper = mapper;
         this.catalogo = catalogo;
         this.identidad = identidad;
@@ -151,6 +163,37 @@ public class EmpleadoService implements EmpleadoApi {
     @Override
     public List<EmpleadoResumen> vigentesEn(LocalDate fecha) {
         return empleados.findVigentesEn(fecha).stream().map(mapper::aResumen).toList();
+    }
+
+    @Override
+    public List<EmpleadoResumen> vigentesEntre(LocalDate desde, LocalDate hasta) {
+        return empleados.findVigentesEntre(desde, hasta).stream().map(mapper::aResumen).toList();
+    }
+
+    @Override
+    public Optional<ContratoResumen> contratoVigenteEn(UUID empleadoId, LocalDate fecha) {
+        return contratos.findByEmpleadoIdOrderByFechaInicioDesc(empleadoId).stream()
+                .filter(c -> !c.getFechaInicio().isAfter(fecha) && c.sigueVigenteEn(fecha))
+                .findFirst()
+                .map(EmpleadoService::aResumen);
+    }
+
+    @Override
+    public List<HijoResumen> hijosDe(UUID empleadoId) {
+        return familiares.findByEmpleadoIdOrderByFechaNacimientoAsc(empleadoId).stream()
+                .filter(f -> f.getParentesco() == Parentesco.HIJO)
+                .map(f -> new HijoResumen(f.getFechaNacimiento(), f.isEstudia()))
+                .toList();
+    }
+
+    private static ContratoResumen aResumen(Contrato contrato) {
+        return new ContratoResumen(
+                contrato.getEmpleadoId(),
+                contrato.getSueldoBasico(),
+                contrato.getJornadaSemanal(),
+                contrato.getRegimenPensionario().name(),
+                contrato.getAfpId(),
+                contrato.getTipoComision() == null ? null : contrato.getTipoComision().name());
     }
 
     private void validarDatos(EmpleadoRequest request, UUID idPropio) {

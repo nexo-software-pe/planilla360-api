@@ -1,5 +1,6 @@
 package pe.nexosoftware.planilla360.asistencia.infrastructure.persistence.adapter;
 
+import java.time.LocalDate;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
@@ -41,6 +42,13 @@ class HoraExtraPersistenceAdapter implements HoraExtraPort {
     @Override
     public Optional<HoraExtra> buscar(UUID id) {
         return repository.findById(id).map(HoraExtraPersistenceAdapter::aDominio);
+    }
+
+    @Override
+    public List<HoraExtra> aprobadasEntre(LocalDate desde, LocalDate hasta) {
+        return repository.findByEstadoAndFechaBetween(EstadoHoraExtra.APROBADA, desde, hasta).stream()
+                .map(HoraExtraPersistenceAdapter::aDominio)
+                .toList();
     }
 
     @Override

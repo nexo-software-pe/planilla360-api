@@ -73,6 +73,12 @@ class SolicitudVacacionesPersistenceAdapter implements SolicitudVacacionesPort {
     }
 
     @Override
+    public List<SolicitudVacaciones> pendientesDeAprobacionQueSolapan(LocalDate desde, LocalDate hasta) {
+        return aDominio(repository.findByEstadoInAndDesdeLessThanEqualAndHastaGreaterThanEqual(
+                List.of(EstadoSolicitud.SOLICITADA, EstadoSolicitud.APROBADA_JEFE), hasta, desde));
+    }
+
+    @Override
     public List<SolicitudVacaciones> porIniciarGoce(LocalDate hoy) {
         return aDominio(repository.findByEstadoAndDesdeLessThanEqual(EstadoSolicitud.APROBADA_RRHH, hoy));
     }

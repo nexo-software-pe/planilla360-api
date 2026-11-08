@@ -15,4 +15,13 @@ public interface EmpleadoApi {
 
     /** Empleados vigentes (ingresados y no cesados) en la fecha indicada. */
     List<EmpleadoResumen> vigentesEn(LocalDate fecha);
+
+    /** Empleados que estuvieron vigentes en algún día del rango (ingresaron antes de su fin y no cesaron antes). */
+    List<EmpleadoResumen> vigentesEntre(LocalDate desde, LocalDate hasta);
+
+    /** Contrato que rige en la fecha indicada, si el empleado tenía alguno. */
+    Optional<ContratoResumen> contratoVigenteEn(UUID empleadoId, LocalDate fecha);
+
+    /** Hijos registrados del empleado. */
+    List<HijoResumen> hijosDe(UUID empleadoId);
 }

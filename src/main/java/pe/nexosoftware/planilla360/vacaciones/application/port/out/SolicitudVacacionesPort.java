@@ -23,6 +23,9 @@ public interface SolicitudVacacionesPort {
     /** Aprobadas por RRHH cuyo primer día ya llegó. */
     List<SolicitudVacaciones> porIniciarGoce(LocalDate hoy);
 
+    /** Solicitadas o aprobadas solo por el jefe (sin aprobación final de RRHH) cuyos días se solapan con el rango. */
+    List<SolicitudVacaciones> pendientesDeAprobacionQueSolapan(LocalDate desde, LocalDate hasta);
+
     /** En goce cuyo último día ya pasó. */
     List<SolicitudVacaciones> porFinalizar(LocalDate hoy);
 }
