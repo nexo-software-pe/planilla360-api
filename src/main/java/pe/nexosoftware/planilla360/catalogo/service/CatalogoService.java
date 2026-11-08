@@ -4,6 +4,7 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.context.ApplicationEventPublisher;
@@ -62,14 +63,18 @@ public class CatalogoService implements CatalogoApi {
 
     @Override
     public BigDecimal valorParametro(String codigo, LocalDate fecha) {
+        return parametroVigente(codigo, fecha).orElseThrow(() -> new RecursoNoEncontradoException(
+                "No hay un valor vigente del parámetro " + codigo + " para " + fecha + "."));
+    }
+
+    @Override
+    public Optional<BigDecimal> parametroVigente(String codigo, LocalDate fecha) {
         return cache.parametros().stream()
                 .filter(p -> p.codigo().equals(codigo))
                 .filter(p -> !p.vigenteDesde().isAfter(fecha))
                 .filter(p -> p.vigenteHasta() == null || !p.vigenteHasta().isBefore(fecha))
                 .max(Comparator.comparing(ParametroLegalResponse::vigenteDesde))
-                .map(ParametroLegalResponse::valor)
-                .orElseThrow(() -> new RecursoNoEncontradoException(
-                        "No hay un valor vigente del parámetro " + codigo + " para " + fecha + "."));
+                .map(ParametroLegalResponse::valor);
     }
 
     @Override

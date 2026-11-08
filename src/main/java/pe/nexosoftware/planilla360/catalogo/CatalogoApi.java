@@ -3,6 +3,7 @@ package pe.nexosoftware.planilla360.catalogo;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 /** API pública del módulo de catálogos: parámetros legales vigentes y AFP. */
@@ -13,6 +14,9 @@ public interface CatalogoApi {
      * {@code ONP_PCT}). Los porcentajes se expresan como número (13 significa 13 %).
      */
     BigDecimal valorParametro(String codigo, LocalDate fecha);
+
+    /** Como {@link #valorParametro}, pero devuelve vacío en vez de fallar cuando no hay valor vigente. */
+    Optional<BigDecimal> parametroVigente(String codigo, LocalDate fecha);
 
     List<AfpResumen> afps();
 
