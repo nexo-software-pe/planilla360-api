@@ -1,7 +1,8 @@
 package pe.nexosoftware.planilla360.vacaciones.domain.model;
 
 /**
- * Strategy: reglas de vacaciones según el régimen laboral de la empresa. (Esqueleto del commit ROJO.)
+ * Strategy: reglas de vacaciones según el régimen laboral de la empresa. Es una interfaz sellada: el
+ * compilador sabe que solo hay dos políticas.
  */
 public sealed interface PoliticaVacaciones permits PoliticaVacaciones.General, PoliticaVacaciones.PequenaEmpresa {
 
@@ -10,11 +11,11 @@ public sealed interface PoliticaVacaciones permits PoliticaVacaciones.General, P
     int maximoDiasVendibles();
 
     static PoliticaVacaciones general() {
-        throw new UnsupportedOperationException("pendiente");
+        return new General();
     }
 
     static PoliticaVacaciones pequenaEmpresa() {
-        throw new UnsupportedOperationException("pendiente");
+        return new PequenaEmpresa();
     }
 
     /** Régimen general: 30 días al año; se pueden vender hasta 15. */
@@ -22,12 +23,12 @@ public sealed interface PoliticaVacaciones permits PoliticaVacaciones.General, P
 
         @Override
         public int diasPorAnio() {
-            throw new UnsupportedOperationException("pendiente");
+            return 30;
         }
 
         @Override
         public int maximoDiasVendibles() {
-            throw new UnsupportedOperationException("pendiente");
+            return 15;
         }
     }
 
@@ -36,12 +37,12 @@ public sealed interface PoliticaVacaciones permits PoliticaVacaciones.General, P
 
         @Override
         public int diasPorAnio() {
-            throw new UnsupportedOperationException("pendiente");
+            return 15;
         }
 
         @Override
         public int maximoDiasVendibles() {
-            throw new UnsupportedOperationException("pendiente");
+            return 0;
         }
     }
 }
