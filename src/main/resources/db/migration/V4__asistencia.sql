@@ -7,7 +7,7 @@ CREATE TABLE horario (
     hora_entrada   time        NOT NULL,
     hora_salida    time        NOT NULL,
     tolerancia_min integer     NOT NULL DEFAULT 10,
-    dias           varchar(40) NOT NULL DEFAULT 'MONDAY,TUESDAY,WEDNESDAY,THURSDAY,FRIDAY',
+    dias           varchar(80) NOT NULL DEFAULT 'MONDAY,TUESDAY,WEDNESDAY,THURSDAY,FRIDAY',
     created_at     timestamptz NOT NULL DEFAULT now(),
     created_by     uuid,
     updated_at     timestamptz NOT NULL DEFAULT now(),

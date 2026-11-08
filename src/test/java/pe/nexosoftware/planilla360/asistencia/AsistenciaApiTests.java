@@ -172,6 +172,16 @@ class AsistenciaApiTests extends PersonalBase {
     }
 
     @Test
+    void unHorarioPuedeTrabajarLos7DiasDeLaSemana() throws Exception {
+        mvc.perform(post("/api/v1/horarios").header("Authorization", bearer(a.rrhh()))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"nombre\":\"Guardia\",\"entrada\":\"06:00\",\"salida\":\"14:00\",\"toleranciaMin\":5,"
+                                + "\"dias\":[\"MONDAY\",\"TUESDAY\",\"WEDNESDAY\",\"THURSDAY\",\"FRIDAY\",\"SATURDAY\",\"SUNDAY\"]}"))
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.dias.length()").value(7));
+    }
+
+    @Test
     void unHorarioInvalidoOSuNombreRepetidoSeRechazan() throws Exception {
         String sinTolerancia = "{\"nombre\":\"Turno\",\"entrada\":\"17:00\",\"salida\":\"08:00\",\"toleranciaMin\":5,\"dias\":[\"MONDAY\"]}";
         mvc.perform(post("/api/v1/horarios").header("Authorization", bearer(a.rrhh()))

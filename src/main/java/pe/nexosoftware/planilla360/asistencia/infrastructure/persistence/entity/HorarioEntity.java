@@ -34,7 +34,7 @@ public class HorarioEntity extends AuditableEntity {
     @Column(name = "tolerancia_min", nullable = false)
     private int toleranciaMin;
 
-    @Column(nullable = false, length = 40)
+    @Column(nullable = false, length = 80)
     private String dias;
 
     protected HorarioEntity() {
