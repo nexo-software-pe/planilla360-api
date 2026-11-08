@@ -1,18 +1,22 @@
 package pe.nexosoftware.planilla360.empresa.service;
 
-import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.function.Consumer;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import pe.nexosoftware.planilla360.compartido.eventos.CambioRegistrado;
 import pe.nexosoftware.planilla360.compartido.eventos.CambioRegistrado.Accion;
 import pe.nexosoftware.planilla360.compartido.excepcion.ConflictoException;
 import pe.nexosoftware.planilla360.compartido.excepcion.RecursoNoEncontradoException;
 import pe.nexosoftware.planilla360.compartido.paginacion.Pagina;
+import pe.nexosoftware.planilla360.compartido.tenant.TenantContext;
 import pe.nexosoftware.planilla360.empresa.EmpresaApi;
 import pe.nexosoftware.planilla360.empresa.EmpresaResumen;
 import pe.nexosoftware.planilla360.empresa.dto.EmpresaRequest;
@@ -25,6 +29,7 @@ import pe.nexosoftware.planilla360.empresa.repository.EmpresaRepository;
 @Transactional(readOnly = true)
 public class EmpresaService implements EmpresaApi {
 
+    private static final Logger LOG = LoggerFactory.getLogger(EmpresaService.class);
     private static final String ENTIDAD = "EMPRESA";
 
     private final EmpresaRepository repository;
@@ -52,8 +57,18 @@ public class EmpresaService implements EmpresaApi {
     }
 
     @Override
-    public List<UUID> idsActivas() {
-        return repository.findByActivaTrue().stream().map(Empresa::getId).toList();
+    @Transactional(propagation = Propagation.NOT_SUPPORTED)
+    public void porCadaEmpresaActiva(Consumer<UUID> accion) {
+        for (Empresa empresa : repository.findByActivaTrue()) {
+            TenantContext.establecer(empresa.getId());
+            try {
+                accion.accept(empresa.getId());
+            } catch (RuntimeException e) {
+                LOG.error("Falló el proceso programado para la empresa {}", empresa.getId(), e);
+            } finally {
+                TenantContext.limpiar();
+            }
+        }
     }
 
     @Transactional

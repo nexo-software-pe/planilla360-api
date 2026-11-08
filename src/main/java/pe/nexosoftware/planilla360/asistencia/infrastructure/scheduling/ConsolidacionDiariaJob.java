@@ -3,7 +3,7 @@ package pe.nexosoftware.planilla360.asistencia.infrastructure.scheduling;
 import java.time.Clock;
 import java.time.Duration;
 import java.time.LocalDate;
-import java.util.UUID;
+import java.util.concurrent.atomic.AtomicInteger;
 import net.javacrumbs.shedlock.core.LockConfiguration;
 import net.javacrumbs.shedlock.core.LockingTaskExecutor;
 import org.slf4j.Logger;
@@ -12,7 +12,6 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 import pe.nexosoftware.planilla360.asistencia.application.port.in.ConsolidarAsistenciaUseCase;
 import pe.nexosoftware.planilla360.asistencia.domain.service.ConsolidadorAsistencia;
-import pe.nexosoftware.planilla360.compartido.tenant.TenantContext;
 import pe.nexosoftware.planilla360.empresa.EmpresaApi;
 
 /**
@@ -63,17 +62,8 @@ public class ConsolidacionDiariaJob {
     }
 
     private void consolidarTodas(LocalDate fecha) {
-        int total = 0;
-        for (UUID empresaId : empresas.idsActivas()) {
-            TenantContext.establecer(empresaId);
-            try {
-                total += consolidacion.consolidar(fecha);
-            } catch (RuntimeException e) {
-                LOG.error("Falló la consolidación de asistencia de la empresa {} para {}", empresaId, fecha, e);
-            } finally {
-                TenantContext.limpiar();
-            }
-        }
-        LOG.info("Consolidación de asistencia del {} terminada: {} empleados procesados", fecha, total);
+        AtomicInteger total = new AtomicInteger();
+        empresas.porCadaEmpresaActiva(empresaId -> total.addAndGet(consolidacion.consolidar(fecha)));
+        LOG.info("Consolidación de asistencia del {} terminada: {} empleados procesados", fecha, total.get());
     }
 }

@@ -40,7 +40,10 @@ public abstract class PersonalBase extends IntegracionBase {
     }
 
     protected Escenario nuevoEscenario() throws Exception {
-        Empresa empresa = nuevaEmpresa();
+        return nuevoEscenario(nuevaEmpresa());
+    }
+
+    protected Escenario nuevoEscenario(Empresa empresa) throws Exception {
         Usuario rrhh = nuevoUsuario(empresa, Rol.RRHH);
         UUID areaId = crearId(rrhh, "/api/v1/areas", Map.of("nombre", "Producción"));
         UUID cargoId = crearId(rrhh, "/api/v1/cargos",

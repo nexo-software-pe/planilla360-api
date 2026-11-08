@@ -149,6 +149,12 @@ class ConsolidadorAsistenciaTests {
     }
 
     @Test
+    void variasEntradasSinSalidaSiguenSiendoIncompletas() {
+        assertThat(consolidar(marca(MARTES, "08:00", ENTRADA), marca(MARTES, "13:00", ENTRADA)))
+                .isEqualTo(new AsistenciaDiaria(MARTES, 0, 0, INCOMPLETA));
+    }
+
+    @Test
     void unaSalidaAnteriorALaEntradaNoCuentaComoSalida() {
         assertThat(consolidar(marca(MARTES, "07:00", SALIDA), marca(MARTES, "08:00", ENTRADA)))
                 .isEqualTo(new AsistenciaDiaria(MARTES, 0, 0, INCOMPLETA));

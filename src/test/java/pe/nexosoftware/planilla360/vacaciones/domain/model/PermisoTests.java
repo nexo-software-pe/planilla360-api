@@ -36,6 +36,11 @@ class PermisoTests {
         assertThat(p.dias()).isEqualTo(3);
     }
 
+    @Test
+    void conservaSiElPermisoEsConGoce() {
+        assertThat(permiso(DIA, DIA).conGoce()).isTrue();
+    }
+
     @ParameterizedTest
     @CsvSource({"2030-04-10, 2030-04-10, 1", "2030-04-10, 2030-04-11, 2", "2030-04-30, 2030-05-02, 3"})
     void losDiasIncluyenAmbosExtremos(String desde, String hasta, int dias) {
