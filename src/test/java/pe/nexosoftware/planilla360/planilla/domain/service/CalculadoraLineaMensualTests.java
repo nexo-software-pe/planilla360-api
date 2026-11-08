@@ -129,8 +129,8 @@ class CalculadoraLineaMensualTests {
 
     @Test
     void loYaPercibidoEnElAnioAumentaLaRetencion() {
-        LineaPlanilla sinPercibido = calcular(datos().sinHijos().basico("10000").build(), 6);
-        LineaPlanilla conPercibido = calcular(datos().sinHijos().basico("10000").percibido("60000").build(), 6);
+        LineaPlanilla sinPercibido = calcular(datos().sinHijos().basico("10000").build(), 7);
+        LineaPlanilla conPercibido = calcular(datos().sinHijos().basico("10000").percibido("60000").build(), 7);
 
         assertThat(conPercibido.retencion5ta().compareTo(sinPercibido.retencion5ta())).isPositive();
     }

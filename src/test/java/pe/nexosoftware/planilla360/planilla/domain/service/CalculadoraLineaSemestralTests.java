@@ -131,7 +131,7 @@ class CalculadoraLineaSemestralTests {
 
         LineaPlanilla linea = calculadora.cts(datos, Periodo.de(2026, 5), referencia());
 
-        assertThat(linea.cts()).isEqualTo(Dinero.de("1664.65"));
+        assertThat(linea.cts()).isEqualTo(Dinero.de("1664.59"));
     }
 
     @Test

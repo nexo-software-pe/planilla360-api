@@ -1,7 +1,10 @@
 package pe.nexosoftware.planilla360.planilla.domain.service;
 
+import pe.nexosoftware.planilla360.compartido.dominio.Dinero;
 import pe.nexosoftware.planilla360.compartido.dominio.Periodo;
 import pe.nexosoftware.planilla360.planilla.domain.model.DatosBeneficioSemestral;
+import pe.nexosoftware.planilla360.planilla.domain.model.DepositoCts;
+import pe.nexosoftware.planilla360.planilla.domain.model.Gratificacion;
 import pe.nexosoftware.planilla360.planilla.domain.model.LineaPlanilla;
 import pe.nexosoftware.planilla360.planilla.domain.model.ParametrosLegales;
 
@@ -16,10 +19,24 @@ public final class CalculadoraLineaSemestral {
     private final CalculadoraCts cts = new CalculadoraCts(gratificacion);
 
     public LineaPlanilla gratificacion(DatosBeneficioSemestral datos, Periodo periodo, ParametrosLegales parametros) {
-        throw new UnsupportedOperationException("pendiente");
+        Dinero asignacion = asignacionFamiliar.calcular(datos.hijos(), periodo.fin(), parametros);
+        Gratificacion calculada = gratificacion.calcular(datos.sueldoBasico(), asignacion,
+                datos.horasExtraDelSemestre(), datos.tiempo().meses(), datos.regimenLaboral(), parametros);
+        return LineaPlanilla.de(datos.empleadoId())
+                .basico(Dinero.CERO)
+                .gratificacion(calculada)
+                .regimenPensionario(datos.regimenPensionario())
+                .build(parametros);
     }
 
     public LineaPlanilla cts(DatosBeneficioSemestral datos, Periodo periodo, ParametrosLegales parametros) {
-        throw new UnsupportedOperationException("pendiente");
+        Dinero asignacion = asignacionFamiliar.calcular(datos.hijos(), periodo.fin(), parametros);
+        DepositoCts deposito = cts.calcular(datos.sueldoBasico(), asignacion, datos.horasExtraDelSemestre(),
+                datos.ultimaGratificacion(), datos.tiempo().meses(), datos.tiempo().dias(), datos.regimenLaboral());
+        return LineaPlanilla.de(datos.empleadoId())
+                .basico(Dinero.CERO)
+                .cts(deposito.monto())
+                .regimenPensionario(datos.regimenPensionario())
+                .build(parametros);
     }
 }
