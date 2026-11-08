@@ -1,9 +1,11 @@
 package pe.nexosoftware.planilla360.vacaciones.domain.model;
 
 import java.time.LocalDate;
+import java.time.temporal.ChronoUnit;
 import java.util.UUID;
+import pe.nexosoftware.planilla360.vacaciones.domain.excepcion.ReglaDeVacacionesException;
 
-/** Permiso o licencia de un empleado, con flujo corto de aprobación. (Esqueleto del commit ROJO.) */
+/** Permiso o licencia de un empleado. Flujo corto: nace solicitado y se aprueba o rechaza una sola vez. */
 public final class Permiso {
 
     public static final int MAXIMO_DIAS = 90;
@@ -41,7 +43,15 @@ public final class Permiso {
 
     public static Permiso solicitar(
             UUID empleadoId, TipoPermiso tipo, LocalDate desde, LocalDate hasta, boolean conGoce, String motivo) {
-        throw new UnsupportedOperationException("pendiente");
+        if (hasta.isBefore(desde)) {
+            throw new ReglaDeVacacionesException("La fecha final no puede ser anterior a la fecha de inicio.");
+        }
+        Permiso permiso = new Permiso(
+                UUID.randomUUID(), empleadoId, tipo, desde, hasta, conGoce, motivo, EstadoPermiso.SOLICITADO, null);
+        if (permiso.dias() > MAXIMO_DIAS) {
+            throw new ReglaDeVacacionesException("Un permiso no puede durar más de " + MAXIMO_DIAS + " días.");
+        }
+        return permiso;
     }
 
     /** Reconstruye un permiso ya guardado (lo usa el adaptador de persistencia). */
@@ -59,15 +69,27 @@ public final class Permiso {
     }
 
     public int dias() {
-        throw new UnsupportedOperationException("pendiente");
+        return (int) ChronoUnit.DAYS.between(desde, hasta) + 1;
     }
 
     public void aprobar() {
-        throw new UnsupportedOperationException("pendiente");
+        exigirSolicitado();
+        this.estado = EstadoPermiso.APROBADO;
     }
 
     public void rechazar(String motivoDelRechazo) {
-        throw new UnsupportedOperationException("pendiente");
+        if (motivoDelRechazo == null || motivoDelRechazo.isBlank()) {
+            throw new ReglaDeVacacionesException("Debe indicarse el motivo del rechazo.");
+        }
+        exigirSolicitado();
+        this.estado = EstadoPermiso.RECHAZADO;
+        this.motivoRechazo = motivoDelRechazo.trim();
+    }
+
+    private void exigirSolicitado() {
+        if (estado != EstadoPermiso.SOLICITADO) {
+            throw new ReglaDeVacacionesException("El permiso ya fue resuelto (" + estado + ").");
+        }
     }
 
     public UUID id() {
