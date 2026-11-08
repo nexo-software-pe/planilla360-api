@@ -32,6 +32,7 @@
 		<jacoco.version>0.8.16</jacoco.version>
 		<pitest.version>1.30.2</pitest.version>
 		<pitest-junit5.version>1.2.3</pitest-junit5.version>
+		<shedlock.version>7.7.0</shedlock.version>
 	</properties>
 	<dependencies>
 		<dependency>
@@ -92,6 +93,16 @@
 			<groupId>org.springdoc</groupId>
 			<artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
 			<version>${springdoc.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>net.javacrumbs.shedlock</groupId>
+			<artifactId>shedlock-spring</artifactId>
+			<version>${shedlock.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>net.javacrumbs.shedlock</groupId>
+			<artifactId>shedlock-provider-jdbc-template</artifactId>
+			<version>${shedlock.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>org.mapstruct</groupId>
@@ -349,6 +360,10 @@
 							<includes>
 								<include>pe/nexosoftware/planilla360/planilla/domain/**</include>
 								<include>pe/nexosoftware/planilla360/planilla/application/**</include>
+								<include>pe/nexosoftware/planilla360/asistencia/domain/**</include>
+								<include>pe/nexosoftware/planilla360/asistencia/application/**</include>
+								<include>pe/nexosoftware/planilla360/vacaciones/domain/**</include>
+								<include>pe/nexosoftware/planilla360/vacaciones/application/**</include>
 								<include>pe/nexosoftware/planilla360/compartido/dominio/**</include>
 							</includes>
 							<rules>
@@ -387,10 +402,14 @@
 				<configuration>
 					<targetClasses>
 						<param>pe.nexosoftware.planilla360.planilla.domain.*</param>
+						<param>pe.nexosoftware.planilla360.asistencia.domain.*</param>
+						<param>pe.nexosoftware.planilla360.vacaciones.domain.*</param>
 						<param>pe.nexosoftware.planilla360.compartido.dominio.*</param>
 					</targetClasses>
 					<targetTests>
 						<param>pe.nexosoftware.planilla360.planilla.domain.*</param>
+						<param>pe.nexosoftware.planilla360.asistencia.domain.*</param>
+						<param>pe.nexosoftware.planilla360.vacaciones.domain.*</param>
 						<param>pe.nexosoftware.planilla360.compartido.dominio.*</param>
 					</targetTests>
 					<mutationThreshold>85</mutationThreshold>
