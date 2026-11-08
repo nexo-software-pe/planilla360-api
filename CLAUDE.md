@@ -3,7 +3,7 @@
 Backend de **Planilla360** (Nexo Software S.A.C.): SaaS multi-empresa de RRHH y planillas para pymes peruanas.
 
 ## Stack
-Java 21 (fijado con maven-enforcer) · Spring Boot 4.1.x · Spring Modulith · Spring Security (resource server JWT) · Spring Data JPA + Hibernate 7 · Flyway · PostgreSQL · Redis (caché) · MapStruct · springdoc · Bucket4j · Maven Wrapper.
+Java 21 (fijado con maven-enforcer) · Spring Boot 4.1.x · Spring Modulith · Spring Security (resource server JWT) · Spring Data JPA + Hibernate 7 · Flyway · PostgreSQL · Redis (caché) · MapStruct · springdoc · Bucket4j · ShedLock · Maven Wrapper.
 Pruebas: JUnit 5, AssertJ, Mockito, spring-security-test, Testcontainers (PostgreSQL, Redis), ArchUnit, Spring Modulith.
 (RabbitMQ, MinIO, Mailpit y observabilidad completa se incorporan en fases siguientes.)
 
@@ -15,7 +15,7 @@ docker compose --profile core up -d   # PostgreSQL local (messaging = + Redis y 
 ./mvnw verify                         # compila, tests, Checkstyle, Spotless, JaCoCo (≥ 80 %) y PIT (dominio)
 ./mvnw test -Dtest='ValidadorCierreTests*'   # solo unas pruebas (las clases @Nested llevan * al final)
 ```
-Informes: `target/site/jacoco/index.html` (cobertura) y `target/pit-reports/index.html` (mutación). Escenarios Cucumber: `EscenariosPlanillaTests`.
+JaCoCo (≥ 80 %) y PIT (≥ 85 %) cubren los dominios de planilla, asistencia y vacaciones. Informes: `target/site/jacoco/index.html` (cobertura) y `target/pit-reports/index.html` (mutación). Escenarios Cucumber: `EscenariosPlanillaTests`.
 Desde PowerShell: `.\mvnw.cmd verify`. Si falla, usar la terminal de Git Bash.
 Swagger (solo local/staging): http://localhost:8080/swagger-ui.html — botón *Authorize* con el `accessToken` del login.
 
@@ -29,6 +29,7 @@ Swagger (solo local/staging): http://localhost:8080/swagger-ui.html — botón *
 - Auditoría: `created_at/by`, `updated_at/by` con `AuditableEntity`; para el historial, publicar `CambioRegistrado` (lo guarda el módulo `auditoria` en la misma transacción). Nunca incluir contraseñas en las instantáneas.
 - Parámetros legales (RMV, UIT, tasas) se leen de `CatalogoApi.valorParametro(codigo, fecha)`; nunca se escriben en el código.
 - **TDD en el dominio**: primero el test en rojo (commit `test:` con un esqueleto que compila y lanza `UnsupportedOperationException`), luego la implementación (`feat:`) y, si hace falta, el `refactor:`. Los tests del dominio van en paquetes `..domain..` / `compartido.dominio` porque PIT solo ejecuta esos. Un cambio en el dominio no se da por bueno si baja el PIT por debajo de 85 % o la cobertura por debajo de 80 %.
+- **Dominio de asistencia/vacaciones**: sus excepciones extienden `compartido.dominio.ReglaDeDominioException` (el `GlobalExceptionHandler` las responde 422). Los casos de uso de `application/` dependen de puertos; otros módulos se consultan solo por un adaptador en `infrastructure/adapter`. `ArquitecturaHexagonalTests` lo hace cumplir. Los eventos entre módulos se publican con Spring (síncronos, misma transacción); las clases de evento viven en la raíz del módulo emisor.
 - Dinero siempre con `Dinero` (nunca `double`). Fechas: `LocalDate`/`Periodo`; el dominio no llama a `LocalDate.now()` (la fecha se recibe como dato).
 - Commits: Conventional Commits. Ramas: `feat/<n>-...`, `fix/<n>-...`, PR a `staging`.
 - **Ningún secreto en el repo**: variables de entorno; `.env.example` documenta las variables. En local la API genera un `JWT_SECRET` efímero si no se define.
@@ -40,6 +41,10 @@ Swagger (solo local/staging): http://localhost:8080/swagger-ui.html — botón *
 - `identidad/` — login, refresh con rotación, logout, perfil, cambio de contraseña (`/api/v1/auth`) y usuarios (`/api/v1/usuarios`). Rate limit de login con Bucket4j.
 - `catalogo/` — áreas y cargos (por empresa), AFP, parámetros legales versionados y feriados (globales, con caché). API pública: `CatalogoApi`.
 - `auditoria/` — historial de cambios (`/api/v1/auditoria`).
+- `empleado/` (capas clásicas) — empleados, contratos y familiares (`/api/v1/empleados`, RRHH/ADMIN_EMPRESA). La búsqueda usa el patrón **Specification** (`service/EmpleadoSpecs`: cada criterio es una pieza que se combina con `and`; filtro `FiltroEmpleados`). API pública: `EmpleadoApi` (`buscar`, `deUsuario`, `vigentesEn`). El DNI no se modifica; el cese fija estado y fecha; el contrato nuevo cierra el anterior; la jerarquía de jefes no admite ciclos.
+- `asistencia/` (**hexagonal**) — `domain/` (Java puro: `Horario`, `ConsolidadorAsistencia`, `PoliticaMarcacion`, `HoraExtra`), `application/` (`port/in` casos de uso, `port/out` puertos, `service/`), `infrastructure/` (`persistence/{entity,repository,adapter}`, `web/{controller,dto,mapper}`, `adapter/` hacia empleado y catálogo, `scheduling/ConsolidacionDiariaJob`, `event/` listener de vacaciones). Endpoints: `/api/v1/asistencia` (marcaciones, `mia`, resumen, consolidaciones, `horas-extra`) y `/api/v1/horarios`.
+- `vacaciones/` (**hexagonal**) — `domain/` (`PoliticaVacaciones` Strategy sellada, `PeriodoVacacional`, `CalculadoraPeriodos`, `SolicitudVacaciones` + `EstadoSolicitud` State, `Permiso`), mismas capas que asistencia. Publica los eventos `VacacionesAprobadas` y `PermisoAprobado` (raíz del módulo = API pública); asistencia los escucha y justifica los días. Endpoints: `/api/v1/vacaciones` (saldo, solicitudes, aprobar-jefe, aprobar-rrhh, rechazar, cancelar, venta) y `/api/v1/permisos`.
+- **Jobs programados**: `SchedulingConfig` (ShedLock sobre la tabla `shedlock`, `LockingTaskExecutor`; `app.jobs.habilitados=false` apaga los `@Scheduled`, p. ej. en tests). El job pide el bloqueo explícitamente (`executeWithLock`) y recorre las empresas con `EmpresaApi.porCadaEmpresaActiva` (fija el tenant y sigue si una falla). Asistencia 00:30 y vacaciones 00:10, hora de Lima.
 - `compartido/dominio/` — value objects `Dinero` (BigDecimal, 2 decimales, redondeo HALF_UP, `proporcional` redondea una sola vez) y `Periodo` (YearMonth), además de `Dni` y `Ruc`.
 - `planilla/domain/` (núcleo hexagonal, **Java puro**; aún sin `application/` ni `infrastructure/`, llegan en la Fase 5):
   - `model/` — `Planilla` (agregado; `cerrar` es idempotente por clave y devuelve el evento `PlanillaCerrada`), `EstadoPlanilla` (State: BORRADOR → CALCULADA → CERRADA, + ANULADA), `LineaPlanilla` + `Builder` (boleta: totales, neto y `conceptos()`), `ParametrosLegales` (RMV, UIT y tasas llegan como datos, nunca hardcodeados), `Gratificacion`, `DepositoCts`.
@@ -48,9 +53,9 @@ Swagger (solo local/staging): http://localhost:8080/swagger-ui.html — botón *
   - `validation/` — cadena de validaciones de cierre (`ValidadorCierre.estandar()`): reúne **todas** las incidencias, no corta en la primera.
   - `excepcion/ReglaDePlanillaException` — error de negocio del dominio (sin Spring); la capa web la traducirá a `problem+json`.
 - Pruebas del dominio: `src/test/.../planilla/domain/**` (unitarias, AssertJ, parametrizadas; `ParametrosLegalesBuilder` y `LineasDePrueba` son test data builders) y escenarios Gherkin en español en `src/test/resources/features/planilla/*.feature` con sus pasos en `planilla/bdd/`.
-- `src/main/resources/db/migration` — Flyway (`V1` esquema, `V2` datos referenciales). `db/seed/local` — datos ficticios, solo perfil `local`.
+- `src/main/resources/db/migration` — Flyway (`V1` esquema, `V2` datos referenciales, `V3` empleados, `V4` asistencia + `shedlock`, `V5` vacaciones). `db/seed/local` — datos ficticios (empresas, usuarios y personal/asistencia/vacaciones), solo perfil `local`.
 - `src/main/resources/application*.yml` — configuración por perfil (`local`, `staging`, `prod`); `src/test/resources/application-test.yml`.
-- `src/test/.../soporte` — `IntegracionBase` (app completa + PostgreSQL real), `TestcontainersConfig`.
+- `src/test/.../soporte` — `IntegracionBase` (app completa + PostgreSQL real), `TestcontainersConfig`, `PersonalBase` (empresa + área + cargo + RRHH + empleados listos) y `RelojDePrueba` (reloj fijable; las pruebas usan fechas de 2030 para que los JWT sigan siendo válidos).
 - `Dockerfile`, `compose.yaml` — imagen multi-etapa (sin root) y servicios locales por perfiles.
 - `config/checkstyle/checkstyle.xml` — reglas de estilo. `.github/workflows/ci.yml` — CI.
 
@@ -59,4 +64,4 @@ Contraseña común: `Planilla360-Local1` (solo local; en staging/prod los usuari
 `admin.saas@nexosoftware.pe` (ADMIN_SAAS) · `admin@textilesandinos.ejemplo.pe` (ADMIN_EMPRESA) · `rrhh@textilesandinos.ejemplo.pe` (RRHH) · `empleado@textilesandinos.ejemplo.pe` (EMPLEADO) · `admin@laespiga.ejemplo.pe` y `rrhh@laespiga.ejemplo.pe` (segunda empresa, para probar aislamiento).
 
 ## Estado
-Fase 2 cerrada: backend base y seguridad. Fase 3: dominio de planilla (cálculo y cierre) con pruebas, Cucumber, JaCoCo y PIT. Pendiente: empleados, asistencia, vacaciones, aplicación e infraestructura de planilla, boletas, mensajería, observabilidad y despliegue.
+Fase 2: backend base y seguridad. Fase 3: dominio de planilla (cálculo y cierre) con pruebas, Cucumber, JaCoCo y PIT. Fase 4: empleados, asistencia y vacaciones (dominios hexagonales con TDD, eventos, jobs con ShedLock). Pendiente: aplicación e infraestructura de planilla, boletas, mensajería, observabilidad y despliegue.
