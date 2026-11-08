@@ -8,13 +8,30 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicInteger;
+import org.junit.jupiter.api.AfterEach;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
 import pe.nexosoftware.planilla360.compartido.seguridad.Rol;
 import pe.nexosoftware.planilla360.empresa.entity.Empresa;
 import pe.nexosoftware.planilla360.identidad.entity.Usuario;
 
 /** Apoyo para pruebas de integración que necesitan empresa, áreas, cargos y empleados reales. */
+@Import(RelojDePruebaConfig.class)
 public abstract class PersonalBase extends IntegracionBase {
+
+    @Autowired
+    protected RelojDePrueba reloj;
+
+    @AfterEach
+    void restablecerReloj() {
+        reloj.restablecer();
+    }
+
+    protected void ahoraEs(String fechaHoraLima) {
+        reloj.fijarEnLima(fechaHoraLima);
+    }
+
 
     private static final AtomicInteger SECUENCIA_DNI = new AtomicInteger(20_000_000);
 
