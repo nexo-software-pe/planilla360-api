@@ -1,9 +1,16 @@
 package pe.nexosoftware.planilla360.vacaciones.domain.model;
 
 import java.time.LocalDate;
+import java.time.temporal.ChronoUnit;
 import java.util.UUID;
+import pe.nexosoftware.planilla360.vacaciones.domain.excepcion.ReglaDeVacacionesException;
 
-/** Solicitud de vacaciones y su flujo de aprobación. (Esqueleto del commit ROJO.) */
+/**
+ * Solicitud de vacaciones y su flujo de aprobación: el jefe aprueba primero, luego RRHH. Los días se
+ * cuentan en calendario, incluyendo ambos extremos. Los bloques deben ser de al menos 7 días, salvo que
+ * se tome todo el saldo restante. Una solicitud ya aprobada por RRHH no se cancela (ya generó días
+ * justificados en asistencia).
+ */
 public final class SolicitudVacaciones {
 
     public static final int BLOQUE_MINIMO_DIAS = 7;
@@ -35,7 +42,24 @@ public final class SolicitudVacaciones {
 
     public static SolicitudVacaciones solicitar(
             UUID empleadoId, UUID periodoId, LocalDate desde, LocalDate hasta, int saldoDisponible, LocalDate hoy) {
-        throw new UnsupportedOperationException("pendiente");
+        if (hasta.isBefore(desde)) {
+            throw new ReglaDeVacacionesException("La fecha final no puede ser anterior a la fecha de inicio.");
+        }
+        if (desde.isBefore(hoy)) {
+            throw new ReglaDeVacacionesException("Las vacaciones no pueden empezar en el pasado.");
+        }
+        SolicitudVacaciones solicitud = new SolicitudVacaciones(
+                UUID.randomUUID(), empleadoId, periodoId, desde, hasta, EstadoSolicitud.SOLICITADA, null);
+        int dias = solicitud.dias();
+        if (dias > saldoDisponible) {
+            throw new ReglaDeVacacionesException(
+                    "Solicitas " + dias + " días pero tu saldo disponible es de " + saldoDisponible + ".");
+        }
+        if (dias < BLOQUE_MINIMO_DIAS && dias != saldoDisponible) {
+            throw new ReglaDeVacacionesException(
+                    "Cada bloque de vacaciones debe ser de al menos " + BLOQUE_MINIMO_DIAS + " días.");
+        }
+        return solicitud;
     }
 
     /** Reconstruye una solicitud ya guardada (lo usa el adaptador de persistencia). */
@@ -51,35 +75,52 @@ public final class SolicitudVacaciones {
     }
 
     public int dias() {
-        throw new UnsupportedOperationException("pendiente");
+        return (int) ChronoUnit.DAYS.between(desde, hasta) + 1;
     }
 
     public boolean seSolapaCon(LocalDate otroDesde, LocalDate otroHasta) {
-        throw new UnsupportedOperationException("pendiente");
+        return !otroDesde.isAfter(hasta) && !otroHasta.isBefore(desde);
     }
 
     public void aprobarPorJefe() {
-        throw new UnsupportedOperationException("pendiente");
+        pasarA(EstadoSolicitud.APROBADA_JEFE);
     }
 
     public void aprobarPorRrhh() {
-        throw new UnsupportedOperationException("pendiente");
+        pasarA(EstadoSolicitud.APROBADA_RRHH);
     }
 
     public void rechazar(String motivo) {
-        throw new UnsupportedOperationException("pendiente");
+        if (motivo == null || motivo.isBlank()) {
+            throw new ReglaDeVacacionesException("Debe indicarse el motivo del rechazo.");
+        }
+        pasarA(EstadoSolicitud.RECHAZADA);
+        this.motivoRechazo = motivo.trim();
     }
 
     public void cancelar() {
-        throw new UnsupportedOperationException("pendiente");
+        pasarA(EstadoSolicitud.CANCELADA);
     }
 
     public void iniciarGoce(LocalDate hoy) {
-        throw new UnsupportedOperationException("pendiente");
+        if (hoy.isBefore(desde)) {
+            throw new ReglaDeVacacionesException("El goce empieza el " + desde + ".");
+        }
+        pasarA(EstadoSolicitud.EN_GOCE);
     }
 
     public void finalizar(LocalDate hoy) {
-        throw new UnsupportedOperationException("pendiente");
+        if (!hoy.isAfter(hasta)) {
+            throw new ReglaDeVacacionesException("El goce termina el " + hasta + ".");
+        }
+        pasarA(EstadoSolicitud.FINALIZADA);
+    }
+
+    private void pasarA(EstadoSolicitud destino) {
+        if (!estado.puedePasarA(destino)) {
+            throw new ReglaDeVacacionesException("No se puede pasar de " + estado + " a " + destino + ".");
+        }
+        this.estado = destino;
     }
 
     public UUID id() {
