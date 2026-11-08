@@ -241,6 +241,28 @@ class EmpleadoApiTests extends PersonalBase {
     }
 
     @Test
+    void sueldoMinimoDeTiempoParcialEsProporcionalALaJornada() throws Exception {
+        String ruta23 = "/api/v1/empleados/" + crearEmpleado(a, "Pía", "Parcial", "2024-01-01") + "/contratos";
+        String ruta24 = "/api/v1/empleados/" + crearEmpleado(a, "Raúl", "Medio", "2024-01-01") + "/contratos";
+
+        // 23 h: RMV × 23 / 48 = 541.46 (1 130 vigente)
+        enviarContrato(ruta23, "PART_TIME", "541.45", 23).andExpect(status().isUnprocessableEntity());
+        enviarContrato(ruta23, "PART_TIME", "541.46", 23).andExpect(status().isCreated());
+
+        // 24 h: ya se exige la RMV completa aunque el contrato sea part-time
+        enviarContrato(ruta24, "PART_TIME", "900.00", 24).andExpect(status().isUnprocessableEntity());
+        enviarContrato(ruta24, "PART_TIME", "1130.00", 24).andExpect(status().isCreated());
+    }
+
+    private org.springframework.test.web.servlet.ResultActions enviarContrato(
+            String ruta, String tipo, String sueldo, int jornada) throws Exception {
+        Map<String, Object> cuerpo = contrato(tipo, "2025-01-01", sueldo, "ONP");
+        cuerpo.put("jornadaSemanal", jornada);
+        return mvc.perform(post(ruta).header("Authorization", bearer(a.rrhh()))
+                .contentType(MediaType.APPLICATION_JSON).content(texto(cuerpo)));
+    }
+
+    @Test
     void familiaresSeRegistranYListan() throws Exception {
         UUID id = crearEmpleado(a, "Ana", "Prueba", "2024-01-01");
         String ruta = "/api/v1/empleados/" + id + "/familiares";

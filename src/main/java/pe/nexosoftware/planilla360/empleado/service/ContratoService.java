@@ -17,6 +17,7 @@ import pe.nexosoftware.planilla360.empleado.dto.ContratoResponse;
 import pe.nexosoftware.planilla360.empleado.entity.Contrato;
 import pe.nexosoftware.planilla360.empleado.entity.Empleado;
 import pe.nexosoftware.planilla360.empleado.mapper.EmpleadoMapper;
+import pe.nexosoftware.planilla360.empleado.model.SueldoMinimo;
 import pe.nexosoftware.planilla360.empleado.model.TipoContrato;
 import pe.nexosoftware.planilla360.empleado.model.TipoRegimenPensionario;
 import pe.nexosoftware.planilla360.empleado.repository.ContratoRepository;
@@ -115,13 +116,12 @@ public class ContratoService {
         } else if (request.afpId() != null || request.tipoComision() != null) {
             throw new ReglaDeNegocioException("El régimen ONP no lleva AFP ni tipo de comisión.");
         }
-        if (request.tipo() != TipoContrato.PART_TIME) {
-            validarSueldoMinimo(request);
-        }
+        validarSueldoMinimo(request);
     }
 
     /**
-     * El sueldo no puede ser menor a la RMV vigente al inicio del contrato. Si el catálogo no tiene RMV
+     * El sueldo no puede ser menor a la RMV vigente al inicio del contrato; con jornada menor a 24 horas
+     * semanales el mínimo es la RMV proporcional ({@link SueldoMinimo}). Si el catálogo no tiene RMV
      * para esa fecha (contratos históricos anteriores a los datos cargados), no hay con qué comparar y
      * se acepta.
      */
@@ -130,8 +130,10 @@ public class ContratoService {
         if (rmv == null) {
             return;
         }
-        if (request.sueldoBasico().compareTo(rmv) < 0) {
-            throw new ReglaDeNegocioException("El sueldo básico no puede ser menor a la RMV vigente (S/ " + rmv + ").");
+        BigDecimal minimo = SueldoMinimo.para(rmv, request.jornadaSemanal());
+        if (request.sueldoBasico().compareTo(minimo) < 0) {
+            throw new ReglaDeNegocioException("El sueldo básico no puede ser menor a S/ " + minimo
+                    + " (RMV vigente S/ " + rmv + " para una jornada de " + request.jornadaSemanal() + " h semanales).");
         }
     }
 
