@@ -22,6 +22,7 @@ public record LineaPlanilla(
         Dinero bonos,
         Dinero gratificacion,
         Dinero bonificacionExtraordinaria,
+        Dinero cts,
         RegimenPensionario regimenPensionario,
         DescuentoPension descuentoPension,
         Dinero retencion5ta,
@@ -92,6 +93,7 @@ public record LineaPlanilla(
         private Dinero horasExtra = Dinero.CERO;
         private Dinero bonos = Dinero.CERO;
         private Gratificacion gratificacion;
+        private Dinero cts = Dinero.CERO;
         private RegimenPensionario regimenPensionario;
         private Dinero retencion5ta = Dinero.CERO;
         private Dinero descuentoAsistencia = Dinero.CERO;
@@ -124,6 +126,10 @@ public record LineaPlanilla(
         public Builder gratificacion(Gratificacion valor) {
             this.gratificacion = valor;
             return this;
+        }
+
+        public Builder cts(Dinero valor) {
+            throw new UnsupportedOperationException("pendiente");
         }
 
         public Builder regimenPensionario(RegimenPensionario valor) {
@@ -163,7 +169,7 @@ public record LineaPlanilla(
             Gratificacion semestral = gratificacion == null ? new Gratificacion(Dinero.CERO, Dinero.CERO)
                     : gratificacion;
             return new LineaPlanilla(empleadoId, basico, asignacionFamiliar, horasExtra, bonos, semestral.monto(),
-                    semestral.bonificacionExtraordinaria(), regimenPensionario,
+                    semestral.bonificacionExtraordinaria(), cts, regimenPensionario,
                     regimenPensionario.calcular(asegurable, parametros), retencion5ta, descuentoAsistencia,
                     otrosDescuentos, asegurable.porcentaje(parametros.pctEssalud()));
         }

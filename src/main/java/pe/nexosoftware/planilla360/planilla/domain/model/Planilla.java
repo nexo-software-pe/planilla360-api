@@ -39,6 +39,12 @@ public final class Planilla {
         return new Planilla(id, empresaId, periodo, tipo);
     }
 
+    /** Reconstruye una planilla ya guardada, con su estado y su cierre (lo usa el adaptador de persistencia). */
+    public static Planilla reconstruir(UUID id, UUID empresaId, Periodo periodo, TipoPlanilla tipo,
+            EstadoPlanilla estado, List<LineaPlanilla> lineas, String claveIdempotencia, Instant cerradaEn) {
+        throw new UnsupportedOperationException("pendiente");
+    }
+
     public UUID id() {
         return id;
     }
