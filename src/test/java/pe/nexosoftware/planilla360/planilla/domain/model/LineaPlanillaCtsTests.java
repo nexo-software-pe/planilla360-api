@@ -61,6 +61,6 @@ class LineaPlanillaCtsTests {
                 .regimenPensionario(new Onp());
 
         assertThatThrownBy(() -> builder.build(referencia()))
-                .isInstanceOf(IllegalArgumentException.class).hasMessageContaining("La CTS no puede ser negativa");
+                .isInstanceOf(IllegalArgumentException.class).hasMessageContaining("La CTS no puede ser negativo");
     }
 }

@@ -42,7 +42,39 @@ public final class Planilla {
     /** Reconstruye una planilla ya guardada, con su estado y su cierre (lo usa el adaptador de persistencia). */
     public static Planilla reconstruir(UUID id, UUID empresaId, Periodo periodo, TipoPlanilla tipo,
             EstadoPlanilla estado, List<LineaPlanilla> lineas, String claveIdempotencia, Instant cerradaEn) {
-        throw new UnsupportedOperationException("pendiente");
+        Objects.requireNonNull(estado, "El estado es obligatorio");
+        Planilla planilla = new Planilla(id, empresaId, periodo, tipo);
+        planilla.estado = estado;
+        planilla.lineas = List.copyOf(lineas);
+        planilla.claveIdempotencia = claveIdempotencia;
+        planilla.cerradaEn = cerradaEn;
+        planilla.exigirCoherencia();
+        return planilla;
+    }
+
+    private void exigirCoherencia() {
+        boolean conCierre = claveIdempotencia != null || cerradaEn != null;
+        if (estado == EstadoPlanilla.CALCULADA || estado == EstadoPlanilla.CERRADA) {
+            if (lineas.isEmpty()) {
+                throw new IllegalArgumentException("Una planilla " + estado + " debe tener líneas");
+            }
+            Set<UUID> vistos = new HashSet<>();
+            for (LineaPlanilla linea : lineas) {
+                if (!vistos.add(linea.empleadoId())) {
+                    throw new IllegalArgumentException(
+                            "El trabajador " + linea.empleadoId() + " tiene más de una línea en la planilla");
+                }
+            }
+        }
+        if (estado == EstadoPlanilla.CERRADA && (claveIdempotencia == null || claveIdempotencia.isBlank())) {
+            throw new IllegalArgumentException("Una planilla cerrada debe tener clave de idempotencia");
+        }
+        if (estado == EstadoPlanilla.CERRADA && cerradaEn == null) {
+            throw new IllegalArgumentException("Una planilla cerrada debe tener fecha de cierre");
+        }
+        if ((estado == EstadoPlanilla.BORRADOR || estado == EstadoPlanilla.CALCULADA) && conCierre) {
+            throw new IllegalArgumentException("Una planilla no cerrada no puede tener datos de cierre");
+        }
     }
 
     public UUID id() {

@@ -39,7 +39,7 @@ public record LineaPlanilla(
     }
 
     public Dinero totalIngresos() {
-        return remuneracionAsegurable().sumar(gratificacion).sumar(bonificacionExtraordinaria);
+        return remuneracionAsegurable().sumar(gratificacion).sumar(bonificacionExtraordinaria).sumar(cts);
     }
 
     public Dinero totalDescuentos() {
@@ -60,6 +60,7 @@ public record LineaPlanilla(
         agregar(lista, "GRATIFICACION", "Gratificación", TipoConcepto.INGRESO, gratificacion);
         agregar(lista, "BONIFICACION_EXTRAORDINARIA", "Bonificación extraordinaria (Ley 30334)",
                 TipoConcepto.INGRESO, bonificacionExtraordinaria);
+        agregar(lista, "CTS", "Compensación por tiempo de servicios (depósito)", TipoConcepto.INGRESO, cts);
         switch (regimenPensionario) {
             case Onp onp -> agregar(lista, "ONP", "Aporte ONP", TipoConcepto.DESCUENTO, descuentoPension.aporte());
             case Afp afp -> {
@@ -129,7 +130,8 @@ public record LineaPlanilla(
         }
 
         public Builder cts(Dinero valor) {
-            throw new UnsupportedOperationException("pendiente");
+            this.cts = valor;
+            return this;
         }
 
         public Builder regimenPensionario(RegimenPensionario valor) {
@@ -161,6 +163,7 @@ public record LineaPlanilla(
             exigirNoNegativo(asignacionFamiliar, "La asignación familiar");
             exigirNoNegativo(horasExtra, "Las horas extra");
             exigirNoNegativo(bonos, "Los bonos");
+            exigirNoNegativo(cts, "La CTS");
             exigirNoNegativo(retencion5ta, "La retención de 5.ª categoría");
             exigirNoNegativo(descuentoAsistencia, "El descuento por asistencia");
             exigirNoNegativo(otrosDescuentos, "Los otros descuentos");
