@@ -69,6 +69,9 @@
           "id" : {
             "format" : "uuid",
             "type" : "string"
+          },
+          "nombre" : {
+            "type" : "string"
           }
         },
         "type" : "object"
@@ -1979,7 +1982,7 @@
         "tags" : [ "Catálogos globales" ]
       }
     },
-    "/api/v1/areas" : {
+    "/api/v1/areas-de-trabajo" : {
       "get" : {
         "operationId" : "listar_9",
         "parameters" : [ {
@@ -2031,7 +2034,7 @@
         "tags" : [ "Áreas" ]
       }
     },
-    "/api/v1/areas/{id}" : {
+    "/api/v1/areas-de-trabajo/{id}" : {
       "delete" : {
         "operationId" : "eliminar_1",
         "parameters" : [ {

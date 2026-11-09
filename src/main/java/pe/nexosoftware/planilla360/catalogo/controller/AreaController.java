@@ -24,7 +24,7 @@ import pe.nexosoftware.planilla360.catalogo.service.AreaService;
 import pe.nexosoftware.planilla360.compartido.paginacion.Pagina;
 
 @RestController
-@RequestMapping("/api/v1/areas")
+@RequestMapping("/api/v1/areas-de-trabajo")
 @Tag(name = "Áreas", description = "Áreas de la empresa (lectura: todos; escritura: RRHH / admin de empresa)")
 public class AreaController {
 
