@@ -15,6 +15,7 @@ import pe.nexosoftware.planilla360.compartido.tenant.TenantContext;
 import pe.nexosoftware.planilla360.planilla.application.model.FiltroPlanillas;
 import pe.nexosoftware.planilla360.planilla.application.model.ResumenPlanilla;
 import pe.nexosoftware.planilla360.planilla.application.port.in.GestionarPlanillasUseCase;
+import pe.nexosoftware.planilla360.planilla.application.port.out.MedidorCalculoPort;
 import pe.nexosoftware.planilla360.planilla.application.port.out.PlanillaPort;
 import pe.nexosoftware.planilla360.planilla.application.port.out.PublicadorEventosPort;
 import pe.nexosoftware.planilla360.planilla.domain.model.Planilla;
@@ -34,18 +35,21 @@ public class PlanillaService implements GestionarPlanillasUseCase {
     private final ValidadorDePlanilla validador;
     private final PublicadorEventosPort eventos;
     private final Clock reloj;
+    private final MedidorCalculoPort medidor;
 
     public PlanillaService(
             PlanillaPort planillas,
             ArmadorDeLineas armador,
             ValidadorDePlanilla validador,
             PublicadorEventosPort eventos,
-            Clock reloj) {
+            Clock reloj,
+            MedidorCalculoPort medidor) {
         this.planillas = planillas;
         this.armador = armador;
         this.validador = validador;
         this.eventos = eventos;
         this.reloj = reloj;
+        this.medidor = medidor;
     }
 
     @Override
@@ -68,7 +72,8 @@ public class PlanillaService implements GestionarPlanillasUseCase {
         Planilla planilla = planillas.buscarParaActualizar(planillaId).orElseThrow(PlanillaService::noExiste);
         ResumenPlanilla antes = ResumenPlanilla.de(planilla);
         planilla.estado().alCalcular();
-        planilla.registrarCalculo(armador.armar(planilla.periodo(), planilla.tipo()));
+        planilla.registrarCalculo(
+                medidor.medir(planilla.tipo(), () -> armador.armar(planilla.periodo(), planilla.tipo())));
         Planilla guardada = planillas.guardar(planilla);
         eventos.registrarCambio(guardada.id(), Accion.ACTUALIZAR, antes, ResumenPlanilla.de(guardada));
         return guardada;
@@ -78,7 +83,7 @@ public class PlanillaService implements GestionarPlanillasUseCase {
     public Planilla simular(Periodo periodo, TipoPlanilla tipo) {
         exigirPeriodoValido(periodo, tipo);
         Planilla simulada = Planilla.crearBorrador(UUID.randomUUID(), TenantContext.requerido(), periodo, tipo);
-        simulada.registrarCalculo(armador.armar(periodo, tipo));
+        simulada.registrarCalculo(medidor.medir(tipo, () -> armador.armar(periodo, tipo)));
         return simulada;
     }
 

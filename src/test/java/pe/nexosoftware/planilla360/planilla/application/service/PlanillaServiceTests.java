@@ -12,9 +12,11 @@ import static pe.nexosoftware.planilla360.planilla.domain.model.LineasDePrueba.l
 import java.time.Clock;
 import java.time.Instant;
 import java.time.ZoneOffset;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.function.Supplier;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -25,6 +27,7 @@ import pe.nexosoftware.planilla360.compartido.excepcion.ConflictoException;
 import pe.nexosoftware.planilla360.compartido.excepcion.RecursoNoEncontradoException;
 import pe.nexosoftware.planilla360.compartido.excepcion.ReglaDeNegocioException;
 import pe.nexosoftware.planilla360.compartido.tenant.TenantContext;
+import pe.nexosoftware.planilla360.planilla.application.port.out.MedidorCalculoPort;
 import pe.nexosoftware.planilla360.planilla.application.port.out.PlanillaPort;
 import pe.nexosoftware.planilla360.planilla.application.port.out.PublicadorEventosPort;
 import pe.nexosoftware.planilla360.planilla.domain.excepcion.ReglaDePlanillaException;
@@ -45,7 +48,16 @@ class PlanillaServiceTests {
     private final ValidadorDePlanilla validador = mock(ValidadorDePlanilla.class);
     private final PublicadorEventosPort eventos = mock(PublicadorEventosPort.class);
     private final Clock reloj = Clock.fixed(Instant.parse("2030-04-02T15:00:00Z"), ZoneOffset.UTC);
-    private final PlanillaService servicio = new PlanillaService(planillas, armador, validador, eventos, reloj);
+    private final List<TipoPlanilla> tiposMedidos = new ArrayList<>();
+    private final MedidorCalculoPort medidor = new MedidorCalculoPort() {
+        @Override
+        public <T> T medir(TipoPlanilla tipo, Supplier<T> calculo) {
+            tiposMedidos.add(tipo);
+            return calculo.get();
+        }
+    };
+    private final PlanillaService servicio =
+            new PlanillaService(planillas, armador, validador, eventos, reloj, medidor);
 
     @BeforeEach
     void empresaEnContexto() {
@@ -114,6 +126,18 @@ class PlanillaServiceTests {
         assertThat(calculada.estado()).isEqualTo(EstadoPlanilla.CALCULADA);
         assertThat(calculada.lineas()).hasSize(2);
         verify(eventos).registrarCambio(any(), org.mockito.ArgumentMatchers.eq(Accion.ACTUALIZAR), any(), any());
+    }
+
+    @Test
+    void elCalculoYLaSimulacionPasanPorElMedidorDeDuracion() {
+        Planilla planilla = borrador();
+        when(planillas.buscarParaActualizar(planilla.id())).thenReturn(Optional.of(planilla));
+        when(armador.armar(MARZO, TipoPlanilla.MENSUAL)).thenReturn(List.of(linea(1)));
+
+        servicio.calcular(planilla.id());
+        servicio.simular(MARZO, TipoPlanilla.MENSUAL);
+
+        assertThat(tiposMedidos).containsExactly(TipoPlanilla.MENSUAL, TipoPlanilla.MENSUAL);
     }
 
     @Test
