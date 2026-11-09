@@ -1,6 +1,7 @@
 package pe.nexosoftware.planilla360.asistencia;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.time.YearMonth;
 import java.util.List;
 import java.util.Map;
@@ -18,6 +19,12 @@ public interface AsistenciaApi {
 
     /** Horas extra aprobadas del mes por empleado: una entrada por día, con las horas de ese día sumadas. */
     Map<UUID, List<BigDecimal>> horasExtraAprobadasDelMes(YearMonth mes);
+
+    /**
+     * Minutos efectivos por día (salida - entrada - refrigerio) del horario que tenía cada empleado en la fecha. Los
+     * empleados sin horario asignado no aparecen.
+     */
+    Map<UUID, Integer> minutosDeHorarioEn(LocalDate fecha);
 
     /** El mes está completo si ya se consolidó su último día y ningún día quedó con marcaciones incompletas. */
     boolean mesCompleto(YearMonth mes);

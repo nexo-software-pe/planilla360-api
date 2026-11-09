@@ -66,6 +66,7 @@ class PersonalModuloAdapter implements ConsultaPersonalPort, ConsultaEmpresaPort
                 c.empleadoId(),
                 Dinero.de(c.sueldoBasico()),
                 c.jornadaSemanal(),
+                c.diasLaborables(),
                 TipoRegimenPensionario.valueOf(c.regimenPensionario()),
                 c.afpId(),
                 c.tipoComision() == null ? null : TipoComision.valueOf(c.tipoComision()));

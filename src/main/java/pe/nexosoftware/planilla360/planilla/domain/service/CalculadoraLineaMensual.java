@@ -33,7 +33,7 @@ public final class CalculadoraLineaMensual {
     public LineaPlanilla calcular(DatosMensualesTrabajador datos, Periodo periodo, ParametrosLegales parametros,
             BigDecimal sobretasaHoraExtra1Pct, BigDecimal sobretasaHoraExtra2Pct) {
         exigirDiasValidos(datos.diasLaborados(), periodo);
-        int horasJornada = JornadaLaboral.horasDiarias(datos.jornadaSemanal());
+        int horasJornada = datos.horasJornadaDiaria();
         Dinero basicoDelMes = datos.sueldoBasico().proporcional(datos.diasLaborados(), periodo.diasDelMes());
         Dinero asignacion = asignacionFamiliar.calcular(datos.hijos(), periodo.fin(), parametros);
         Dinero pagoHorasExtra = horasExtra.total(datos.sueldoBasico(), horasJornada, datos.horasExtraPorDia(),

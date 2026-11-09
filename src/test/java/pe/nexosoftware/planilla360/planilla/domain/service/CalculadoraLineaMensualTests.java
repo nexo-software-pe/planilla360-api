@@ -96,8 +96,8 @@ class CalculadoraLineaMensualTests {
     }
 
     @Test
-    void laJornadaDelContratoDefineElValorDeLaHoraExtra() {
-        LineaPlanilla linea = calcular(datos().jornada(24).horasExtra("2").build(), 3);
+    void laJornadaDiariaDefineElValorDeLaHoraExtra() {
+        LineaPlanilla linea = calcular(datos().jornada(5).horasExtra("2").build(), 3);
 
         assertThat(linea.horasExtra()).isEqualTo(Dinero.de("50.00"));
     }
@@ -163,7 +163,7 @@ class CalculadoraLineaMensualTests {
     private static final class DatosBuilder {
 
         private Dinero basico = Dinero.de("3000");
-        private int jornada = 48;
+        private int jornada = 8;
         private RegimenPensionario regimen = new Onp();
         private RegimenLaboral laboral = RegimenLaboral.GENERAL;
         private List<Hijo> hijos = List.of(HIJO_MENOR);

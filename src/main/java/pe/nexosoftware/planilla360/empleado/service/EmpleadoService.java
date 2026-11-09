@@ -191,6 +191,7 @@ public class EmpleadoService implements EmpleadoApi {
                 contrato.getEmpleadoId(),
                 contrato.getSueldoBasico(),
                 contrato.getJornadaSemanal(),
+                contrato.getDiasLaborables(),
                 contrato.getRegimenPensionario().name(),
                 contrato.getAfpId(),
                 contrato.getTipoComision() == null ? null : contrato.getTipoComision().name());

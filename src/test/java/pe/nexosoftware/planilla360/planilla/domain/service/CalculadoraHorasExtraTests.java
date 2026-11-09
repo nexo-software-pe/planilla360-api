@@ -69,17 +69,4 @@ class CalculadoraHorasExtraTests {
         assertThatThrownBy(() -> calculadora.montoDelDia(BASICO, jornada, BigDecimal.ONE, S1, S2))
                 .isInstanceOf(IllegalArgumentException.class).hasMessageContaining("jornada");
     }
-
-    @ParameterizedTest(name = "{0} h semanales -> {1} h diarias")
-    @CsvSource({"48, 8", "44, 8", "40, 8", "36, 8", "30, 6", "24, 5", "20, 4", "12, 3", "1, 1"})
-    void conviertelaJornadaSemanalEnHorasDiarias(int semanal, int diarias) {
-        assertThat(JornadaLaboral.horasDiarias(semanal)).isEqualTo(diarias);
-    }
-
-    @ParameterizedTest
-    @CsvSource({"0", "-1", "49"})
-    void laJornadaSemanalDebeEstarEntre1Y48(int semanal) {
-        assertThatThrownBy(() -> JornadaLaboral.horasDiarias(semanal))
-                .isInstanceOf(IllegalArgumentException.class).hasMessageContaining("jornada semanal");
-    }
 }

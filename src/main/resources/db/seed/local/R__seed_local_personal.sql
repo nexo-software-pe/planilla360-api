@@ -63,10 +63,10 @@ ON CONFLICT (id) DO NOTHING;
 -- ---------------------------------------------------------------------------------------------
 -- Horarios y asignaciones
 -- ---------------------------------------------------------------------------------------------
-INSERT INTO horario (id, tenant_id, nombre, hora_entrada, hora_salida, tolerancia_min, dias) VALUES
-    ('eeeeeeee-0000-4000-8000-000000000001', '11111111-1111-4111-8111-111111111111', 'Oficina',       TIME '08:00', TIME '17:00', 10, 'MONDAY,TUESDAY,WEDNESDAY,THURSDAY,FRIDAY'),
-    ('eeeeeeee-0000-4000-8000-000000000002', '22222222-2222-4222-8222-222222222222', 'Turno mañana',  TIME '06:00', TIME '14:00', 10, 'MONDAY,TUESDAY,WEDNESDAY,THURSDAY,FRIDAY,SATURDAY')
-ON CONFLICT (id) DO NOTHING;
+INSERT INTO horario (id, tenant_id, nombre, hora_entrada, hora_salida, tolerancia_min, refrigerio_min, dias) VALUES
+    ('eeeeeeee-0000-4000-8000-000000000001', '11111111-1111-4111-8111-111111111111', 'Oficina',       TIME '08:00', TIME '17:00', 10, 60, 'MONDAY,TUESDAY,WEDNESDAY,THURSDAY,FRIDAY'),
+    ('eeeeeeee-0000-4000-8000-000000000002', '22222222-2222-4222-8222-222222222222', 'Turno mañana',  TIME '06:00', TIME '14:00', 10, 0, 'MONDAY,TUESDAY,WEDNESDAY,THURSDAY,FRIDAY,SATURDAY')
+ON CONFLICT (id) DO UPDATE SET refrigerio_min = EXCLUDED.refrigerio_min;
 
 INSERT INTO empleado_horario (tenant_id, empleado_id, horario_id, desde, hasta)
 SELECT e.tenant_id, e.id,

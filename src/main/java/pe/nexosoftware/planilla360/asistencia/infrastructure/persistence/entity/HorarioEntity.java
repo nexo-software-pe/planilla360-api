@@ -34,17 +34,22 @@ public class HorarioEntity extends AuditableEntity {
     @Column(name = "tolerancia_min", nullable = false)
     private int toleranciaMin;
 
+    @Column(name = "refrigerio_min", nullable = false)
+    private int refrigerioMin;
+
     @Column(nullable = false, length = 80)
     private String dias;
 
     protected HorarioEntity() {
     }
 
-    public HorarioEntity(String nombre, LocalTime horaEntrada, LocalTime horaSalida, int toleranciaMin, String dias) {
+    public HorarioEntity(String nombre, LocalTime horaEntrada, LocalTime horaSalida, int toleranciaMin, int refrigerioMin,
+            String dias) {
         this.nombre = nombre;
         this.horaEntrada = horaEntrada;
         this.horaSalida = horaSalida;
         this.toleranciaMin = toleranciaMin;
+        this.refrigerioMin = refrigerioMin;
         this.dias = dias;
     }
 
@@ -66,6 +71,10 @@ public class HorarioEntity extends AuditableEntity {
 
     public int getToleranciaMin() {
         return toleranciaMin;
+    }
+
+    public int getRefrigerioMin() {
+        return refrigerioMin;
     }
 
     public String getDias() {

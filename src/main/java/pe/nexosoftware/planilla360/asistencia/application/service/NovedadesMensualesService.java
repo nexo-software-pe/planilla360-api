@@ -15,6 +15,7 @@ import pe.nexosoftware.planilla360.asistencia.AsistenciaApi;
 import pe.nexosoftware.planilla360.asistencia.application.port.out.AsistenciaDiariaPort;
 import pe.nexosoftware.planilla360.asistencia.application.port.out.AsistenciaDiariaPort.Registro;
 import pe.nexosoftware.planilla360.asistencia.application.port.out.HoraExtraPort;
+import pe.nexosoftware.planilla360.asistencia.application.port.out.HorarioPort;
 import pe.nexosoftware.planilla360.asistencia.domain.model.EstadoAsistencia;
 import pe.nexosoftware.planilla360.asistencia.domain.model.HoraExtra;
 
@@ -25,10 +26,13 @@ public class NovedadesMensualesService implements AsistenciaApi {
 
     private final AsistenciaDiariaPort asistencias;
     private final HoraExtraPort horasExtra;
+    private final HorarioPort horarios;
 
-    public NovedadesMensualesService(AsistenciaDiariaPort asistencias, HoraExtraPort horasExtra) {
+    public NovedadesMensualesService(
+            AsistenciaDiariaPort asistencias, HoraExtraPort horasExtra, HorarioPort horarios) {
         this.asistencias = asistencias;
         this.horasExtra = horasExtra;
+        this.horarios = horarios;
     }
 
     @Override
@@ -56,6 +60,13 @@ public class NovedadesMensualesService implements AsistenciaApi {
         Map<UUID, List<BigDecimal>> resultado = new HashMap<>();
         porDia.forEach((id, dias) -> resultado.put(id, new ArrayList<>(dias.values())));
         return resultado;
+    }
+
+    @Override
+    public Map<UUID, Integer> minutosDeHorarioEn(LocalDate fecha) {
+        Map<UUID, Integer> minutos = new HashMap<>();
+        horarios.vigentesEn(fecha).forEach((empleadoId, horario) -> minutos.put(empleadoId, horario.minutosEfectivos()));
+        return minutos;
     }
 
     @Override

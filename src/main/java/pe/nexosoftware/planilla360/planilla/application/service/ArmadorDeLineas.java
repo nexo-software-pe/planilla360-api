@@ -30,6 +30,7 @@ import pe.nexosoftware.planilla360.planilla.domain.regimen.RegimenLaboral;
 import pe.nexosoftware.planilla360.planilla.domain.service.CalculadoraLineaMensual;
 import pe.nexosoftware.planilla360.planilla.domain.service.CalculadoraLineaSemestral;
 import pe.nexosoftware.planilla360.planilla.domain.service.CalculadoraTiempoDeServicio;
+import pe.nexosoftware.planilla360.planilla.domain.service.JornadaLaboral;
 
 /**
  * Reúne los datos de otros módulos y le pide al dominio las líneas de una planilla. Cada tipo de planilla tiene su
@@ -99,6 +100,7 @@ class ArmadorDeLineas {
         Map<UUID, List<BigDecimal>> horasExtra = asistencia.horasExtraAprobadasDelMes(periodo);
         Map<UUID, Integer> diasSinGoce = vacaciones.diasDePermisoSinGoce(periodo);
         Map<UUID, Dinero> percibidos = historial.ingresosPercibidosEnElAnio(periodo);
+        Map<UUID, Integer> minutosDeHorario = asistencia.minutosDeHorarioEn(periodo.fin());
 
         List<LineaPlanilla> lineas = new ArrayList<>();
         for (TrabajadorConRegimen t : personalDelPeriodo.resolver(periodo.inicio(), periodo.fin()).conRegimen()) {
@@ -107,7 +109,8 @@ class ArmadorDeLineas {
             DatosMensualesTrabajador datos = new DatosMensualesTrabajador(
                     id,
                     t.contrato().sueldoBasico(),
-                    t.contrato().jornadaSemanal(),
+                    JornadaLaboral.horasDiarias(minutosDeHorario.get(id), t.contrato().jornadaSemanal(),
+                            t.contrato().diasLaborables()),
                     t.regimen(),
                     regimenLaboral,
                     personal.hijosDe(id),

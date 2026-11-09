@@ -29,6 +29,7 @@ import pe.nexosoftware.planilla360.empleado.repository.EmpleadoRepository;
 public class ContratoService {
 
     private static final String ENTIDAD = "CONTRATO";
+    private static final int DIAS_LABORABLES_POR_DEFECTO = 5;
 
     private final ContratoRepository contratos;
     private final EmpleadoRepository empleados;
@@ -87,6 +88,7 @@ public class ContratoService {
                 request.fechaFin(),
                 request.sueldoBasico(),
                 request.jornadaSemanal(),
+                request.diasLaborables() == null ? DIAS_LABORABLES_POR_DEFECTO : request.diasLaborables(),
                 request.regimenPensionario(),
                 request.afpId(),
                 request.tipoComision(),

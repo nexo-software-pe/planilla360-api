@@ -47,6 +47,9 @@ public class Contrato extends AuditableEntity {
     @Column(name = "jornada_semanal", nullable = false)
     private int jornadaSemanal;
 
+    @Column(name = "dias_laborables", nullable = false)
+    private int diasLaborables;
+
     @Enumerated(EnumType.STRING)
     @Column(name = "regimen_pensionario", nullable = false, length = 10)
     private TipoRegimenPensionario regimenPensionario;
@@ -71,6 +74,7 @@ public class Contrato extends AuditableEntity {
             LocalDate fechaFin,
             BigDecimal sueldoBasico,
             int jornadaSemanal,
+            int diasLaborables,
             TipoRegimenPensionario regimenPensionario,
             UUID afpId,
             TipoComision tipoComision,
@@ -81,6 +85,7 @@ public class Contrato extends AuditableEntity {
         this.fechaFin = fechaFin;
         this.sueldoBasico = sueldoBasico;
         this.jornadaSemanal = jornadaSemanal;
+        this.diasLaborables = diasLaborables;
         this.regimenPensionario = regimenPensionario;
         this.afpId = afpId;
         this.tipoComision = tipoComision;
@@ -122,6 +127,10 @@ public class Contrato extends AuditableEntity {
 
     public int getJornadaSemanal() {
         return jornadaSemanal;
+    }
+
+    public int getDiasLaborables() {
+        return diasLaborables;
     }
 
     public TipoRegimenPensionario getRegimenPensionario() {

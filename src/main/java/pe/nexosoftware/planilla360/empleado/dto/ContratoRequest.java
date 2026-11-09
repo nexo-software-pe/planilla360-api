@@ -19,6 +19,7 @@ public record ContratoRequest(
         LocalDate fechaFin,
         @NotNull @DecimalMin("0.01") @Digits(integer = 10, fraction = 2) BigDecimal sueldoBasico,
         @NotNull @Min(1) @Max(48) Integer jornadaSemanal,
+        @Min(1) @Max(7) Integer diasLaborables,
         @NotNull TipoRegimenPensionario regimenPensionario,
         UUID afpId,
         TipoComision tipoComision,

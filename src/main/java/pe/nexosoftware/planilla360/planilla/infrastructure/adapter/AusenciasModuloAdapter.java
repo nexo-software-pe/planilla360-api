@@ -1,6 +1,7 @@
 package pe.nexosoftware.planilla360.planilla.infrastructure.adapter;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -38,6 +39,11 @@ class AusenciasModuloAdapter implements ConsultaAsistenciaPort, ConsultaVacacion
     @Override
     public Map<UUID, List<BigDecimal>> horasExtraAprobadasDelMes(Periodo periodo) {
         return asistencia.horasExtraAprobadasDelMes(periodo.valor());
+    }
+
+    @Override
+    public Map<UUID, Integer> minutosDeHorarioEn(LocalDate fecha) {
+        return asistencia.minutosDeHorarioEn(fecha);
     }
 
     @Override

@@ -19,6 +19,7 @@ public interface ConsultaPersonalPort {
             UUID empleadoId,
             Dinero sueldoBasico,
             int jornadaSemanal,
+            int diasLaborables,
             TipoRegimenPensionario regimenPensionario,
             UUID afpId,
             TipoComision tipoComision) {

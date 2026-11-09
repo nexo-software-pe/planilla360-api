@@ -12,6 +12,7 @@ import pe.nexosoftware.planilla360.planilla.domain.regimen.RegimenPensionario;
  * Lo que la capa de aplicación reúne de otros módulos para calcular el mes de un trabajador: contrato, familiares,
  * asistencia del mes, horas extra aprobadas y lo ya percibido en el año.
  *
+ * @param horasJornadaDiaria horas de la jornada diaria (ver {@code JornadaLaboral}); define el valor de la hora
  * @param diasLaborados días calendario del mes en que el trabajador estuvo vigente (mes completo = días del mes)
  * @param diasInasistencia faltas injustificadas más días de permiso sin goce
  * @param horasExtraPorDia horas extra aprobadas, una entrada por día
@@ -20,7 +21,7 @@ import pe.nexosoftware.planilla360.planilla.domain.regimen.RegimenPensionario;
 public record DatosMensualesTrabajador(
         UUID empleadoId,
         Dinero sueldoBasico,
-        int jornadaSemanal,
+        int horasJornadaDiaria,
         RegimenPensionario regimenPensionario,
         RegimenLaboral regimenLaboral,
         List<Hijo> hijos,

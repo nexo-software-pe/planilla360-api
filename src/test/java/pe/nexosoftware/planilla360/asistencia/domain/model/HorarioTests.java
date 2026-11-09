@@ -95,6 +95,34 @@ class HorarioTests {
     }
 
     @Test
+    void sinRefrigerioLosMinutosEfectivosSonTodaLaJornada() {
+        assertThat(Horario.lunesAViernes(OCHO, CINCO_PM, 10).refrigerioMin()).isZero();
+        assertThat(Horario.lunesAViernes(OCHO, CINCO_PM, 10).minutosEfectivos()).isEqualTo(540);
+    }
+
+    @Test
+    void elRefrigerioSeDescuentaDeLosMinutosEfectivos() {
+        Horario horario = new Horario(OCHO, CINCO_PM, 10, Set.of(DayOfWeek.MONDAY), 60);
+
+        assertThat(horario.refrigerioMin()).isEqualTo(60);
+        assertThat(horario.minutosEfectivos()).isEqualTo(480);
+    }
+
+    @Test
+    void elRefrigerioNoPuedeSerNegativo() {
+        assertThatThrownBy(() -> new Horario(OCHO, CINCO_PM, 10, Set.of(DayOfWeek.MONDAY), -1))
+                .isInstanceOf(ReglaDeAsistenciaException.class).hasMessageContaining("refrigerio");
+    }
+
+    @Test
+    void elRefrigerioDebeSerMenorQueLaJornada() {
+        assertThatThrownBy(() -> new Horario(OCHO, OCHO.plusHours(1), 0, Set.of(DayOfWeek.MONDAY), 60))
+                .isInstanceOf(ReglaDeAsistenciaException.class).hasMessageContaining("refrigerio");
+        assertThatCode(() -> new Horario(OCHO, OCHO.plusHours(1), 0, Set.of(DayOfWeek.MONDAY), 59))
+                .doesNotThrowAnyException();
+    }
+
+    @Test
     void losDiasSeCopianYNoSePuedenModificarDesdeFuera() {
         Set<DayOfWeek> dias = EnumSet.of(DayOfWeek.MONDAY);
         Horario horario = new Horario(OCHO, CINCO_PM, 10, dias);

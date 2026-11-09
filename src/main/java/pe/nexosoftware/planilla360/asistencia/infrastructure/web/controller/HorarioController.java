@@ -43,7 +43,9 @@ public class HorarioController {
 
     @PostMapping
     public ResponseEntity<HorarioResponse> crear(@Valid @RequestBody HorarioRequest request) {
-        Horario horario = new Horario(request.entrada(), request.salida(), request.toleranciaMin(), request.dias());
+        int refrigerio = request.refrigerioMin() == null ? 0 : request.refrigerioMin();
+        Horario horario = new Horario(
+                request.entrada(), request.salida(), request.toleranciaMin(), request.dias(), refrigerio);
         HorarioResponse creado = mapper.aResponse(horarios.crear(request.nombre(), horario));
         return ResponseEntity.created(URI.create("/api/v1/horarios/" + creado.id())).body(creado);
     }

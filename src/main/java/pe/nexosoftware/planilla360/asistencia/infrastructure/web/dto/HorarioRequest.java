@@ -1,5 +1,6 @@
 package pe.nexosoftware.planilla360.asistencia.infrastructure.web.dto;
 
+import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
@@ -13,5 +14,6 @@ public record HorarioRequest(
         @NotNull LocalTime entrada,
         @NotNull LocalTime salida,
         @NotNull Integer toleranciaMin,
-        @NotEmpty Set<DayOfWeek> dias) {
+        @NotEmpty Set<DayOfWeek> dias,
+        @Min(0) Integer refrigerioMin) {
 }
