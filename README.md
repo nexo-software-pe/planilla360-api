@@ -92,15 +92,28 @@ Anular (`POST /{id}/anular`) solo lo puede hacer el administrador de la empresa 
 | `messaging` | PostgreSQL + Redis + RabbitMQ (para usar Redis: `CACHE_TYPE=redis`) |
 | `storage` | PostgreSQL + MinIO + Mailpit + WireMock |
 | `app` | PostgreSQL + la API en contenedor (`docker compose --profile app up -d --build`) |
+| `obs` | Prometheus + Grafana (se combina con los demás: `--profile messaging --profile obs`) |
 | `full` | Todo lo anterior, salvo la API |
 
 La imagen de MinIO es la de Chainguard (`cgr.dev/chainguard/minio`, fijada por digest en `compose.yaml`): MinIO dejó de publicar imágenes oficiales en Docker Hub y Quay.
+
+### Observabilidad
+Salud (`/actuator/health/liveness` y `/readiness`), métricas con Micrometer, logs con `traceId` por petición (JSON en staging/prod) y un dashboard de Grafana ya provisionado:
+
+```bash
+docker compose --profile messaging --profile storage --profile obs up -d
+```
+
+Grafana: http://localhost:3000 (`admin` / `planilla360-local`) · Prometheus: http://localhost:9090. Todo el detalle en [docs/observabilidad.md](docs/observabilidad.md).
+
+### Contrato de la API
+El contrato OpenAPI está versionado en [docs/openapi/openapi.json](docs/openapi/openapi.json). Si cambias un endpoint o un DTO, regenéralo (`./mvnw test -Dtest=ContratoOpenApiTests -Dcontrato.actualizar=true`); el CI falla si el cambio rompe `/api/v1`. Ver [docs/contrato-api.md](docs/contrato-api.md).
 
 ## Cómo verificarlo
 ```bash
 ./mvnw verify
 ```
-Compila, ejecuta las pruebas (unitarias, de integración con Testcontainers, arquitectura y escenarios Cucumber), Checkstyle, Spotless, cobertura con JaCoCo (mínimo 80 % en el dominio) y mutation testing con PIT sobre el dominio. Los informes quedan en `target/site/jacoco/index.html` y `target/pit-reports/index.html`. Requiere Docker Desktop encendido.
+Compila, ejecuta las pruebas (unitarias, de integración con Testcontainers, arquitectura, contrato OpenAPI y escenarios Cucumber), Checkstyle, Spotless, cobertura con JaCoCo (mínimo 80 % en el dominio) y mutation testing con PIT sobre el dominio. Los informes quedan en `target/site/jacoco/index.html` y `target/pit-reports/index.html`. Requiere Docker Desktop encendido.
 
 ## Perfiles de Spring
 `local` (por defecto), `staging`, `prod`. La configuración sensible se entrega por variables de entorno; ver `.env.example`.

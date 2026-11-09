@@ -5,7 +5,7 @@ Backend de **Planilla360** (Nexo Software S.A.C.): SaaS multi-empresa de RRHH y 
 ## Stack
 Java 21 (fijado con maven-enforcer) · Spring Boot 4.1.x · Spring Modulith · Spring Security (resource server JWT) · Spring Data JPA + Hibernate 7 · Flyway · PostgreSQL · Redis (caché) · RabbitMQ (Spring AMQP) · MinIO/R2 (AWS SDK S3) · OpenPDF · Apache POI · JavaMail (Mailpit) · Resilience4j · MapStruct · springdoc · Bucket4j · ShedLock · Maven Wrapper.
 Pruebas: JUnit 5, AssertJ, Mockito, spring-security-test, Testcontainers (PostgreSQL, Redis, RabbitMQ, MinIO, Mailpit), WireMock, Awaitility, ArchUnit, Spring Modulith.
-(La observabilidad completa se incorpora en una fase posterior.)
+Observabilidad: Actuator + Micrometer (registro Prometheus) + logs estructurados con traceId; Prometheus y Grafana en compose (perfil `obs`). Contrato: OpenAPI versionado + oasdiff en el CI.
 
 ## Comandos
 Usar JDK 21 (`JAVA_HOME` o SDK del proyecto en IntelliJ). Los tests de integración necesitan Docker Desktop encendido.
@@ -69,6 +69,12 @@ Swagger (solo local/staging): http://localhost:8080/swagger-ui.html — botón *
 - `src/main/resources/db/migration` — Flyway (`V1` esquema, `V2` datos referenciales, `V3` empleados, `V4` asistencia + `shedlock`, `V5` vacaciones, `V6` planilla, `V7` refrigerio del horario y días laborables del contrato, `V8` boletas y la vista de reportes). `db/seed/local` — datos ficticios (empresas, usuarios y personal/asistencia/vacaciones), solo perfil `local`.
 - `src/main/resources/application*.yml` — configuración por perfil (`local`, `staging`, `prod`); `src/test/resources/application-test.yml`.
 - `src/test/.../soporte` — `IntegracionBase` (app completa + PostgreSQL real), `TestcontainersConfig`, `PersonalBase` (empresa + área + cargo + RRHH + empleados listos) y `RelojDePrueba` (reloj fijable; las pruebas usan fechas de 2030 para que los JWT sigan siendo válidos).
+- **Fase 6 — observabilidad y contrato** (detalle en `docs/observabilidad.md` y `docs/contrato-api.md`):
+  - `compartido/infrastructure/TraceIdFilter` (traceId en el MDC, cabecera `X-Trace-Id`, línea de acceso por petición; respeta `traceparent`/`X-Request-Id` válidos) y `TenantContextFilter` (deja `tenantId` en el MDC). Logs en JSON (`logging.structured.format.console: logstash`) en staging y prod; texto con traceId en local.
+  - `MetricsSecurityConfig`: `/actuator/prometheus` con HTTP Basic (`app.metrics.user/password`, env `METRICS_USER/METRICS_PASSWORD`); sin contraseña responde 401. Salud: liveness (solo el proceso) y readiness (+ base de datos), públicas.
+  - Métrica de negocio: `planilla.calculo.duracion` (tags `tipo`, `resultado`) vía el puerto `planilla/application/port/out/MedidorCalculoPort` y su adapter `MicrometerMedidorCalculo`; la aplicación no importa Micrometer.
+  - `docker/prometheus/` y `docker/grafana/` (datasource y dashboard `planilla360.json` provisionados). Imágenes fijadas: `prom/prometheus:v3.16.0`, `grafana/grafana:13.2.5`. RabbitMQ publica sus colas con su plugin `rabbitmq_prometheus` (puerto 15692 interno).
+  - Contrato: `docs/openapi/openapi.json` lo verifica `ContratoOpenApiTests` (regenerar con `-Dcontrato.actualizar=true`) y el job `Contrato OpenAPI` del CI lo compara con la rama destino con oasdiff; `/api/v1` no se rompe, lo incompatible va en `/api/v2`.
 - `Dockerfile`, `compose.yaml` — imagen multi-etapa (sin root) y servicios locales por perfiles.
 - `config/checkstyle/checkstyle.xml` — reglas de estilo. `.github/workflows/ci.yml` — CI.
 
@@ -77,4 +83,4 @@ Contraseña común: `Planilla360-Local1` (solo local; en staging/prod los usuari
 `admin.saas@nexosoftware.pe` (ADMIN_SAAS) · `admin@textilesandinos.ejemplo.pe` (ADMIN_EMPRESA) · `rrhh@textilesandinos.ejemplo.pe` (RRHH) · `empleado@textilesandinos.ejemplo.pe` (EMPLEADO) · `admin@laespiga.ejemplo.pe` y `rrhh@laespiga.ejemplo.pe` (segunda empresa, para probar aislamiento).
 
 ## Estado
-Fase 2: backend base y seguridad. Fase 3: dominio de planilla (cálculo y cierre) con pruebas, Cucumber, JaCoCo y PIT. Fase 4: empleados, asistencia y vacaciones (dominios hexagonales con TDD, eventos, jobs con ShedLock). Fase 5a: planilla completa (aplicación + infraestructura, cierre idempotente, gratificación, CTS, pre-cálculo con ShedLock, seed de planillas). Fase 5b: boletas PDF, almacenamiento S3/MinIO, RabbitMQ con reintentos y DLQ, correos con Mailpit, importación Excel, reportes con SQL nativo e integración externa con Resilience4j. Pendiente: observabilidad y despliegue.
+Fase 2: backend base y seguridad. Fase 3: dominio de planilla (cálculo y cierre) con pruebas, Cucumber, JaCoCo y PIT. Fase 4: empleados, asistencia y vacaciones (dominios hexagonales con TDD, eventos, jobs con ShedLock). Fase 5a: planilla completa (aplicación + infraestructura, cierre idempotente, gratificación, CTS, pre-cálculo con ShedLock, seed de planillas). Fase 5b: boletas PDF, almacenamiento S3/MinIO, RabbitMQ con reintentos y DLQ, correos con Mailpit, importación Excel, reportes con SQL nativo e integración externa con Resilience4j. Fase 6: observabilidad (Actuator, Micrometer, logs JSON con traceId, Prometheus + Grafana) y validación del contrato OpenAPI en el CI. Pendiente: despliegue.
