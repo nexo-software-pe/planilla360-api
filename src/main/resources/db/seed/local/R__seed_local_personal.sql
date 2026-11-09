@@ -65,64 +65,21 @@ ON CONFLICT (id) DO NOTHING;
 -- ---------------------------------------------------------------------------------------------
 INSERT INTO horario (id, tenant_id, nombre, hora_entrada, hora_salida, tolerancia_min, refrigerio_min, dias) VALUES
     ('eeeeeeee-0000-4000-8000-000000000001', '11111111-1111-4111-8111-111111111111', 'Oficina',       TIME '08:00', TIME '17:00', 10, 60, 'MONDAY,TUESDAY,WEDNESDAY,THURSDAY,FRIDAY'),
-    ('eeeeeeee-0000-4000-8000-000000000002', '22222222-2222-4222-8222-222222222222', 'Turno mañana',  TIME '06:00', TIME '14:00', 10, 0, 'MONDAY,TUESDAY,WEDNESDAY,THURSDAY,FRIDAY,SATURDAY')
+    ('eeeeeeee-0000-4000-8000-000000000002', '22222222-2222-4222-8222-222222222222', 'Turno mañana',  TIME '06:00', TIME '14:00', 10, 0, 'MONDAY,TUESDAY,WEDNESDAY,THURSDAY,FRIDAY,SATURDAY'),
+    ('eeeeeeee-0000-4000-8000-000000000003', '22222222-2222-4222-8222-222222222222', 'Medio tiempo',   TIME '06:00', TIME '14:00', 10, 0, 'MONDAY,TUESDAY,WEDNESDAY')
 ON CONFLICT (id) DO UPDATE SET refrigerio_min = EXCLUDED.refrigerio_min;
 
 INSERT INTO empleado_horario (tenant_id, empleado_id, horario_id, desde, hasta)
 SELECT e.tenant_id, e.id,
        CASE WHEN e.tenant_id = '11111111-1111-4111-8111-111111111111'
             THEN 'eeeeeeee-0000-4000-8000-000000000001'::uuid
+            WHEN e.id = 'dddddddd-0000-4000-8000-000000000013' -- jornada de 24 h semanales (contrato part-time)
+            THEN 'eeeeeeee-0000-4000-8000-000000000003'::uuid
             ELSE 'eeeeeeee-0000-4000-8000-000000000002'::uuid END,
        e.fecha_ingreso, e.fecha_cese
   FROM empleado e
  WHERE e.id::text LIKE 'dddddddd-0000-4000-8000-%'
    AND NOT EXISTS (SELECT 1 FROM empleado_horario eh WHERE eh.empleado_id = e.id);
-
--- ---------------------------------------------------------------------------------------------
--- Marcaciones y asistencia consolidada de las últimas dos semanas (relativas a hoy).
--- Para cada empleado y día laborable: tardanzas, horas extra y alguna falta, de forma determinista.
--- ---------------------------------------------------------------------------------------------
-CREATE TEMP TABLE _seed_dias ON COMMIT DROP AS
-SELECT e.tenant_id, e.id AS empleado_id, d::date AS dia, h.hora_entrada, h.hora_salida, h.tolerancia_min,
-       abs(hashtext(e.id::text || d::date::text)) % 10 AS n
-  FROM empleado e
-  JOIN empleado_horario eh ON eh.empleado_id = e.id AND eh.hasta IS NULL
-  JOIN horario h ON h.id = eh.horario_id
- CROSS JOIN generate_series((current_date - 14)::timestamp, (current_date - 1)::timestamp, interval '1 day') d
- WHERE e.id::text LIKE 'dddddddd-0000-4000-8000-%'
-   AND e.estado = 'ACTIVO'
-   AND e.fecha_ingreso <= d::date
-   AND (ARRAY['MONDAY','TUESDAY','WEDNESDAY','THURSDAY','FRIDAY','SATURDAY','SUNDAY'])[extract(isodow FROM d)::int]
-       = ANY (string_to_array(h.dias, ','))
-   AND NOT EXISTS (SELECT 1 FROM marcacion m WHERE m.tenant_id = e.tenant_id);
-
-ALTER TABLE _seed_dias ADD COLUMN atraso int, ADD COLUMN extra int;
-UPDATE _seed_dias SET
-    atraso = CASE n WHEN 0 THEN 25 WHEN 1 THEN 12 ELSE n % 5 END,
-    extra  = CASE n WHEN 2 THEN 45 WHEN 3 THEN 20 ELSE 0 END;
-
-INSERT INTO marcacion (tenant_id, empleado_id, instante, tipo, origen)
-SELECT tenant_id, empleado_id, (dia + hora_entrada + atraso * interval '1 minute') AT TIME ZONE 'America/Lima', 'ENTRADA', 'WEB'
-  FROM _seed_dias WHERE n <> 9
-UNION ALL
-SELECT tenant_id, empleado_id, (dia + hora_salida + extra * interval '1 minute') AT TIME ZONE 'America/Lima', 'SALIDA', 'WEB'
-  FROM _seed_dias WHERE n <> 9;
-
-INSERT INTO asistencia_diaria (tenant_id, empleado_id, fecha, minutos_tardanza, minutos_extra, estado)
-SELECT tenant_id, empleado_id, dia,
-       CASE WHEN n <> 9 AND atraso > tolerancia_min THEN atraso ELSE 0 END,
-       CASE WHEN n <> 9 THEN extra ELSE 0 END,
-       CASE WHEN n = 9 THEN 'FALTA' WHEN atraso > tolerancia_min THEN 'TARDANZA' ELSE 'PRESENTE' END
-  FROM _seed_dias
-ON CONFLICT (tenant_id, empleado_id, fecha) DO NOTHING;
-
--- ---------------------------------------------------------------------------------------------
--- Horas extra
--- ---------------------------------------------------------------------------------------------
-INSERT INTO hora_extra (id, tenant_id, empleado_id, fecha, horas, motivo, estado, aprobado_por) VALUES
-    ('0e0e0e0e-0000-4000-8000-000000000001', '11111111-1111-4111-8111-111111111111', 'dddddddd-0000-4000-8000-000000000003', current_date - 2, 2.00, 'Cierre de lote de exportación', 'PENDIENTE', NULL),
-    ('0e0e0e0e-0000-4000-8000-000000000002', '11111111-1111-4111-8111-111111111111', 'dddddddd-0000-4000-8000-000000000004', current_date - 9, 1.50, 'Mantenimiento de telares',      'APROBADA',  'aaaaaaaa-0000-4000-8000-000000000003')
-ON CONFLICT (id) DO NOTHING;
 
 -- ---------------------------------------------------------------------------------------------
 -- Vacaciones: periodos ganados, solicitudes en varios estados y permisos
@@ -137,9 +94,9 @@ ON CONFLICT (id) DO NOTHING;
 INSERT INTO solicitud_vacaciones (id, tenant_id, empleado_id, periodo_id, desde, hasta, dias, estado, motivo_rechazo) VALUES
     ('5a5a5a5a-0000-4000-8000-000000000001', '11111111-1111-4111-8111-111111111111', 'dddddddd-0000-4000-8000-000000000001', '9a9a9a9a-0000-4000-8000-000000000001', DATE '2023-12-04', DATE '2024-01-02', 30, 'FINALIZADA',    NULL),
     ('5a5a5a5a-0000-4000-8000-000000000002', '11111111-1111-4111-8111-111111111111', 'dddddddd-0000-4000-8000-000000000001', '9a9a9a9a-0000-4000-8000-000000000002', DATE '2025-08-04', DATE '2025-08-18', 15, 'FINALIZADA',    NULL),
-    ('5a5a5a5a-0000-4000-8000-000000000003', '11111111-1111-4111-8111-111111111111', 'dddddddd-0000-4000-8000-000000000001', '9a9a9a9a-0000-4000-8000-000000000003', current_date + 30, current_date + 39, 10, 'SOLICITADA',    NULL),
-    ('5a5a5a5a-0000-4000-8000-000000000004', '11111111-1111-4111-8111-111111111111', 'dddddddd-0000-4000-8000-000000000003', '9a9a9a9a-0000-4000-8000-000000000004', current_date + 60, current_date + 74, 15, 'APROBADA_JEFE', NULL),
-    ('5a5a5a5a-0000-4000-8000-000000000005', '11111111-1111-4111-8111-111111111111', 'dddddddd-0000-4000-8000-000000000001', '9a9a9a9a-0000-4000-8000-000000000003', current_date + 90, current_date + 96,  7, 'RECHAZADA',     'Coincide con la campaña de ventas')
+    ('5a5a5a5a-0000-4000-8000-000000000003', '11111111-1111-4111-8111-111111111111', 'dddddddd-0000-4000-8000-000000000001', '9a9a9a9a-0000-4000-8000-000000000003', (date_trunc('month', current_date) + interval '1 month')::date + 9, (date_trunc('month', current_date) + interval '1 month')::date + 18, 10, 'SOLICITADA',    NULL),
+    ('5a5a5a5a-0000-4000-8000-000000000004', '11111111-1111-4111-8111-111111111111', 'dddddddd-0000-4000-8000-000000000003', '9a9a9a9a-0000-4000-8000-000000000004', (date_trunc('month', current_date) + interval '2 months')::date + 4, (date_trunc('month', current_date) + interval '2 months')::date + 18, 15, 'APROBADA_JEFE', NULL),
+    ('5a5a5a5a-0000-4000-8000-000000000005', '11111111-1111-4111-8111-111111111111', 'dddddddd-0000-4000-8000-000000000001', '9a9a9a9a-0000-4000-8000-000000000003', (date_trunc('month', current_date) + interval '3 months')::date, (date_trunc('month', current_date) + interval '3 months')::date + 6,  7, 'RECHAZADA',     'Coincide con la campaña de ventas')
 ON CONFLICT (id) DO NOTHING;
 
 INSERT INTO permiso (id, tenant_id, empleado_id, tipo, desde, hasta, con_goce, motivo, estado, motivo_rechazo) VALUES
