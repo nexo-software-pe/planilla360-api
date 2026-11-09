@@ -2,6 +2,7 @@
 #   docker compose --profile core up -d        # PostgreSQL
 #   docker compose --profile messaging up -d   # PostgreSQL + Redis + RabbitMQ
 #   docker compose --profile app up -d --build # PostgreSQL + la API en contenedor
+#   docker compose --profile storage up -d     # PostgreSQL + MinIO (archivos) + Mailpit (correo) + WireMock (externos)
 #   docker compose --profile full up -d        # todo lo disponible
 # Las contraseñas de abajo son solo para desarrollo en tu máquina (puertos expuestos únicamente en
 # 127.0.0.1) y se pueden cambiar en .env (ver .env.example).
@@ -10,7 +11,7 @@ name: planilla360
 services:
   postgres:
     image: postgres:16-alpine
-    profiles: [core, messaging, app, full]
+    profiles: [core, messaging, storage, app, full]
     environment:
       POSTGRES_DB: ${POSTGRES_DB:-planilla360}
       POSTGRES_USER: ${POSTGRES_USER:-planilla360}
@@ -53,6 +54,36 @@ services:
       timeout: 5s
       retries: 10
 
+  minio:
+    # MinIO dejó de publicar imágenes en Docker Hub y Quay; esta es la imagen mantenida de Chainguard (sin shell).
+    image: cgr.dev/chainguard/minio:latest
+    profiles: [storage, full]
+    command: ["server", "/data", "--console-address", ":9001"]
+    environment:
+      MINIO_ROOT_USER: ${MINIO_ROOT_USER:-planilla360}
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD:-planilla360-local}
+    ports:
+      - "127.0.0.1:9000:9000" # API S3
+      - "127.0.0.1:9001:9001" # consola web: http://localhost:9001
+    volumes:
+      - minio-data:/data
+
+  mailpit:
+    image: axllent/mailpit:v1.24
+    profiles: [storage, full]
+    ports:
+      - "127.0.0.1:1025:1025" # SMTP
+      - "127.0.0.1:8025:8025" # bandeja web: http://localhost:8025
+
+  wiremock:
+    image: wiremock/wiremock:3.13.2
+    profiles: [storage, full]
+    command: ["--global-response-templating", "--disable-gzip", "--verbose"]
+    ports:
+      - "127.0.0.1:${WIREMOCK_PORT:-8099}:8080" # servicios externos simulados (DNI, RUC, tipo de cambio)
+    volumes:
+      - ./docker/wiremock:/home/wiremock:ro
+
   api:
     build: .
     profiles: [app]
@@ -71,3 +102,4 @@ services:
 volumes:
   postgres-data:
   rabbitmq-data:
+  minio-data:

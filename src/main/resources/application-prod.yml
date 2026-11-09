@@ -1,6 +1,11 @@
 # Perfil prod: los valores sensibles llegan por variables de entorno (nunca en este archivo).
 # Requeridas: DB_URL, DB_USER, DB_PASSWORD, JWT_SECRET, CORS_ALLOWED_ORIGINS.
 # Opcionales: CACHE_TYPE=redis + REDIS_HOST/REDIS_PORT/REDIS_PASSWORD.
+# Fase 5b (todo opcional; por defecto la app degrada sin servicios externos):
+#  - MESSAGING_ENABLED=true + RABBITMQ_HOST/PORT/USER/PASSWORD: boletas y correos por RabbitMQ (CloudAMQP).
+#  - STORAGE_TIPO=s3 + STORAGE_ENDPOINT/BUCKET/ACCESS_KEY/SECRET_KEY/STORAGE_REGION=auto: PDF en Cloudflare R2.
+#  - NOTIFICACIONES_HABILITADAS=true + MAIL_HOST/PORT/USER/PASSWORD: correos de aviso.
+#  - INTEGRACION_MODO=http + INTEGRACION_BASE_URL: servicio externo de DNI/RUC/tipo de cambio (por defecto stub).
 server:
   forward-headers-strategy: native
 
