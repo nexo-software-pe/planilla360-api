@@ -20,6 +20,9 @@ management:
       show-details: always
 
 app:
+  metrics:
+    # Solo desarrollo: el Prometheus de docker-compose usa esta misma clave (docker/prometheus/metrics-password).
+    password: ${METRICS_PASSWORD:planilla360-metrics-local}
   messaging:
     enabled: ${MESSAGING_ENABLED:true}
   storage:

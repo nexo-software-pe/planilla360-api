@@ -13,6 +13,9 @@ spring:
           max-interval: 100ms
 
 app:
+  metrics:
+    user: prometheus
+    password: clave-de-prueba-metricas
   messaging:
     enabled: false
   storage:
