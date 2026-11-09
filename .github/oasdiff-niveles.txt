@@ -1,0 +1,17 @@
+response-required-property-removed err
+response-optional-property-removed err
+request-parameter-became-required err
+request-property-became-required err
+request-body-became-required err
+new-required-request-parameter err
+new-required-request-property err
+new-required-request-header-property err
+request-header-property-became-required err
+response-property-type-changed err
+response-body-type-changed err
+request-property-type-changed err
+request-parameter-type-changed err
+request-parameter-property-type-changed err
+request-body-type-changed err
+response-property-enum-value-removed err
+response-mediatype-enum-value-removed err
