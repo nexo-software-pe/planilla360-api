@@ -6,6 +6,12 @@
 #  - STORAGE_TIPO=s3 + STORAGE_ENDPOINT/BUCKET/ACCESS_KEY/SECRET_KEY/STORAGE_REGION=auto: PDF en Cloudflare R2.
 #  - NOTIFICACIONES_HABILITADAS=true + MAIL_HOST/PORT/USER/PASSWORD: correos de aviso.
 #  - INTEGRACION_MODO=http + INTEGRACION_BASE_URL: servicio externo de DNI/RUC/tipo de cambio (por defecto stub).
+logging:
+  structured:
+    format:
+      # Una línea JSON por evento (formato Logstash), con traceId y el resto del MDC.
+      console: logstash
+
 server:
   # Render termina TLS en un proxy: respeta X-Forwarded-* (IP real del cliente para el rate limit).
   forward-headers-strategy: native
