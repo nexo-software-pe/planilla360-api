@@ -2350,7 +2350,7 @@
     },
     "/api/v1/auditoria" : {
       "get" : {
-        "operationId" : "listar_10",
+        "operationId" : "listar_11",
         "parameters" : [ {
           "in" : "query",
           "name" : "entidad",
@@ -4635,6 +4635,32 @@
         },
         "tags" : [ "Vacaciones" ]
       }
+    },
+    "/api/v2/areas" : {
+      "get" : {
+        "operationId" : "listar_10",
+        "parameters" : [ {
+          "in" : "query",
+          "name" : "pageable",
+          "required" : true,
+          "schema" : {
+            "$ref" : "#/components/schemas/Pageable"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/PaginaAreaResponse"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "tags" : [ "Áreas v2" ]
+      }
     }
   },
   "security" : [ {
@@ -4670,6 +4696,9 @@
   }, {
     "description" : "Planilla mensual, gratificación y CTS: cálculo, validación, cierre y anulación",
     "name" : "Planillas"
+  }, {
+    "description" : "Prueba de contrato: endpoint nuevo en v2",
+    "name" : "Áreas v2"
   }, {
     "description" : "Administración de usuarios de la empresa",
     "name" : "Usuarios"
