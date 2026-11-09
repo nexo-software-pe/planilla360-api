@@ -42,6 +42,7 @@ jobs:
     runs-on: ubuntu-latest
     env:
       CONTRATO: docs/openapi/openapi.json
+      NIVELES: .github/oasdiff-niveles.txt
       OASDIFF_VERSION: '1.36.0'
       OASDIFF_SHA256: dba65661f6d0f178a3e4884c309f19527a849388bb9df0e81545db76dbb697d6
       RAMA_DESTINO: ${{ github.base_ref }}
@@ -67,11 +68,11 @@ jobs:
           tar -xzf oasdiff.tar.gz oasdiff
       - name: Cambios del contrato (informativo)
         if: steps.base.outputs.existe == 'true'
-        run: ./oasdiff changelog "${RUNNER_TEMP}/openapi-base.json" "${CONTRATO}"
+        run: ./oasdiff changelog "${RUNNER_TEMP}/openapi-base.json" "${CONTRATO}" --severity-levels "${NIVELES}"
       - name: Cambios que rompen la compatibilidad
         if: steps.base.outputs.existe == 'true'
         run: |
-          ./oasdiff breaking "${RUNNER_TEMP}/openapi-base.json" "${CONTRATO}" --fail-on ERR || {
+          ./oasdiff breaking "${RUNNER_TEMP}/openapi-base.json" "${CONTRATO}" --severity-levels "${NIVELES}" --fail-on ERR || {
             echo "::error::Este PR rompe la compatibilidad de la API vigente. Conserva /api/v1 tal como está y publica el cambio en una versión nueva (/api/v2); ver docs/contrato-api.md."
             exit 1
           }
