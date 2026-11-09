@@ -107,6 +107,11 @@ management:
       enabled: false
 
 app:
+  # Primer ADMIN_SAAS de un entorno nuevo (staging/prod). Sin estas variables no se crea ningún usuario.
+  bootstrap:
+    admin-email: ${ADMIN_INICIAL_EMAIL:}
+    admin-password: ${ADMIN_INICIAL_PASSWORD:}
+    admin-nombre: ${ADMIN_INICIAL_NOMBRE:}
   # Credencial del raspador de Prometheus para /actuator/prometheus. Sin contraseña (por defecto fuera de local)
   # el endpoint responde siempre 401.
   metrics:

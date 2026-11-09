@@ -1,11 +1,20 @@
 # Perfil staging: los valores sensibles llegan por variables de entorno (nunca en este archivo).
 # Requeridas: DB_URL, DB_USER, DB_PASSWORD, JWT_SECRET, CORS_ALLOWED_ORIGINS.
+# Primer administrador (entorno nuevo): ADMIN_INICIAL_EMAIL, ADMIN_INICIAL_PASSWORD y ADMIN_INICIAL_NOMBRE (opcional).
 # Opcionales: CACHE_TYPE=redis + REDIS_HOST/REDIS_PORT/REDIS_PASSWORD.
 # Fase 5b (todo opcional; por defecto la app degrada sin servicios externos):
 #  - MESSAGING_ENABLED=true + RABBITMQ_HOST/PORT/USER/PASSWORD: boletas y correos por RabbitMQ (CloudAMQP).
 #  - STORAGE_TIPO=s3 + STORAGE_ENDPOINT/BUCKET/ACCESS_KEY/SECRET_KEY/STORAGE_REGION=auto: PDF en Cloudflare R2.
 #  - NOTIFICACIONES_HABILITADAS=true + MAIL_HOST/PORT/USER/PASSWORD: correos de aviso.
 #  - INTEGRACION_MODO=http + INTEGRACION_BASE_URL: servicio externo de DNI/RUC/tipo de cambio (por defecto stub).
+spring:
+  datasource:
+    hikari:
+      # Neon free y Render free tienen poca memoria y pocas conexiones: un pozo chico alcanza.
+      maximum-pool-size: 5
+      # La base de Neon se suspende a los 5 minutos sin uso; la primera conexión tras la pausa tarda un poco.
+      connection-timeout: 60000
+
 logging:
   structured:
     format:

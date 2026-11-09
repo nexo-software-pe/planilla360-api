@@ -89,8 +89,12 @@ jobs:
   imagen:
     name: Imagen Docker y Trivy
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
     env:
       IMAGEN: planilla360-api:${{ github.sha }}
+      REGISTRO: ghcr.io/nexo-software-pe/planilla360-api
     steps:
       - uses: actions/checkout@v4
       - uses: docker/setup-buildx-action@f87e5991a6d7451dcb8d9637bfbc97413f497069 # v4.4.1
@@ -112,3 +116,87 @@ jobs:
           ignore-unfixed: true
           exit-code: '1'
           format: table
+      # Solo se publica lo que ya pasó el escaneo: la imagen desplegada es la misma que se analizó.
+      - name: Iniciar sesión en GitHub Container Registry
+        if: github.event_name == 'push'
+        uses: docker/login-action@8aa5831fb8d48d8f76594c7ddde61ae58019f550 # v4.8.0
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - name: Publicar la imagen
+        if: github.event_name == 'push'
+        run: |
+          VERSION=$(python3 -c "import xml.etree.ElementTree as E; n={'m':'http://maven.apache.org/POM/4.0.0'}; print(E.parse('pom.xml').getroot().find('m:version',n).text)")
+          if [ "${GITHUB_REF_NAME}" = "main" ]; then ETIQUETAS="latest v${VERSION}"; else ETIQUETAS="staging"; fi
+          for etiqueta in ${ETIQUETAS} "sha-${GITHUB_SHA}"; do
+            docker tag "${IMAGEN}" "${REGISTRO}:${etiqueta}"
+            docker push "${REGISTRO}:${etiqueta}"
+          done
+
+  desplegar:
+    name: Desplegar en Render
+    needs: [build, secrets, imagen]
+    if: github.event_name == 'push'
+    runs-on: ubuntu-latest
+    # Cada rama tiene su entorno de GitHub con su propio secreto (RENDER_DEPLOY_HOOK) y variable (API_URL).
+    environment: ${{ github.ref_name == 'main' && 'production' || 'staging' }}
+    concurrency:
+      group: desplegar-${{ github.ref_name }}
+      cancel-in-progress: false
+    steps:
+      - name: Pedir el despliegue de esta imagen
+        env:
+          HOOK: ${{ secrets.RENDER_DEPLOY_HOOK }}
+          IMG: ghcr.io/nexo-software-pe/planilla360-api:sha-${{ github.sha }}
+        run: |
+          if [ -z "${HOOK}" ]; then echo "::error::Falta el secreto RENDER_DEPLOY_HOOK del entorno"; exit 1; fi
+          IMG_CODIFICADA=$(python3 -c "import urllib.parse,sys; print(urllib.parse.quote(sys.argv[1], safe=''))" "${IMG}")
+          curl -fsS -X POST "${HOOK}&imgURL=${IMG_CODIFICADA}" > /dev/null
+          echo "Despliegue pedido: ${IMG}"
+      - name: Esperar a que la API responda (Render free puede tardar varios minutos)
+        env:
+          API_URL: ${{ vars.API_URL }}
+        run: |
+          if [ -z "${API_URL}" ]; then echo "::error::Falta la variable API_URL del entorno"; exit 1; fi
+          for i in $(seq 1 60); do
+            if curl -fs "${API_URL}/actuator/health/readiness" | grep -q '"UP"'; then echo "API lista"; exit 0; fi
+            sleep 10
+          done
+          echo "::error::La API no quedó lista en 10 minutos"; exit 1
+
+  version:
+    name: Versión y CHANGELOG
+    # Un PR hacia main es un release: debe traer una versión nueva y su entrada en el CHANGELOG.
+    if: github.event_name == 'pull_request' && github.base_ref == 'main'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Comprobar versión y CHANGELOG
+        run: |
+          VERSION=$(python3 -c "import xml.etree.ElementTree as E; n={'m':'http://maven.apache.org/POM/4.0.0'}; print(E.parse('pom.xml').getroot().find('m:version',n).text)")
+          case "${VERSION}" in *SNAPSHOT*) echo "::error::La versión del pom (${VERSION}) debe ser una versión final"; exit 1;; esac
+          if git rev-parse -q --verify "refs/tags/v${VERSION}" > /dev/null; then
+            echo "::error::La versión ${VERSION} ya se publicó (existe la etiqueta v${VERSION}). Sube la versión en el pom.xml y en el CHANGELOG."; exit 1
+          fi
+          grep -q "^## \[${VERSION}\]" CHANGELOG.md || { echo "::error::CHANGELOG.md no tiene la sección ## [${VERSION}]"; exit 1; }
+
+  release:
+    name: Etiqueta y release
+    needs: [desplegar]
+    if: github.event_name == 'push' && github.ref_name == 'main'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - name: Crear la etiqueta y el release con las notas del CHANGELOG
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          VERSION=$(python3 -c "import xml.etree.ElementTree as E; n={'m':'http://maven.apache.org/POM/4.0.0'}; print(E.parse('pom.xml').getroot().find('m:version',n).text)")
+          awk -v v="${VERSION}" 'index($0, "## [" v "]")==1 {on=1; next} index($0, "## [")==1 {on=0} on' CHANGELOG.md > "${RUNNER_TEMP}/notas.md"
+          if gh release view "v${VERSION}" > /dev/null 2>&1; then echo "El release v${VERSION} ya existe"; exit 0; fi
+          gh release create "v${VERSION}" --target "${GITHUB_SHA}" --title "v${VERSION}" --notes-file "${RUNNER_TEMP}/notas.md"
