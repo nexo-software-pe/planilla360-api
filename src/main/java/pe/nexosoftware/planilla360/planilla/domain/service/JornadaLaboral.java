@@ -10,6 +10,10 @@ public final class JornadaLaboral {
     private JornadaLaboral() {
     }
 
+    public static int horasDiarias(Integer minutosDeHorario, int jornadaSemanal, int diasLaborables) {
+        throw new UnsupportedOperationException("Pendiente");
+    }
+
     public static int horasDiarias(int jornadaSemanal) {
         if (jornadaSemanal < 1 || jornadaSemanal > MAXIMO_HORAS_SEMANALES) {
             throw new IllegalArgumentException("La jornada semanal debe estar entre 1 y 48 horas: " + jornadaSemanal);
