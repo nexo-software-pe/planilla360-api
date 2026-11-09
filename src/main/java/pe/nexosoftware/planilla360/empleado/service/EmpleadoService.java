@@ -21,6 +21,12 @@ import pe.nexosoftware.planilla360.compartido.tenant.TenantContext;
 import pe.nexosoftware.planilla360.empleado.ContratoResumen;
 import pe.nexosoftware.planilla360.empleado.EmpleadoApi;
 import pe.nexosoftware.planilla360.empleado.EmpleadoResumen;
+import pe.nexosoftware.planilla360.empleado.FichaEmpleado;
+import pe.nexosoftware.planilla360.empleado.NuevoEmpleado;
+import pe.nexosoftware.planilla360.empleado.dto.ContratoRequest;
+import pe.nexosoftware.planilla360.empleado.model.TipoComision;
+import pe.nexosoftware.planilla360.empleado.model.TipoContrato;
+import pe.nexosoftware.planilla360.empleado.model.TipoRegimenPensionario;
 import pe.nexosoftware.planilla360.empleado.HijoResumen;
 import pe.nexosoftware.planilla360.empleado.dto.CeseRequest;
 import pe.nexosoftware.planilla360.empleado.dto.EmpleadoRequest;
@@ -51,6 +57,7 @@ public class EmpleadoService implements EmpleadoApi {
     private final CatalogoApi catalogo;
     private final IdentidadApi identidad;
     private final ApplicationEventPublisher eventos;
+    private final ContratoService contratoService;
 
     public EmpleadoService(
             EmpleadoRepository empleados,
@@ -59,7 +66,8 @@ public class EmpleadoService implements EmpleadoApi {
             EmpleadoMapper mapper,
             CatalogoApi catalogo,
             IdentidadApi identidad,
-            ApplicationEventPublisher eventos) {
+            ApplicationEventPublisher eventos,
+            ContratoService contratoService) {
         this.empleados = empleados;
         this.contratos = contratos;
         this.familiares = familiares;
@@ -67,6 +75,7 @@ public class EmpleadoService implements EmpleadoApi {
         this.catalogo = catalogo;
         this.identidad = identidad;
         this.eventos = eventos;
+        this.contratoService = contratoService;
     }
 
     public Pagina<EmpleadoResponse> listar(FiltroEmpleados filtro, Pageable pageable) {
@@ -184,6 +193,51 @@ public class EmpleadoService implements EmpleadoApi {
                 .filter(f -> f.getParentesco() == Parentesco.HIJO)
                 .map(f -> new HijoResumen(f.getFechaNacimiento(), f.isEstudia()))
                 .toList();
+    }
+
+    @Override
+    public Optional<FichaEmpleado> fichaDe(UUID empleadoId) {
+        return empleados.findById(empleadoId).map(e -> new FichaEmpleado(
+                e.getId(),
+                e.getDni(),
+                e.nombreCompleto(),
+                e.getEmail(),
+                catalogo.nombreDeArea(e.getAreaId()).orElse(""),
+                catalogo.nombreDeCargo(e.getCargoId()).orElse(""),
+                e.getFechaIngreso()));
+    }
+
+    @Override
+    public boolean existeDni(String dni) {
+        return empleados.existsByDni(dni);
+    }
+
+    @Override
+    @Transactional
+    public UUID registrar(NuevoEmpleado datos) {
+        EmpleadoResponse empleado = crear(new EmpleadoRequest(
+                datos.dni(),
+                datos.nombres(),
+                datos.apellidos(),
+                datos.fechaNacimiento(),
+                datos.email(),
+                datos.telefono(),
+                datos.fechaIngreso(),
+                datos.areaId(),
+                datos.cargoId(),
+                null));
+        contratoService.crear(empleado.id(), new ContratoRequest(
+                TipoContrato.valueOf(datos.tipoContrato()),
+                datos.fechaIngreso(),
+                datos.fechaFinContrato(),
+                datos.sueldoBasico(),
+                datos.jornadaSemanal(),
+                null,
+                TipoRegimenPensionario.valueOf(datos.regimenPensionario()),
+                datos.afpId(),
+                datos.tipoComision() == null ? null : TipoComision.valueOf(datos.tipoComision()),
+                null));
+        return empleado.id();
     }
 
     private static ContratoResumen aResumen(Contrato contrato) {
