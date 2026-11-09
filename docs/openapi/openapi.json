@@ -1,0 +1,4698 @@
+{
+  "components" : {
+    "schemas" : {
+      "ActualizarUsuarioRequest" : {
+        "properties" : {
+          "empleadoId" : {
+            "format" : "uuid",
+            "type" : "string"
+          },
+          "nombre" : {
+            "maxLength" : 150,
+            "minLength" : 0,
+            "type" : "string"
+          },
+          "rol" : {
+            "enum" : [ "ADMIN_SAAS", "ADMIN_EMPRESA", "RRHH", "EMPLEADO" ],
+            "type" : "string"
+          }
+        },
+        "required" : [ "nombre", "rol" ],
+        "type" : "object"
+      },
+      "AfpResponse" : {
+        "properties" : {
+          "comisionFlujo" : {
+            "type" : "number"
+          },
+          "comisionMixta" : {
+            "type" : "number"
+          },
+          "id" : {
+            "format" : "uuid",
+            "type" : "string"
+          },
+          "nombre" : {
+            "type" : "string"
+          },
+          "vigenteDesde" : {
+            "format" : "date",
+            "type" : "string"
+          }
+        },
+        "type" : "object"
+      },
+      "AnularPlanillaRequest" : {
+        "properties" : {
+          "motivo" : {
+            "maxLength" : 300,
+            "minLength" : 0,
+            "type" : "string"
+          }
+        },
+        "required" : [ "motivo" ],
+        "type" : "object"
+      },
+      "AreaRequest" : {
+        "properties" : {
+          "nombre" : {
+            "maxLength" : 100,
+            "minLength" : 0,
+            "type" : "string"
+          }
+        },
+        "required" : [ "nombre" ],
+        "type" : "object"
+      },
+      "AreaResponse" : {
+        "properties" : {
+          "id" : {
+            "format" : "uuid",
+            "type" : "string"
+          },
+          "nombre" : {
+            "type" : "string"
+          }
+        },
+        "type" : "object"
+      },
+      "AsignarHorarioRequest" : {
+        "properties" : {
+          "desde" : {
+            "format" : "date",
+            "type" : "string"
+          },
+          "empleadoId" : {
+            "format" : "uuid",
+            "type" : "string"
+          }
+        },
+        "required" : [ "desde", "empleadoId" ],
+        "type" : "object"
+      },
+      "AsistenciaDiariaResponse" : {
+        "properties" : {
+          "estado" : {
+            "enum" : [ "PRESENTE", "TARDANZA", "FALTA", "JUSTIFICADA", "FERIADO", "DESCANSO", "INCOMPLETA" ],
+            "type" : "string"
+          },
+          "fecha" : {
+            "format" : "date",
+            "type" : "string"
+          },
+          "minutosExtra" : {
+            "format" : "int32",
+            "type" : "integer"
+          },
+          "minutosTardanza" : {
+            "format" : "int32",
+            "type" : "integer"
+          }
+        },
+        "type" : "object"
+      },
+      "AuditoriaResponse" : {
+        "properties" : {
+          "accion" : {
+            "enum" : [ "CREAR", "ACTUALIZAR", "ELIMINAR" ],
+            "type" : "string"
+          },
+          "antes" : {
+            "$ref" : "#/components/schemas/JsonNode"
+          },
+          "despues" : {
+            "$ref" : "#/components/schemas/JsonNode"
+          },
+          "entidad" : {
+            "type" : "string"
+          },
+          "entidadId" : {
+            "format" : "uuid",
+            "type" : "string"
+          },
+          "id" : {
+            "format" : "uuid",
+            "type" : "string"
+          },
+          "instante" : {
+            "format" : "date-time",
+            "type" : "string"
+          },
+          "tenantId" : {
+            "format" : "uuid",
+            "type" : "string"
+          },
+          "usuario" : {
+            "type" : "string"
+          }
+        },
+        "type" : "object"
+      },
+      "BoletaResponse" : {
+        "properties" : {
+          "empleadoId" : {
+            "format" : "uuid",
+            "type" : "string"
+          },
+          "enviadaEn" : {
+            "format" : "date-time",
+            "type" : "string"
+          },
+          "estado" : {
+            "enum" : [ "PENDIENTE", "GENERADA", "ENVIADA", "FALLIDA" ],
+            "type" : "string"
+          },
+          "generadaEn" : {
+            "format" : "date-time",
+            "type" : "string"
+          },
+          "id" : {
+            "format" : "uuid",
+            "type" : "string"
+          },
+          "periodo" : {
+            "type" : "string"
+          },
+          "planillaId" : {
+            "format" : "uuid",
+            "type" : "string"
+          },
+          "tipo" : {
+            "type" : "string"
+          }
+        },
+        "type" : "object"
+      },
+      "CambiarPasswordRequest" : {
+        "properties" : {
+          "passwordActual" : {
+            "maxLength" : 72,
+            "minLength" : 0,
+            "type" : "string"
+          },
+          "passwordNueva" : {
+            "minLength" : 1,
+            "pattern" : "^(?=.*[A-Za-z])(?=.*\\d).{10,72}$",
+            "type" : "string"
+          }
+        },
+        "required" : [ "passwordActual", "passwordNueva" ],
+        "type" : "object"
+      },
+      "CargoRequest" : {
+        "properties" : {
+          "areaId" : {
+            "format" : "uuid",
+            "type" : "string"
+          },
+          "nombre" : {
+            "maxLength" : 100,
+            "minLength" : 0,
+            "type" : "string"
+          },
+          "sueldoReferencial" : {
+            "minimum" : 0.0,
+            "type" : "number"
+          }
+        },
+        "required" : [ "areaId", "nombre", "sueldoReferencial" ],
+        "type" : "object"
+      },
+      "CargoResponse" : {
+        "properties" : {
+          "areaId" : {
+            "format" : "uuid",
+            "type" : "string"
+          },
+          "id" : {
+            "format" : "uuid",
+            "type" : "string"
+          },
+          "nombre" : {
+            "type" : "string"
+          },
+          "sueldoReferencial" : {
+            "type" : "number"
+          }
+        },
+        "type" : "object"
+      },
+      "CeseRequest" : {
+        "properties" : {
+          "fechaCese" : {
+            "format" : "date",
+            "type" : "string"
+          }
+        },
+        "required" : [ "fechaCese" ],
+        "type" : "object"
+      },
+      "ConceptoResponse" : {
+        "properties" : {
+          "codigo" : {
+            "type" : "string"
+          },
+          "descripcion" : {
+            "type" : "string"
+          },
+          "monto" : {
+            "type" : "number"
+          },
+          "tipo" : {
+            "enum" : [ "INGRESO", "DESCUENTO", "APORTE_EMPLEADOR" ],
+            "type" : "string"
+          }
+        },
+        "type" : "object"
+      },
+      "ConsolidacionRequest" : {
+        "properties" : {
+          "fecha" : {
+            "format" : "date",
+            "type" : "string"
+          }
+        },
+        "required" : [ "fecha" ],
+        "type" : "object"
+      },
+      "ConsolidacionResponse" : {
+        "properties" : {
+          "empleadosProcesados" : {
+            "format" : "int32",
+            "type" : "integer"
+          },
+          "fecha" : {
+            "format" : "date",
+            "type" : "string"
+          }
+        },
+        "type" : "object"
+      },
+      "ContratoRequest" : {
+        "properties" : {
+          "afpId" : {
+            "format" : "uuid",
+            "type" : "string"
+          },
+          "cuspp" : {
+            "maxLength" : 12,
+            "minLength" : 0,
+            "type" : "string"
+          },
+          "diasLaborables" : {
+            "format" : "int32",
+            "maximum" : 7,
+            "minimum" : 1,
+            "type" : "integer"
+          },
+          "fechaFin" : {
+            "format" : "date",
+            "type" : "string"
+          },
+          "fechaInicio" : {
+            "format" : "date",
+            "type" : "string"
+          },
+          "jornadaSemanal" : {
+            "format" : "int32",
+            "maximum" : 48,
+            "minimum" : 1,
+            "type" : "integer"
+          },
+          "regimenPensionario" : {
+            "enum" : [ "ONP", "AFP" ],
+            "type" : "string"
+          },
+          "sueldoBasico" : {
+            "minimum" : 0.01,
+            "type" : "number"
+          },
+          "tipo" : {
+            "enum" : [ "INDEFINIDO", "PLAZO_FIJO", "PART_TIME" ],
+            "type" : "string"
+          },
+          "tipoComision" : {
+            "enum" : [ "FLUJO", "MIXTA" ],
+            "type" : "string"
+          }
+        },
+        "required" : [ "fechaInicio", "jornadaSemanal", "regimenPensionario", "sueldoBasico", "tipo" ],
+        "type" : "object"
+      },
+      "ContratoResponse" : {
+        "properties" : {
+          "afpId" : {
+            "format" : "uuid",
+            "type" : "string"
+          },
+          "cuspp" : {
+            "type" : "string"
+          },
+          "diasLaborables" : {
+            "format" : "int32",
+            "type" : "integer"
+          },
+          "empleadoId" : {
+            "format" : "uuid",
+            "type" : "string"
+          },
+          "fechaFin" : {
+            "format" : "date",
+            "type" : "string"
+          },
+          "fechaInicio" : {
+            "format" : "date",
+            "type" : "string"
+          },
+          "id" : {
+            "format" : "uuid",
+            "type" : "string"
+          },
+          "jornadaSemanal" : {
+            "format" : "int32",
+            "type" : "integer"
+          },
+          "regimenPensionario" : {
+            "enum" : [ "ONP", "AFP" ],
+            "type" : "string"
+          },
+          "sueldoBasico" : {
+            "type" : "number"
+          },
+          "tipo" : {
+            "enum" : [ "INDEFINIDO", "PLAZO_FIJO", "PART_TIME" ],
+            "type" : "string"
+          },
+          "tipoComision" : {
+            "enum" : [ "FLUJO", "MIXTA" ],
+            "type" : "string"
+          }
+        },
+        "type" : "object"
+      },
+      "ContribuyenteRuc" : {
+        "properties" : {
+          "condicion" : {
+            "type" : "string"
+          },
+          "direccion" : {
+            "type" : "string"
+          },
+          "estado" : {
+            "type" : "string"
+          },
+          "razonSocial" : {
+            "type" : "string"
+          },
+          "ruc" : {
+            "type" : "string"
+          }
+        },
+        "type" : "object"
+      },
+      "CostoLaboral" : {
+        "properties" : {
+          "area" : {
+            "type" : "string"
+          },
+          "cargo" : {
+            "type" : "string"
+          },
+          "costoTotal" : {
+            "type" : "number"
+          },
+          "essalud" : {
+            "type" : "number"
+          },
+          "ingresos" : {
+            "type" : "number"
+          },
+          "nivel" : {
+            "type" : "string"
+          },
+          "trabajadores" : {
+            "format" : "int64",
+            "type" : "integer"
+          }
+        },
+        "type" : "object"
+      },
+      "CrearPlanillaRequest" : {
+        "properties" : {
+          "periodo" : {
+            "minLength" : 1,
+            "pattern" : "^[0-9]{4}-(0[1-9]|1[0-2])$",
+            "type" : "string"
+          },
+          "tipo" : {
+            "enum" : [ "MENSUAL", "GRATIFICACION", "CTS" ],
+            "type" : "string"
+          }
+        },
+        "required" : [ "periodo" ],
+        "type" : "object"
+      },
+      "DetallePeriodo" : {
+        "properties" : {
+          "desde" : {
+            "format" : "date",
+            "type" : "string"
+          },
+          "diasDisponibles" : {
+            "format" : "int32",
+            "type" : "integer"
+          },
+          "diasGanados" : {
+            "format" : "int32",
+            "type" : "integer"
+          },
+          "diasGozados" : {
+            "format" : "int32",
+            "type" : "integer"
+          },
+          "diasReservados" : {
+            "format" : "int32",
+            "type" : "integer"
+          },
+          "diasVendidos" : {
+            "format" : "int32",
+            "type" : "integer"
+          },
+          "hasta" : {
+            "format" : "date",
+            "type" : "string"
+          },
+          "periodoId" : {
+            "format" : "uuid",
+            "type" : "string"
+          }
+        },
+        "type" : "object"
+      },
+      "EmpleadoRequest" : {
+        "properties" : {
+          "apellidos" : {
+            "maxLength" : 100,
+            "minLength" : 0,
+            "type" : "string"
+          },
+          "areaId" : {
+            "format" : "uuid",
+            "type" : "string"
+          },
+          "cargoId" : {
+            "format" : "uuid",
+            "type" : "string"
+          },
+          "dni" : {
+            "minLength" : 1,
+            "pattern" : "\\d{8}",
+            "type" : "string"
+          },
+          "email" : {
+            "format" : "email",
+            "maxLength" : 160,
+            "minLength" : 0,
+            "type" : "string"
+          },
+          "fechaIngreso" : {
+            "format" : "date",
+            "type" : "string"
+          },
+          "fechaNacimiento" : {
+            "format" : "date",
+            "type" : "string"
+          },
+          "jefeId" : {
+            "format" : "uuid",
+            "type" : "string"
+          },
+          "nombres" : {
+            "maxLength" : 100,
+            "minLength" : 0,
+            "type" : "string"
+          },
+          "telefono" : {
+            "maxLength" : 20,
+            "minLength" : 0,
+            "type" : "string"
+          }
+        },
+        "required" : [ "apellidos", "areaId", "cargoId", "dni", "fechaIngreso", "fechaNacimiento", "nombres" ],
+        "type" : "object"
+      },
+      "EmpleadoResponse" : {
+        "properties" : {
+          "apellidos" : {
+            "type" : "string"
+          },
+          "areaId" : {
+            "format" : "uuid",
+            "type" : "string"
+          },
+          "cargoId" : {
+            "format" : "uuid",
+            "type" : "string"
+          },
+          "dni" : {
+            "type" : "string"
+          },
+          "email" : {
+            "type" : "string"
+          },
+          "estado" : {
+            "enum" : [ "ACTIVO", "VACACIONES", "LICENCIA", "CESADO" ],
+            "type" : "string"
+          },
+          "fechaCese" : {
+            "format" : "date",
+            "type" : "string"
+          },
+          "fechaIngreso" : {
+            "format" : "date",
+            "type" : "string"
+          },
+          "fechaNacimiento" : {
+            "format" : "date",
+            "type" : "string"
+          },
+          "id" : {
+            "format" : "uuid",
+            "type" : "string"
+          },
+          "jefeId" : {
+            "format" : "uuid",
+            "type" : "string"
+          },
+          "nombres" : {
+            "type" : "string"
+          },
+          "telefono" : {
+            "type" : "string"
+          }
+        },
+        "type" : "object"
+      },
+      "EmpresaRequest" : {
+        "properties" : {
+          "plan" : {
+            "enum" : [ "BASICO", "PROFESIONAL", "EMPRESARIAL" ],
+            "type" : "string"
+          },
+          "razonSocial" : {
+            "maxLength" : 200,
+            "minLength" : 0,
+            "type" : "string"
+          },
+          "regimenLaboral" : {
+            "enum" : [ "GENERAL", "PEQUENA_EMPRESA" ],
+            "type" : "string"
+          },
+          "ruc" : {
+            "minLength" : 1,
+            "type" : "string"
+          }
+        },
+        "required" : [ "plan", "razonSocial", "regimenLaboral", "ruc" ],
+        "type" : "object"
+      },
+      "EmpresaResponse" : {
+        "properties" : {
+          "activa" : {
+            "type" : "boolean"
+          },
+          "creadaEn" : {
+            "format" : "date-time",
+            "type" : "string"
+          },
+          "id" : {
+            "format" : "uuid",
+            "type" : "string"
+          },
+          "plan" : {
+            "enum" : [ "BASICO", "PROFESIONAL", "EMPRESARIAL" ],
+            "type" : "string"
+          },
+          "razonSocial" : {
+            "type" : "string"
+          },
+          "regimenLaboral" : {
+            "enum" : [ "GENERAL", "PEQUENA_EMPRESA" ],
+            "type" : "string"
+          },
+          "ruc" : {
+            "type" : "string"
+          }
+        },
+        "type" : "object"
+      },
+      "EmpresaResumen" : {
+        "properties" : {
+          "activa" : {
+            "type" : "boolean"
+          },
+          "id" : {
+            "format" : "uuid",
+            "type" : "string"
+          },
+          "razonSocial" : {
+            "type" : "string"
+          },
+          "regimenLaboral" : {
+            "enum" : [ "GENERAL", "PEQUENA_EMPRESA" ],
+            "type" : "string"
+          },
+          "ruc" : {
+            "type" : "string"
+          }
+        },
+        "type" : "object"
+      },
+      "ErrorFila" : {
+        "properties" : {
+          "campo" : {
+            "type" : "string"
+          },
+          "fila" : {
+            "format" : "int32",
+            "type" : "integer"
+          },
+          "mensaje" : {
+            "type" : "string"
+          }
+        },
+        "type" : "object"
+      },
+      "EstadoEmpresaRequest" : {
+        "properties" : {
+          "activa" : {
+            "type" : "boolean"
+          }
+        },
+        "required" : [ "activa" ],
+        "type" : "object"
+      },
+      "EstadoGeneracionResponse" : {
+        "properties" : {
+          "enviadas" : {
+            "format" : "int64",
+            "type" : "integer"
+          },
+          "estado" : {
+            "type" : "string"
+          },
+          "fallidas" : {
+            "format" : "int64",
+            "type" : "integer"
+          },
+          "generadas" : {
+            "format" : "int64",
+            "type" : "integer"
+          },
+          "pendientes" : {
+            "format" : "int64",
+            "type" : "integer"
+          },
+          "planillaId" : {
+            "format" : "uuid",
+            "type" : "string"
+          },
+          "total" : {
+            "format" : "int64",
+            "type" : "integer"
+          }
+        },
+        "type" : "object"
+      },
+      "EstadoUsuarioRequest" : {
+        "properties" : {
+          "activo" : {
+            "type" : "boolean"
+          }
+        },
+        "required" : [ "activo" ],
+        "type" : "object"
+      },
+      "FamiliarRequest" : {
+        "properties" : {
+          "estudia" : {
+            "type" : "boolean"
+          },
+          "fechaNacimiento" : {
+            "format" : "date",
+            "type" : "string"
+          },
+          "nombres" : {
+            "maxLength" : 150,
+            "minLength" : 0,
+            "type" : "string"
+          },
+          "parentesco" : {
+            "enum" : [ "HIJO", "CONYUGE", "CONVIVIENTE", "PADRE", "MADRE" ],
+            "type" : "string"
+          }
+        },
+        "required" : [ "fechaNacimiento", "nombres", "parentesco" ],
+        "type" : "object"
+      },
+      "FamiliarResponse" : {
+        "properties" : {
+          "empleadoId" : {
+            "format" : "uuid",
+            "type" : "string"
+          },
+          "estudia" : {
+            "type" : "boolean"
+          },
+          "fechaNacimiento" : {
+            "format" : "date",
+            "type" : "string"
+          },
+          "id" : {
+            "format" : "uuid",
+            "type" : "string"
+          },
+          "nombres" : {
+            "type" : "string"
+          },
+          "parentesco" : {
+            "enum" : [ "HIJO", "CONYUGE", "CONVIVIENTE", "PADRE", "MADRE" ],
+            "type" : "string"
+          }
+        },
+        "type" : "object"
+      },
+      "FeriadoResponse" : {
+        "properties" : {
+          "ambito" : {
+            "type" : "string"
+          },
+          "descripcion" : {
+            "type" : "string"
+          },
+          "fecha" : {
+            "format" : "date",
+            "type" : "string"
+          },
+          "id" : {
+            "format" : "uuid",
+            "type" : "string"
+          }
+        },
+        "type" : "object"
+      },
+      "GenerarBeneficioRequest" : {
+        "properties" : {
+          "periodo" : {
+            "minLength" : 1,
+            "pattern" : "^[0-9]{4}-(0[1-9]|1[0-2])$",
+            "type" : "string"
+          },
+          "simular" : {
+            "type" : "boolean"
+          }
+        },
+        "required" : [ "periodo" ],
+        "type" : "object"
+      },
+      "HoraExtraRequest" : {
+        "properties" : {
+          "empleadoId" : {
+            "format" : "uuid",
+            "type" : "string"
+          },
+          "fecha" : {
+            "format" : "date",
+            "type" : "string"
+          },
+          "horas" : {
+            "type" : "number"
+          },
+          "motivo" : {
+            "maxLength" : 200,
+            "minLength" : 0,
+            "type" : "string"
+          }
+        },
+        "required" : [ "fecha", "horas" ],
+        "type" : "object"
+      },
+      "HoraExtraResponse" : {
+        "properties" : {
+          "aprobadoPor" : {
+            "format" : "uuid",
+            "type" : "string"
+          },
+          "empleadoId" : {
+            "format" : "uuid",
+            "type" : "string"
+          },
+          "estado" : {
+            "enum" : [ "PENDIENTE", "APROBADA", "RECHAZADA" ],
+            "type" : "string"
+          },
+          "fecha" : {
+            "format" : "date",
+            "type" : "string"
+          },
+          "horas" : {
+            "type" : "number"
+          },
+          "id" : {
+            "format" : "uuid",
+            "type" : "string"
+          },
+          "motivo" : {
+            "type" : "string"
+          }
+        },
+        "type" : "object"
+      },
+      "HorarioRequest" : {
+        "properties" : {
+          "dias" : {
+            "items" : {
+              "enum" : [ "MONDAY", "TUESDAY", "WEDNESDAY", "THURSDAY", "FRIDAY", "SATURDAY", "SUNDAY" ],
+              "type" : "string"
+            },
+            "minItems" : 1,
+            "type" : "array",
+            "uniqueItems" : true
+          },
+          "entrada" : {
+            "format" : "time-local",
+            "type" : "string"
+          },
+          "nombre" : {
+            "maxLength" : 80,
+            "minLength" : 0,
+            "type" : "string"
+          },
+          "refrigerioMin" : {
+            "format" : "int32",
+            "minimum" : 0,
+            "type" : "integer"
+          },
+          "salida" : {
+            "format" : "time-local",
+            "type" : "string"
+          },
+          "toleranciaMin" : {
+            "format" : "int32",
+            "type" : "integer"
+          }
+        },
+        "required" : [ "dias", "entrada", "nombre", "salida", "toleranciaMin" ],
+        "type" : "object"
+      },
+      "HorarioResponse" : {
+        "properties" : {
+          "dias" : {
+            "items" : {
+              "enum" : [ "MONDAY", "TUESDAY", "WEDNESDAY", "THURSDAY", "FRIDAY", "SATURDAY", "SUNDAY" ],
+              "type" : "string"
+            },
+            "type" : "array",
+            "uniqueItems" : true
+          },
+          "entrada" : {
+            "format" : "time-local",
+            "type" : "string"
+          },
+          "id" : {
+            "format" : "uuid",
+            "type" : "string"
+          },
+          "nombre" : {
+            "type" : "string"
+          },
+          "refrigerioMin" : {
+            "format" : "int32",
+            "type" : "integer"
+          },
+          "salida" : {
+            "format" : "time-local",
+            "type" : "string"
+          },
+          "toleranciaMin" : {
+            "format" : "int32",
+            "type" : "integer"
+          }
+        },
+        "type" : "object"
+      },
+      "IncidenciaResponse" : {
+        "properties" : {
+          "codigo" : {
+            "type" : "string"
+          },
+          "mensaje" : {
+            "type" : "string"
+          }
+        },
+        "type" : "object"
+      },
+      "JsonNode" : {
+        "properties" : {
+          "array" : {
+            "type" : "boolean"
+          },
+          "bigDecimal" : {
+            "type" : "boolean"
+          },
+          "bigInteger" : {
+            "type" : "boolean"
+          },
+          "binary" : {
+            "type" : "boolean"
+          },
+          "boolean" : {
+            "type" : "boolean"
+          },
+          "container" : {
+            "type" : "boolean"
+          },
+          "double" : {
+            "type" : "boolean"
+          },
+          "embeddedValue" : {
+            "type" : "boolean"
+          },
+          "empty" : {
+            "type" : "boolean"
+          },
+          "float" : {
+            "type" : "boolean"
+          },
+          "floatingPointNumber" : {
+            "type" : "boolean"
+          },
+          "int" : {
+            "type" : "boolean"
+          },
+          "integralNumber" : {
+            "type" : "boolean"
+          },
+          "long" : {
+            "type" : "boolean"
+          },
+          "missingNode" : {
+            "type" : "boolean"
+          },
+          "nodeType" : {
+            "enum" : [ "ARRAY", "BINARY", "BOOLEAN", "MISSING", "NULL", "NUMBER", "OBJECT", "POJO", "STRING" ],
+            "type" : "string"
+          },
+          "null" : {
+            "type" : "boolean"
+          },
+          "number" : {
+            "type" : "boolean"
+          },
+          "object" : {
+            "type" : "boolean"
+          },
+          "pojo" : {
+            "type" : "boolean"
+          },
+          "short" : {
+            "type" : "boolean"
+          },
+          "string" : {
+            "type" : "boolean"
+          },
+          "textual" : {
+            "deprecated" : true,
+            "type" : "boolean"
+          },
+          "valueNode" : {
+            "type" : "boolean"
+          }
+        },
+        "type" : "object"
+      },
+      "LineaPlanillaResponse" : {
+        "properties" : {
+          "aporteEssalud" : {
+            "type" : "number"
+          },
+          "asignacionFamiliar" : {
+            "type" : "number"
+          },
+          "basico" : {
+            "type" : "number"
+          },
+          "bonificacionExtraordinaria" : {
+            "type" : "number"
+          },
+          "bonos" : {
+            "type" : "number"
+          },
+          "conceptos" : {
+            "items" : {
+              "$ref" : "#/components/schemas/ConceptoResponse"
+            },
+            "type" : "array"
+          },
+          "cts" : {
+            "type" : "number"
+          },
+          "descuentoAsistencia" : {
+            "type" : "number"
+          },
+          "descuentoPension" : {
+            "type" : "number"
+          },
+          "empleadoId" : {
+            "format" : "uuid",
+            "type" : "string"
+          },
+          "gratificacion" : {
+            "type" : "number"
+          },
+          "horasExtra" : {
+            "type" : "number"
+          },
+          "neto" : {
+            "type" : "number"
+          },
+          "otrosDescuentos" : {
+            "type" : "number"
+          },
+          "regimenPensionario" : {
+            "type" : "string"
+          },
+          "retencion5ta" : {
+            "type" : "number"
+          },
+          "totalDescuentos" : {
+            "type" : "number"
+          },
+          "totalIngresos" : {
+            "type" : "number"
+          }
+        },
+        "type" : "object"
+      },
+      "LoginRequest" : {
+        "properties" : {
+          "email" : {
+            "format" : "email",
+            "maxLength" : 160,
+            "minLength" : 0,
+            "type" : "string"
+          },
+          "password" : {
+            "maxLength" : 72,
+            "minLength" : 0,
+            "type" : "string"
+          }
+        },
+        "required" : [ "email", "password" ],
+        "type" : "object"
+      },
+      "MarcacionResponse" : {
+        "properties" : {
+          "instante" : {
+            "format" : "date-time",
+            "type" : "string"
+          },
+          "tipo" : {
+            "enum" : [ "ENTRADA", "SALIDA" ],
+            "type" : "string"
+          }
+        },
+        "type" : "object"
+      },
+      "Pageable" : {
+        "properties" : {
+          "page" : {
+            "format" : "int32",
+            "minimum" : 0,
+            "type" : "integer"
+          },
+          "size" : {
+            "format" : "int32",
+            "minimum" : 1,
+            "type" : "integer"
+          },
+          "sort" : {
+            "items" : {
+              "type" : "string"
+            },
+            "type" : "array"
+          }
+        },
+        "type" : "object"
+      },
+      "PaginaAreaResponse" : {
+        "properties" : {
+          "contenido" : {
+            "items" : {
+              "$ref" : "#/components/schemas/AreaResponse"
+            },
+            "type" : "array"
+          },
+          "pagina" : {
+            "format" : "int32",
+            "type" : "integer"
+          },
+          "tamano" : {
+            "format" : "int32",
+            "type" : "integer"
+          },
+          "totalElementos" : {
+            "format" : "int64",
+            "type" : "integer"
+          },
+          "totalPaginas" : {
+            "format" : "int32",
+            "type" : "integer"
+          }
+        },
+        "type" : "object"
+      },
+      "PaginaAuditoriaResponse" : {
+        "properties" : {
+          "contenido" : {
+            "items" : {
+              "$ref" : "#/components/schemas/AuditoriaResponse"
+            },
+            "type" : "array"
+          },
+          "pagina" : {
+            "format" : "int32",
+            "type" : "integer"
+          },
+          "tamano" : {
+            "format" : "int32",
+            "type" : "integer"
+          },
+          "totalElementos" : {
+            "format" : "int64",
+            "type" : "integer"
+          },
+          "totalPaginas" : {
+            "format" : "int32",
+            "type" : "integer"
+          }
+        },
+        "type" : "object"
+      },
+      "PaginaBoletaResponse" : {
+        "properties" : {
+          "contenido" : {
+            "items" : {
+              "$ref" : "#/components/schemas/BoletaResponse"
+            },
+            "type" : "array"
+          },
+          "pagina" : {
+            "format" : "int32",
+            "type" : "integer"
+          },
+          "tamano" : {
+            "format" : "int32",
+            "type" : "integer"
+          },
+          "totalElementos" : {
+            "format" : "int64",
+            "type" : "integer"
+          },
+          "totalPaginas" : {
+            "format" : "int32",
+            "type" : "integer"
+          }
+        },
+        "type" : "object"
+      },
+      "PaginaCargoResponse" : {
+        "properties" : {
+          "contenido" : {
+            "items" : {
+              "$ref" : "#/components/schemas/CargoResponse"
+            },
+            "type" : "array"
+          },
+          "pagina" : {
+            "format" : "int32",
+            "type" : "integer"
+          },
+          "tamano" : {
+            "format" : "int32",
+            "type" : "integer"
+          },
+          "totalElementos" : {
+            "format" : "int64",
+            "type" : "integer"
+          },
+          "totalPaginas" : {
+            "format" : "int32",
+            "type" : "integer"
+          }
+        },
+        "type" : "object"
+      },
+      "PaginaEmpleadoResponse" : {
+        "properties" : {
+          "contenido" : {
+            "items" : {
+              "$ref" : "#/components/schemas/EmpleadoResponse"
+            },
+            "type" : "array"
+          },
+          "pagina" : {
+            "format" : "int32",
+            "type" : "integer"
+          },
+          "tamano" : {
+            "format" : "int32",
+            "type" : "integer"
+          },
+          "totalElementos" : {
+            "format" : "int64",
+            "type" : "integer"
+          },
+          "totalPaginas" : {
+            "format" : "int32",
+            "type" : "integer"
+          }
+        },
+        "type" : "object"
+      },
+      "PaginaEmpresaResponse" : {
+        "properties" : {
+          "contenido" : {
+            "items" : {
+              "$ref" : "#/components/schemas/EmpresaResponse"
+            },
+            "type" : "array"
+          },
+          "pagina" : {
+            "format" : "int32",
+            "type" : "integer"
+          },
+          "tamano" : {
+            "format" : "int32",
+            "type" : "integer"
+          },
+          "totalElementos" : {
+            "format" : "int64",
+            "type" : "integer"
+          },
+          "totalPaginas" : {
+            "format" : "int32",
+            "type" : "integer"
+          }
+        },
+        "type" : "object"
+      },
+      "PaginaPlanillaResponse" : {
+        "properties" : {
+          "contenido" : {
+            "items" : {
+              "$ref" : "#/components/schemas/PlanillaResponse"
+            },
+            "type" : "array"
+          },
+          "pagina" : {
+            "format" : "int32",
+            "type" : "integer"
+          },
+          "tamano" : {
+            "format" : "int32",
+            "type" : "integer"
+          },
+          "totalElementos" : {
+            "format" : "int64",
+            "type" : "integer"
+          },
+          "totalPaginas" : {
+            "format" : "int32",
+            "type" : "integer"
+          }
+        },
+        "type" : "object"
+      },
+      "PaginaUsuarioResponse" : {
+        "properties" : {
+          "contenido" : {
+            "items" : {
+              "$ref" : "#/components/schemas/UsuarioResponse"
+            },
+            "type" : "array"
+          },
+          "pagina" : {
+            "format" : "int32",
+            "type" : "integer"
+          },
+          "tamano" : {
+            "format" : "int32",
+            "type" : "integer"
+          },
+          "totalElementos" : {
+            "format" : "int64",
+            "type" : "integer"
+          },
+          "totalPaginas" : {
+            "format" : "int32",
+            "type" : "integer"
+          }
+        },
+        "type" : "object"
+      },
+      "PagoPlanillaRequest" : {
+        "properties" : {
+          "fechaPago" : {
+            "format" : "date",
+            "type" : "string"
+          },
+          "referencia" : {
+            "maxLength" : 80,
+            "minLength" : 0,
+            "type" : "string"
+          }
+        },
+        "required" : [ "fechaPago", "referencia" ],
+        "type" : "object"
+      },
+      "PagoPlanillaResponse" : {
+        "properties" : {
+          "fechaPago" : {
+            "format" : "date",
+            "type" : "string"
+          },
+          "planillaId" : {
+            "format" : "uuid",
+            "type" : "string"
+          },
+          "referencia" : {
+            "type" : "string"
+          }
+        },
+        "type" : "object"
+      },
+      "ParametroLegalRequest" : {
+        "properties" : {
+          "codigo" : {
+            "minLength" : 1,
+            "pattern" : "^[A-Z0-9_]{2,60}$",
+            "type" : "string"
+          },
+          "descripcion" : {
+            "maxLength" : 200,
+            "minLength" : 0,
+            "type" : "string"
+          },
+          "valor" : {
+            "minimum" : 0.0,
+            "type" : "number"
+          },
+          "vigenteDesde" : {
+            "format" : "date",
+            "type" : "string"
+          }
+        },
+        "required" : [ "codigo", "descripcion", "valor", "vigenteDesde" ],
+        "type" : "object"
+      },
+      "ParametroLegalResponse" : {
+        "properties" : {
+          "codigo" : {
+            "type" : "string"
+          },
+          "descripcion" : {
+            "type" : "string"
+          },
+          "id" : {
+            "format" : "uuid",
+            "type" : "string"
+          },
+          "valor" : {
+            "type" : "number"
+          },
+          "vigenteDesde" : {
+            "format" : "date",
+            "type" : "string"
+          },
+          "vigenteHasta" : {
+            "format" : "date",
+            "type" : "string"
+          }
+        },
+        "type" : "object"
+      },
+      "PerfilResponse" : {
+        "properties" : {
+          "empresa" : {
+            "$ref" : "#/components/schemas/EmpresaResumen"
+          },
+          "usuario" : {
+            "$ref" : "#/components/schemas/UsuarioResponse"
+          }
+        },
+        "type" : "object"
+      },
+      "PermisoRequest" : {
+        "properties" : {
+          "conGoce" : {
+            "type" : "boolean"
+          },
+          "desde" : {
+            "format" : "date",
+            "type" : "string"
+          },
+          "empleadoId" : {
+            "format" : "uuid",
+            "type" : "string"
+          },
+          "hasta" : {
+            "format" : "date",
+            "type" : "string"
+          },
+          "motivo" : {
+            "maxLength" : 300,
+            "minLength" : 0,
+            "type" : "string"
+          },
+          "tipo" : {
+            "enum" : [ "MEDICO", "PERSONAL", "LICENCIA" ],
+            "type" : "string"
+          }
+        },
+        "required" : [ "desde", "hasta", "tipo" ],
+        "type" : "object"
+      },
+      "PermisoResponse" : {
+        "properties" : {
+          "conGoce" : {
+            "type" : "boolean"
+          },
+          "desde" : {
+            "format" : "date",
+            "type" : "string"
+          },
+          "dias" : {
+            "format" : "int32",
+            "type" : "integer"
+          },
+          "empleadoId" : {
+            "format" : "uuid",
+            "type" : "string"
+          },
+          "estado" : {
+            "enum" : [ "SOLICITADO", "APROBADO", "RECHAZADO" ],
+            "type" : "string"
+          },
+          "hasta" : {
+            "format" : "date",
+            "type" : "string"
+          },
+          "id" : {
+            "format" : "uuid",
+            "type" : "string"
+          },
+          "motivo" : {
+            "type" : "string"
+          },
+          "motivoRechazo" : {
+            "type" : "string"
+          },
+          "tipo" : {
+            "enum" : [ "MEDICO", "PERSONAL", "LICENCIA" ],
+            "type" : "string"
+          }
+        },
+        "type" : "object"
+      },
+      "PersonaDni" : {
+        "properties" : {
+          "apellidoMaterno" : {
+            "type" : "string"
+          },
+          "apellidoPaterno" : {
+            "type" : "string"
+          },
+          "dni" : {
+            "type" : "string"
+          },
+          "nombres" : {
+            "type" : "string"
+          }
+        },
+        "type" : "object"
+      },
+      "PlanillaResponse" : {
+        "properties" : {
+          "cerradaEn" : {
+            "format" : "date-time",
+            "type" : "string"
+          },
+          "estado" : {
+            "enum" : [ "BORRADOR", "CALCULADA", "CERRADA", "ANULADA" ],
+            "type" : "string"
+          },
+          "id" : {
+            "format" : "uuid",
+            "type" : "string"
+          },
+          "periodo" : {
+            "type" : "string"
+          },
+          "tipo" : {
+            "enum" : [ "MENSUAL", "GRATIFICACION", "CTS" ],
+            "type" : "string"
+          },
+          "totalDescuentos" : {
+            "type" : "number"
+          },
+          "totalEssalud" : {
+            "type" : "number"
+          },
+          "totalIngresos" : {
+            "type" : "number"
+          },
+          "totalNeto" : {
+            "type" : "number"
+          },
+          "trabajadores" : {
+            "format" : "int32",
+            "type" : "integer"
+          }
+        },
+        "type" : "object"
+      },
+      "RechazoRequest" : {
+        "properties" : {
+          "motivo" : {
+            "maxLength" : 300,
+            "minLength" : 0,
+            "type" : "string"
+          }
+        },
+        "required" : [ "motivo" ],
+        "type" : "object"
+      },
+      "RefreshRequest" : {
+        "properties" : {
+          "refreshToken" : {
+            "maxLength" : 200,
+            "minLength" : 0,
+            "type" : "string"
+          }
+        },
+        "required" : [ "refreshToken" ],
+        "type" : "object"
+      },
+      "ResetPasswordRequest" : {
+        "properties" : {
+          "passwordNueva" : {
+            "minLength" : 1,
+            "pattern" : "^(?=.*[A-Za-z])(?=.*\\d).{10,72}$",
+            "type" : "string"
+          }
+        },
+        "required" : [ "passwordNueva" ],
+        "type" : "object"
+      },
+      "ResolverHoraExtraRequest" : {
+        "properties" : {
+          "accion" : {
+            "enum" : [ "APROBAR", "RECHAZAR" ],
+            "type" : "string"
+          }
+        },
+        "required" : [ "accion" ],
+        "type" : "object"
+      },
+      "ResultadoImportacion" : {
+        "properties" : {
+          "errores" : {
+            "items" : {
+              "$ref" : "#/components/schemas/ErrorFila"
+            },
+            "type" : "array"
+          },
+          "importadas" : {
+            "format" : "int32",
+            "type" : "integer"
+          },
+          "simulacion" : {
+            "type" : "boolean"
+          },
+          "totalFilas" : {
+            "format" : "int32",
+            "type" : "integer"
+          },
+          "validas" : {
+            "format" : "int32",
+            "type" : "integer"
+          }
+        },
+        "type" : "object"
+      },
+      "ResumenMensual" : {
+        "properties" : {
+          "diasAsistidos" : {
+            "format" : "int32",
+            "type" : "integer"
+          },
+          "diasJustificados" : {
+            "format" : "int32",
+            "type" : "integer"
+          },
+          "empleadoId" : {
+            "format" : "uuid",
+            "type" : "string"
+          },
+          "faltas" : {
+            "format" : "int32",
+            "type" : "integer"
+          },
+          "minutosExtra" : {
+            "format" : "int32",
+            "type" : "integer"
+          },
+          "minutosTardanza" : {
+            "format" : "int32",
+            "type" : "integer"
+          },
+          "nombreCompleto" : {
+            "type" : "string"
+          },
+          "tardanzas" : {
+            "format" : "int32",
+            "type" : "integer"
+          }
+        },
+        "type" : "object"
+      },
+      "SaldoVacaciones" : {
+        "properties" : {
+          "diasDisponibles" : {
+            "format" : "int32",
+            "type" : "integer"
+          },
+          "periodos" : {
+            "items" : {
+              "$ref" : "#/components/schemas/DetallePeriodo"
+            },
+            "type" : "array"
+          }
+        },
+        "type" : "object"
+      },
+      "SolicitudVacacionesRequest" : {
+        "properties" : {
+          "desde" : {
+            "format" : "date",
+            "type" : "string"
+          },
+          "hasta" : {
+            "format" : "date",
+            "type" : "string"
+          }
+        },
+        "required" : [ "desde", "hasta" ],
+        "type" : "object"
+      },
+      "SolicitudVacacionesResponse" : {
+        "properties" : {
+          "desde" : {
+            "format" : "date",
+            "type" : "string"
+          },
+          "dias" : {
+            "format" : "int32",
+            "type" : "integer"
+          },
+          "empleadoId" : {
+            "format" : "uuid",
+            "type" : "string"
+          },
+          "estado" : {
+            "enum" : [ "SOLICITADA", "APROBADA_JEFE", "APROBADA_RRHH", "EN_GOCE", "FINALIZADA", "RECHAZADA", "CANCELADA" ],
+            "type" : "string"
+          },
+          "hasta" : {
+            "format" : "date",
+            "type" : "string"
+          },
+          "id" : {
+            "format" : "uuid",
+            "type" : "string"
+          },
+          "motivoRechazo" : {
+            "type" : "string"
+          },
+          "periodoId" : {
+            "format" : "uuid",
+            "type" : "string"
+          }
+        },
+        "type" : "object"
+      },
+      "TardanzaPorArea" : {
+        "properties" : {
+          "area" : {
+            "type" : "string"
+          },
+          "dias" : {
+            "format" : "int64",
+            "type" : "integer"
+          },
+          "minutos" : {
+            "format" : "int64",
+            "type" : "integer"
+          },
+          "posicion" : {
+            "format" : "int32",
+            "type" : "integer"
+          },
+          "trabajador" : {
+            "type" : "string"
+          }
+        },
+        "type" : "object"
+      },
+      "TipoCambio" : {
+        "properties" : {
+          "compra" : {
+            "type" : "number"
+          },
+          "desactualizado" : {
+            "type" : "boolean"
+          },
+          "fecha" : {
+            "format" : "date",
+            "type" : "string"
+          },
+          "moneda" : {
+            "type" : "string"
+          },
+          "venta" : {
+            "type" : "number"
+          }
+        },
+        "type" : "object"
+      },
+      "TokenResponse" : {
+        "properties" : {
+          "accessToken" : {
+            "type" : "string"
+          },
+          "expiraEnSegundos" : {
+            "format" : "int64",
+            "type" : "integer"
+          },
+          "refreshToken" : {
+            "type" : "string"
+          },
+          "tokenType" : {
+            "type" : "string"
+          },
+          "usuario" : {
+            "$ref" : "#/components/schemas/UsuarioResponse"
+          }
+        },
+        "type" : "object"
+      },
+      "UsuarioRequest" : {
+        "properties" : {
+          "email" : {
+            "format" : "email",
+            "maxLength" : 160,
+            "minLength" : 0,
+            "type" : "string"
+          },
+          "empleadoId" : {
+            "format" : "uuid",
+            "type" : "string"
+          },
+          "nombre" : {
+            "maxLength" : 150,
+            "minLength" : 0,
+            "type" : "string"
+          },
+          "password" : {
+            "minLength" : 1,
+            "pattern" : "^(?=.*[A-Za-z])(?=.*\\d).{10,72}$",
+            "type" : "string"
+          },
+          "rol" : {
+            "enum" : [ "ADMIN_SAAS", "ADMIN_EMPRESA", "RRHH", "EMPLEADO" ],
+            "type" : "string"
+          },
+          "tenantId" : {
+            "format" : "uuid",
+            "type" : "string"
+          }
+        },
+        "required" : [ "email", "nombre", "password", "rol" ],
+        "type" : "object"
+      },
+      "UsuarioResponse" : {
+        "properties" : {
+          "activo" : {
+            "type" : "boolean"
+          },
+          "creadoEn" : {
+            "format" : "date-time",
+            "type" : "string"
+          },
+          "email" : {
+            "type" : "string"
+          },
+          "empleadoId" : {
+            "format" : "uuid",
+            "type" : "string"
+          },
+          "id" : {
+            "format" : "uuid",
+            "type" : "string"
+          },
+          "nombre" : {
+            "type" : "string"
+          },
+          "rol" : {
+            "enum" : [ "ADMIN_SAAS", "ADMIN_EMPRESA", "RRHH", "EMPLEADO" ],
+            "type" : "string"
+          },
+          "tenantId" : {
+            "format" : "uuid",
+            "type" : "string"
+          },
+          "ultimoAcceso" : {
+            "format" : "date-time",
+            "type" : "string"
+          }
+        },
+        "type" : "object"
+      },
+      "VacacionPendiente" : {
+        "properties" : {
+          "empleadoId" : {
+            "format" : "uuid",
+            "type" : "string"
+          },
+          "periodoDesde" : {
+            "format" : "date",
+            "type" : "string"
+          },
+          "periodoHasta" : {
+            "format" : "date",
+            "type" : "string"
+          },
+          "saldoDias" : {
+            "format" : "int32",
+            "type" : "integer"
+          },
+          "saldoTotalDias" : {
+            "format" : "int32",
+            "type" : "integer"
+          },
+          "trabajador" : {
+            "type" : "string"
+          },
+          "vencido" : {
+            "type" : "boolean"
+          }
+        },
+        "type" : "object"
+      },
+      "ValidacionResponse" : {
+        "properties" : {
+          "incidencias" : {
+            "items" : {
+              "$ref" : "#/components/schemas/IncidenciaResponse"
+            },
+            "type" : "array"
+          },
+          "valida" : {
+            "type" : "boolean"
+          }
+        },
+        "type" : "object"
+      },
+      "VentaDiasRequest" : {
+        "properties" : {
+          "dias" : {
+            "format" : "int32",
+            "maximum" : 15,
+            "minimum" : 1,
+            "type" : "integer"
+          }
+        },
+        "type" : "object"
+      }
+    },
+    "securitySchemes" : {
+      "bearer-jwt" : {
+        "bearerFormat" : "JWT",
+        "scheme" : "bearer",
+        "type" : "http"
+      }
+    }
+  },
+  "info" : {
+    "description" : "API de RRHH y planillas para pymes peruanas (Nexo Software S.A.C.).",
+    "title" : "Planilla360 API",
+    "version" : "v1"
+  },
+  "openapi" : "3.1.0",
+  "paths" : {
+    "/api/v1/afps" : {
+      "get" : {
+        "operationId" : "afps",
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "items" : {
+                    "$ref" : "#/components/schemas/AfpResponse"
+                  },
+                  "type" : "array"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "tags" : [ "Catálogos globales" ]
+      }
+    },
+    "/api/v1/areas" : {
+      "get" : {
+        "operationId" : "listar_9",
+        "parameters" : [ {
+          "in" : "query",
+          "name" : "pageable",
+          "required" : true,
+          "schema" : {
+            "$ref" : "#/components/schemas/Pageable"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/PaginaAreaResponse"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "tags" : [ "Áreas" ]
+      },
+      "post" : {
+        "operationId" : "crear_6",
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/AreaRequest"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/AreaResponse"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "tags" : [ "Áreas" ]
+      }
+    },
+    "/api/v1/areas/{id}" : {
+      "delete" : {
+        "operationId" : "eliminar_1",
+        "parameters" : [ {
+          "in" : "path",
+          "name" : "id",
+          "required" : true,
+          "schema" : {
+            "format" : "uuid",
+            "type" : "string"
+          }
+        } ],
+        "responses" : {
+          "204" : {
+            "description" : "No Content"
+          }
+        },
+        "tags" : [ "Áreas" ]
+      },
+      "get" : {
+        "operationId" : "obtener_4",
+        "parameters" : [ {
+          "in" : "path",
+          "name" : "id",
+          "required" : true,
+          "schema" : {
+            "format" : "uuid",
+            "type" : "string"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/AreaResponse"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "tags" : [ "Áreas" ]
+      },
+      "put" : {
+        "operationId" : "actualizar_4",
+        "parameters" : [ {
+          "in" : "path",
+          "name" : "id",
+          "required" : true,
+          "schema" : {
+            "format" : "uuid",
+            "type" : "string"
+          }
+        } ],
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/AreaRequest"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/AreaResponse"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "tags" : [ "Áreas" ]
+      }
+    },
+    "/api/v1/asistencia" : {
+      "get" : {
+        "operationId" : "deEmpleado",
+        "parameters" : [ {
+          "in" : "query",
+          "name" : "empleadoId",
+          "required" : true,
+          "schema" : {
+            "format" : "uuid",
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "mes",
+          "required" : true,
+          "schema" : {
+            "type" : "string"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "items" : {
+                    "$ref" : "#/components/schemas/AsistenciaDiariaResponse"
+                  },
+                  "type" : "array"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "tags" : [ "Asistencia" ]
+      }
+    },
+    "/api/v1/asistencia/consolidaciones" : {
+      "post" : {
+        "operationId" : "consolidar",
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/ConsolidacionRequest"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ConsolidacionResponse"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "tags" : [ "Asistencia" ]
+      }
+    },
+    "/api/v1/asistencia/horas-extra" : {
+      "get" : {
+        "operationId" : "listar_8",
+        "parameters" : [ {
+          "in" : "query",
+          "name" : "estado",
+          "required" : false,
+          "schema" : {
+            "enum" : [ "PENDIENTE", "APROBADA", "RECHAZADA" ],
+            "type" : "string"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "items" : {
+                    "$ref" : "#/components/schemas/HoraExtraResponse"
+                  },
+                  "type" : "array"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "tags" : [ "Horas extra" ]
+      },
+      "post" : {
+        "operationId" : "solicitar_2",
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/HoraExtraRequest"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/HoraExtraResponse"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "tags" : [ "Horas extra" ]
+      }
+    },
+    "/api/v1/asistencia/horas-extra/{id}" : {
+      "patch" : {
+        "operationId" : "resolver",
+        "parameters" : [ {
+          "in" : "path",
+          "name" : "id",
+          "required" : true,
+          "schema" : {
+            "format" : "uuid",
+            "type" : "string"
+          }
+        } ],
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/ResolverHoraExtraRequest"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/HoraExtraResponse"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "tags" : [ "Horas extra" ]
+      }
+    },
+    "/api/v1/asistencia/marcaciones" : {
+      "post" : {
+        "operationId" : "marcar",
+        "responses" : {
+          "201" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/MarcacionResponse"
+                }
+              }
+            },
+            "description" : "Created"
+          }
+        },
+        "tags" : [ "Asistencia" ]
+      }
+    },
+    "/api/v1/asistencia/mia" : {
+      "get" : {
+        "operationId" : "mia",
+        "parameters" : [ {
+          "in" : "query",
+          "name" : "mes",
+          "required" : true,
+          "schema" : {
+            "type" : "string"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "items" : {
+                    "$ref" : "#/components/schemas/AsistenciaDiariaResponse"
+                  },
+                  "type" : "array"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "tags" : [ "Asistencia" ]
+      }
+    },
+    "/api/v1/asistencia/resumen" : {
+      "get" : {
+        "operationId" : "resumen",
+        "parameters" : [ {
+          "in" : "query",
+          "name" : "mes",
+          "required" : true,
+          "schema" : {
+            "type" : "string"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "items" : {
+                    "$ref" : "#/components/schemas/ResumenMensual"
+                  },
+                  "type" : "array"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "tags" : [ "Asistencia" ]
+      }
+    },
+    "/api/v1/auditoria" : {
+      "get" : {
+        "operationId" : "listar_10",
+        "parameters" : [ {
+          "in" : "query",
+          "name" : "entidad",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "desde",
+          "required" : false,
+          "schema" : {
+            "format" : "date",
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "hasta",
+          "required" : false,
+          "schema" : {
+            "format" : "date",
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "tenantId",
+          "required" : false,
+          "schema" : {
+            "format" : "uuid",
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "pageable",
+          "required" : true,
+          "schema" : {
+            "$ref" : "#/components/schemas/Pageable"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/PaginaAuditoriaResponse"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "tags" : [ "Auditoría" ]
+      }
+    },
+    "/api/v1/auth/cambiar-password" : {
+      "post" : {
+        "operationId" : "cambiarPassword",
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/CambiarPasswordRequest"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "204" : {
+            "description" : "No Content"
+          }
+        },
+        "tags" : [ "Autenticación" ]
+      }
+    },
+    "/api/v1/auth/login" : {
+      "post" : {
+        "operationId" : "login",
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/LoginRequest"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/TokenResponse"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "tags" : [ "Autenticación" ]
+      }
+    },
+    "/api/v1/auth/logout" : {
+      "post" : {
+        "operationId" : "cerrarSesion",
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/RefreshRequest"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "204" : {
+            "description" : "No Content"
+          }
+        },
+        "tags" : [ "Autenticación" ]
+      }
+    },
+    "/api/v1/auth/me" : {
+      "get" : {
+        "operationId" : "perfil",
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/PerfilResponse"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "tags" : [ "Autenticación" ]
+      }
+    },
+    "/api/v1/auth/refresh" : {
+      "post" : {
+        "operationId" : "refrescar",
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/RefreshRequest"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/TokenResponse"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "tags" : [ "Autenticación" ]
+      }
+    },
+    "/api/v1/boletas/mias" : {
+      "get" : {
+        "operationId" : "mias",
+        "parameters" : [ {
+          "in" : "query",
+          "name" : "pageable",
+          "required" : true,
+          "schema" : {
+            "$ref" : "#/components/schemas/Pageable"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/PaginaBoletaResponse"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "summary" : "Mis boletas",
+        "tags" : [ "Boletas" ]
+      }
+    },
+    "/api/v1/boletas/{id}/pdf" : {
+      "get" : {
+        "operationId" : "pdf",
+        "parameters" : [ {
+          "in" : "path",
+          "name" : "id",
+          "required" : true,
+          "schema" : {
+            "format" : "uuid",
+            "type" : "string"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "format" : "byte",
+                  "type" : "string"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "summary" : "Descarga el PDF de una boleta (el trabajador solo accede a las suyas)",
+        "tags" : [ "Boletas" ]
+      }
+    },
+    "/api/v1/cargos" : {
+      "get" : {
+        "operationId" : "listar_7",
+        "parameters" : [ {
+          "in" : "query",
+          "name" : "areaId",
+          "required" : false,
+          "schema" : {
+            "format" : "uuid",
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "pageable",
+          "required" : true,
+          "schema" : {
+            "$ref" : "#/components/schemas/Pageable"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/PaginaCargoResponse"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "tags" : [ "Cargos" ]
+      },
+      "post" : {
+        "operationId" : "crear_5",
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/CargoRequest"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/CargoResponse"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "tags" : [ "Cargos" ]
+      }
+    },
+    "/api/v1/cargos/{id}" : {
+      "delete" : {
+        "operationId" : "eliminar",
+        "parameters" : [ {
+          "in" : "path",
+          "name" : "id",
+          "required" : true,
+          "schema" : {
+            "format" : "uuid",
+            "type" : "string"
+          }
+        } ],
+        "responses" : {
+          "204" : {
+            "description" : "No Content"
+          }
+        },
+        "tags" : [ "Cargos" ]
+      },
+      "get" : {
+        "operationId" : "obtener_3",
+        "parameters" : [ {
+          "in" : "path",
+          "name" : "id",
+          "required" : true,
+          "schema" : {
+            "format" : "uuid",
+            "type" : "string"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/CargoResponse"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "tags" : [ "Cargos" ]
+      },
+      "put" : {
+        "operationId" : "actualizar_3",
+        "parameters" : [ {
+          "in" : "path",
+          "name" : "id",
+          "required" : true,
+          "schema" : {
+            "format" : "uuid",
+            "type" : "string"
+          }
+        } ],
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/CargoRequest"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/CargoResponse"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "tags" : [ "Cargos" ]
+      }
+    },
+    "/api/v1/consultas/dni/{dni}" : {
+      "get" : {
+        "operationId" : "dni",
+        "parameters" : [ {
+          "in" : "path",
+          "name" : "dni",
+          "required" : true,
+          "schema" : {
+            "type" : "string"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/PersonaDni"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "summary" : "Consulta un DNI",
+        "tags" : [ "Consultas externas" ]
+      }
+    },
+    "/api/v1/consultas/ruc/{ruc}" : {
+      "get" : {
+        "operationId" : "ruc",
+        "parameters" : [ {
+          "in" : "path",
+          "name" : "ruc",
+          "required" : true,
+          "schema" : {
+            "type" : "string"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ContribuyenteRuc"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "summary" : "Consulta un RUC",
+        "tags" : [ "Consultas externas" ]
+      }
+    },
+    "/api/v1/consultas/tipo-cambio" : {
+      "get" : {
+        "operationId" : "tipoCambio",
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/TipoCambio"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "summary" : "Tipo de cambio del día (USD)",
+        "tags" : [ "Consultas externas" ]
+      }
+    },
+    "/api/v1/empleados" : {
+      "get" : {
+        "operationId" : "listar_6",
+        "parameters" : [ {
+          "in" : "query",
+          "name" : "q",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "areaId",
+          "required" : false,
+          "schema" : {
+            "format" : "uuid",
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "cargoId",
+          "required" : false,
+          "schema" : {
+            "format" : "uuid",
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "jefeId",
+          "required" : false,
+          "schema" : {
+            "format" : "uuid",
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "estado",
+          "required" : false,
+          "schema" : {
+            "enum" : [ "ACTIVO", "VACACIONES", "LICENCIA", "CESADO" ],
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "ingresoDesde",
+          "required" : false,
+          "schema" : {
+            "format" : "date",
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "ingresoHasta",
+          "required" : false,
+          "schema" : {
+            "format" : "date",
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "pageable",
+          "required" : true,
+          "schema" : {
+            "$ref" : "#/components/schemas/Pageable"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/PaginaEmpleadoResponse"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "tags" : [ "Empleados" ]
+      },
+      "post" : {
+        "operationId" : "crear_4",
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/EmpleadoRequest"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/EmpleadoResponse"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "tags" : [ "Empleados" ]
+      }
+    },
+    "/api/v1/empleados/{id}" : {
+      "get" : {
+        "operationId" : "obtener_2",
+        "parameters" : [ {
+          "in" : "path",
+          "name" : "id",
+          "required" : true,
+          "schema" : {
+            "format" : "uuid",
+            "type" : "string"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/EmpleadoResponse"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "tags" : [ "Empleados" ]
+      },
+      "put" : {
+        "operationId" : "actualizar_2",
+        "parameters" : [ {
+          "in" : "path",
+          "name" : "id",
+          "required" : true,
+          "schema" : {
+            "format" : "uuid",
+            "type" : "string"
+          }
+        } ],
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/EmpleadoRequest"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/EmpleadoResponse"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "tags" : [ "Empleados" ]
+      }
+    },
+    "/api/v1/empleados/{id}/cese" : {
+      "patch" : {
+        "operationId" : "cesar",
+        "parameters" : [ {
+          "in" : "path",
+          "name" : "id",
+          "required" : true,
+          "schema" : {
+            "format" : "uuid",
+            "type" : "string"
+          }
+        } ],
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/CeseRequest"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/EmpleadoResponse"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "tags" : [ "Empleados" ]
+      }
+    },
+    "/api/v1/empleados/{id}/contratos" : {
+      "get" : {
+        "operationId" : "listarContratos",
+        "parameters" : [ {
+          "in" : "path",
+          "name" : "id",
+          "required" : true,
+          "schema" : {
+            "format" : "uuid",
+            "type" : "string"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "items" : {
+                    "$ref" : "#/components/schemas/ContratoResponse"
+                  },
+                  "type" : "array"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "tags" : [ "Empleados" ]
+      },
+      "post" : {
+        "operationId" : "crearContrato",
+        "parameters" : [ {
+          "in" : "path",
+          "name" : "id",
+          "required" : true,
+          "schema" : {
+            "format" : "uuid",
+            "type" : "string"
+          }
+        } ],
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/ContratoRequest"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ContratoResponse"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "tags" : [ "Empleados" ]
+      }
+    },
+    "/api/v1/empleados/{id}/familiares" : {
+      "get" : {
+        "operationId" : "listarFamiliares",
+        "parameters" : [ {
+          "in" : "path",
+          "name" : "id",
+          "required" : true,
+          "schema" : {
+            "format" : "uuid",
+            "type" : "string"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "items" : {
+                    "$ref" : "#/components/schemas/FamiliarResponse"
+                  },
+                  "type" : "array"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "tags" : [ "Empleados" ]
+      },
+      "post" : {
+        "operationId" : "crearFamiliar",
+        "parameters" : [ {
+          "in" : "path",
+          "name" : "id",
+          "required" : true,
+          "schema" : {
+            "format" : "uuid",
+            "type" : "string"
+          }
+        } ],
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/FamiliarRequest"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/FamiliarResponse"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "tags" : [ "Empleados" ]
+      }
+    },
+    "/api/v1/empresas" : {
+      "get" : {
+        "operationId" : "listar_5",
+        "parameters" : [ {
+          "in" : "query",
+          "name" : "activa",
+          "required" : false,
+          "schema" : {
+            "type" : "boolean"
+          }
+        }, {
+          "in" : "query",
+          "name" : "pageable",
+          "required" : true,
+          "schema" : {
+            "$ref" : "#/components/schemas/Pageable"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/PaginaEmpresaResponse"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "tags" : [ "Empresas" ]
+      },
+      "post" : {
+        "operationId" : "crear_3",
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/EmpresaRequest"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/EmpresaResponse"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "tags" : [ "Empresas" ]
+      }
+    },
+    "/api/v1/empresas/{id}" : {
+      "get" : {
+        "operationId" : "obtener_1",
+        "parameters" : [ {
+          "in" : "path",
+          "name" : "id",
+          "required" : true,
+          "schema" : {
+            "format" : "uuid",
+            "type" : "string"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/EmpresaResponse"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "tags" : [ "Empresas" ]
+      },
+      "put" : {
+        "operationId" : "actualizar_1",
+        "parameters" : [ {
+          "in" : "path",
+          "name" : "id",
+          "required" : true,
+          "schema" : {
+            "format" : "uuid",
+            "type" : "string"
+          }
+        } ],
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/EmpresaRequest"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/EmpresaResponse"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "tags" : [ "Empresas" ]
+      }
+    },
+    "/api/v1/empresas/{id}/estado" : {
+      "patch" : {
+        "operationId" : "cambiarEstado_1",
+        "parameters" : [ {
+          "in" : "path",
+          "name" : "id",
+          "required" : true,
+          "schema" : {
+            "format" : "uuid",
+            "type" : "string"
+          }
+        } ],
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/EstadoEmpresaRequest"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/EmpresaResponse"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "tags" : [ "Empresas" ]
+      }
+    },
+    "/api/v1/feriados" : {
+      "get" : {
+        "operationId" : "feriados",
+        "parameters" : [ {
+          "in" : "query",
+          "name" : "anio",
+          "required" : false,
+          "schema" : {
+            "format" : "int32",
+            "maximum" : 2100,
+            "minimum" : 2000,
+            "type" : "integer"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "items" : {
+                    "$ref" : "#/components/schemas/FeriadoResponse"
+                  },
+                  "type" : "array"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "tags" : [ "Catálogos globales" ]
+      }
+    },
+    "/api/v1/horarios" : {
+      "get" : {
+        "operationId" : "listar_4",
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "items" : {
+                    "$ref" : "#/components/schemas/HorarioResponse"
+                  },
+                  "type" : "array"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "tags" : [ "Horarios" ]
+      },
+      "post" : {
+        "operationId" : "crear_2",
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/HorarioRequest"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/HorarioResponse"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "tags" : [ "Horarios" ]
+      }
+    },
+    "/api/v1/horarios/{id}/asignaciones" : {
+      "post" : {
+        "operationId" : "asignar",
+        "parameters" : [ {
+          "in" : "path",
+          "name" : "id",
+          "required" : true,
+          "schema" : {
+            "format" : "uuid",
+            "type" : "string"
+          }
+        } ],
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/AsignarHorarioRequest"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "204" : {
+            "description" : "No Content"
+          }
+        },
+        "tags" : [ "Horarios" ]
+      }
+    },
+    "/api/v1/importaciones/empleados" : {
+      "post" : {
+        "description" : "Por defecto solo valida (`simular=true`) y devuelve todos los errores con fila y columna. Con `simular=false` guarda las filas válidas y omite las inválidas.",
+        "operationId" : "importarEmpleados",
+        "parameters" : [ {
+          "in" : "query",
+          "name" : "simular",
+          "required" : false,
+          "schema" : {
+            "default" : true,
+            "type" : "boolean"
+          }
+        } ],
+        "requestBody" : {
+          "content" : {
+            "multipart/form-data" : {
+              "schema" : {
+                "properties" : {
+                  "archivo" : {
+                    "format" : "binary",
+                    "type" : "string"
+                  }
+                },
+                "required" : [ "archivo" ],
+                "type" : "object"
+              }
+            }
+          }
+        },
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ResultadoImportacion"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "summary" : "Importa empleados (con su primer contrato) desde un Excel",
+        "tags" : [ "Importaciones" ]
+      }
+    },
+    "/api/v1/importaciones/empleados/plantilla.xlsx" : {
+      "get" : {
+        "operationId" : "plantilla",
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "format" : "byte",
+                  "type" : "string"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "summary" : "Plantilla de Excel para importar empleados",
+        "tags" : [ "Importaciones" ]
+      }
+    },
+    "/api/v1/parametros-legales" : {
+      "get" : {
+        "operationId" : "parametros",
+        "parameters" : [ {
+          "in" : "query",
+          "name" : "codigo",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "items" : {
+                    "$ref" : "#/components/schemas/ParametroLegalResponse"
+                  },
+                  "type" : "array"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "tags" : [ "Catálogos globales" ]
+      },
+      "post" : {
+        "operationId" : "registrarVigencia",
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/ParametroLegalRequest"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "201" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ParametroLegalResponse"
+                }
+              }
+            },
+            "description" : "Created"
+          }
+        },
+        "tags" : [ "Catálogos globales" ]
+      }
+    },
+    "/api/v1/permisos" : {
+      "get" : {
+        "operationId" : "listar_3",
+        "parameters" : [ {
+          "in" : "query",
+          "name" : "estado",
+          "required" : false,
+          "schema" : {
+            "enum" : [ "SOLICITADO", "APROBADO", "RECHAZADO" ],
+            "type" : "string"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "items" : {
+                    "$ref" : "#/components/schemas/PermisoResponse"
+                  },
+                  "type" : "array"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "tags" : [ "Permisos" ]
+      },
+      "post" : {
+        "operationId" : "solicitar_1",
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/PermisoRequest"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/PermisoResponse"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "tags" : [ "Permisos" ]
+      }
+    },
+    "/api/v1/permisos/{id}/aprobar" : {
+      "post" : {
+        "operationId" : "aprobar",
+        "parameters" : [ {
+          "in" : "path",
+          "name" : "id",
+          "required" : true,
+          "schema" : {
+            "format" : "uuid",
+            "type" : "string"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/PermisoResponse"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "tags" : [ "Permisos" ]
+      }
+    },
+    "/api/v1/permisos/{id}/rechazar" : {
+      "post" : {
+        "operationId" : "rechazar_1",
+        "parameters" : [ {
+          "in" : "path",
+          "name" : "id",
+          "required" : true,
+          "schema" : {
+            "format" : "uuid",
+            "type" : "string"
+          }
+        } ],
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/RechazoRequest"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/PermisoResponse"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "tags" : [ "Permisos" ]
+      }
+    },
+    "/api/v1/planillas" : {
+      "get" : {
+        "operationId" : "listar_2",
+        "parameters" : [ {
+          "in" : "query",
+          "name" : "periodo",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "tipo",
+          "required" : false,
+          "schema" : {
+            "enum" : [ "MENSUAL", "GRATIFICACION", "CTS" ],
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "estado",
+          "required" : false,
+          "schema" : {
+            "enum" : [ "BORRADOR", "CALCULADA", "CERRADA", "ANULADA" ],
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "pageable",
+          "required" : true,
+          "schema" : {
+            "$ref" : "#/components/schemas/Pageable"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/PaginaPlanillaResponse"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "summary" : "Lista las planillas, de la más reciente a la más antigua",
+        "tags" : [ "Planillas" ]
+      },
+      "post" : {
+        "operationId" : "crear_1",
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/CrearPlanillaRequest"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/PlanillaResponse"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "summary" : "Crea una planilla en borrador (mensual por defecto)",
+        "tags" : [ "Planillas" ]
+      }
+    },
+    "/api/v1/planillas/cts" : {
+      "post" : {
+        "description" : "Con simular=true (por defecto) solo devuelve el cálculo; con simular=false crea la planilla calculada, lista para validar y cerrar.",
+        "operationId" : "cts",
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/GenerarBeneficioRequest"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "type" : "object"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "summary" : "Simula o genera la planilla de CTS (mayo y noviembre)",
+        "tags" : [ "Planillas" ]
+      }
+    },
+    "/api/v1/planillas/gratificacion" : {
+      "post" : {
+        "description" : "Con simular=true (por defecto) solo devuelve el cálculo; con simular=false crea la planilla calculada, lista para validar y cerrar.",
+        "operationId" : "gratificacion",
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/GenerarBeneficioRequest"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "type" : "object"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "summary" : "Simula o genera la planilla de gratificación (julio y diciembre)",
+        "tags" : [ "Planillas" ]
+      }
+    },
+    "/api/v1/planillas/{id}" : {
+      "get" : {
+        "operationId" : "obtener_5",
+        "parameters" : [ {
+          "in" : "path",
+          "name" : "id",
+          "required" : true,
+          "schema" : {
+            "format" : "uuid",
+            "type" : "string"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/PlanillaResponse"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "tags" : [ "Planillas" ]
+      }
+    },
+    "/api/v1/planillas/{id}/anular" : {
+      "post" : {
+        "operationId" : "anular",
+        "parameters" : [ {
+          "in" : "path",
+          "name" : "id",
+          "required" : true,
+          "schema" : {
+            "format" : "uuid",
+            "type" : "string"
+          }
+        } ],
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/AnularPlanillaRequest"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/PlanillaResponse"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "summary" : "Anula la planilla (solo el administrador de la empresa y sin pago registrado)",
+        "tags" : [ "Planillas" ]
+      }
+    },
+    "/api/v1/planillas/{id}/calcular" : {
+      "post" : {
+        "operationId" : "calcular",
+        "parameters" : [ {
+          "in" : "path",
+          "name" : "id",
+          "required" : true,
+          "schema" : {
+            "format" : "uuid",
+            "type" : "string"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/PlanillaResponse"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "summary" : "Calcula (o recalcula) las líneas de una planilla en borrador o calculada",
+        "tags" : [ "Planillas" ]
+      }
+    },
+    "/api/v1/planillas/{id}/cerrar" : {
+      "post" : {
+        "description" : "Repetir la petición con la misma Idempotency-Key devuelve la misma planilla cerrada (cabecera Idempotent-Replayed: true) sin cerrar de nuevo.",
+        "operationId" : "cerrar",
+        "parameters" : [ {
+          "in" : "path",
+          "name" : "id",
+          "required" : true,
+          "schema" : {
+            "format" : "uuid",
+            "type" : "string"
+          }
+        }, {
+          "in" : "header",
+          "name" : "Idempotency-Key",
+          "required" : true,
+          "schema" : {
+            "type" : "string"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/PlanillaResponse"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "summary" : "Cierra la planilla de forma idempotente",
+        "tags" : [ "Planillas" ]
+      }
+    },
+    "/api/v1/planillas/{id}/lineas" : {
+      "get" : {
+        "operationId" : "lineas",
+        "parameters" : [ {
+          "in" : "path",
+          "name" : "id",
+          "required" : true,
+          "schema" : {
+            "format" : "uuid",
+            "type" : "string"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "items" : {
+                    "$ref" : "#/components/schemas/LineaPlanillaResponse"
+                  },
+                  "type" : "array"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "summary" : "Boletas de la planilla: una línea por trabajador con su desglose",
+        "tags" : [ "Planillas" ]
+      }
+    },
+    "/api/v1/planillas/{id}/pago" : {
+      "post" : {
+        "operationId" : "registrarPago",
+        "parameters" : [ {
+          "in" : "path",
+          "name" : "id",
+          "required" : true,
+          "schema" : {
+            "format" : "uuid",
+            "type" : "string"
+          }
+        } ],
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/PagoPlanillaRequest"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/PagoPlanillaResponse"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "summary" : "Registra el pago de una planilla cerrada (desde entonces ya no se puede anular)",
+        "tags" : [ "Planillas" ]
+      }
+    },
+    "/api/v1/planillas/{id}/validaciones" : {
+      "get" : {
+        "operationId" : "validaciones",
+        "parameters" : [ {
+          "in" : "path",
+          "name" : "id",
+          "required" : true,
+          "schema" : {
+            "format" : "uuid",
+            "type" : "string"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ValidacionResponse"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "summary" : "Incidencias que impiden cerrar la planilla",
+        "tags" : [ "Planillas" ]
+      }
+    },
+    "/api/v1/planillas/{planillaId}/boletas" : {
+      "get" : {
+        "operationId" : "deLaPlanilla",
+        "parameters" : [ {
+          "in" : "path",
+          "name" : "planillaId",
+          "required" : true,
+          "schema" : {
+            "format" : "uuid",
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "pageable",
+          "required" : true,
+          "schema" : {
+            "$ref" : "#/components/schemas/Pageable"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/PaginaBoletaResponse"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "summary" : "Boletas de la planilla",
+        "tags" : [ "Boletas" ]
+      }
+    },
+    "/api/v1/planillas/{planillaId}/boletas/estado" : {
+      "get" : {
+        "operationId" : "estado",
+        "parameters" : [ {
+          "in" : "path",
+          "name" : "planillaId",
+          "required" : true,
+          "schema" : {
+            "format" : "uuid",
+            "type" : "string"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/EstadoGeneracionResponse"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "summary" : "Avance de la generación de boletas de la planilla",
+        "tags" : [ "Boletas" ]
+      }
+    },
+    "/api/v1/planillas/{planillaId}/boletas/generar" : {
+      "post" : {
+        "description" : "Es asíncrono: responde 202 y el avance se consulta en /estado. Repetirlo solo procesa lo pendiente o fallido.",
+        "operationId" : "generar",
+        "parameters" : [ {
+          "in" : "path",
+          "name" : "planillaId",
+          "required" : true,
+          "schema" : {
+            "format" : "uuid",
+            "type" : "string"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/EstadoGeneracionResponse"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "summary" : "Genera (o reintenta) las boletas de una planilla cerrada",
+        "tags" : [ "Boletas" ]
+      }
+    },
+    "/api/v1/reportes/costo-laboral" : {
+      "get" : {
+        "description" : "Usa ROLLUP sobre la planilla mensual cerrada del periodo.",
+        "operationId" : "costoLaboral",
+        "parameters" : [ {
+          "in" : "query",
+          "name" : "periodo",
+          "required" : true,
+          "schema" : {
+            "type" : "string"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "items" : {
+                    "$ref" : "#/components/schemas/CostoLaboral"
+                  },
+                  "type" : "array"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "summary" : "Costo laboral (ingresos + EsSalud) por área y cargo, con subtotales y total",
+        "tags" : [ "Reportes" ]
+      }
+    },
+    "/api/v1/reportes/planilla-mensual.xlsx" : {
+      "get" : {
+        "operationId" : "planillaMensual",
+        "parameters" : [ {
+          "in" : "query",
+          "name" : "periodo",
+          "required" : true,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "tipo",
+          "required" : false,
+          "schema" : {
+            "default" : "MENSUAL",
+            "type" : "string"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "format" : "byte",
+                  "type" : "string"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "summary" : "Excel con el detalle de la planilla cerrada del periodo",
+        "tags" : [ "Reportes" ]
+      }
+    },
+    "/api/v1/reportes/tardanzas-por-area" : {
+      "get" : {
+        "description" : "Usa una CTE y RANK() por área. `top` limita cuántos por área (por defecto 3; los empates comparten lugar).",
+        "operationId" : "tardanzasPorArea",
+        "parameters" : [ {
+          "in" : "query",
+          "name" : "periodo",
+          "required" : true,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "top",
+          "required" : false,
+          "schema" : {
+            "default" : 3,
+            "format" : "int32",
+            "type" : "integer"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "items" : {
+                    "$ref" : "#/components/schemas/TardanzaPorArea"
+                  },
+                  "type" : "array"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "summary" : "Los trabajadores con más tardanzas de cada área en el mes",
+        "tags" : [ "Reportes" ]
+      }
+    },
+    "/api/v1/reportes/vacaciones-pendientes" : {
+      "get" : {
+        "operationId" : "vacacionesPendientes",
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "items" : {
+                    "$ref" : "#/components/schemas/VacacionPendiente"
+                  },
+                  "type" : "array"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "summary" : "Saldos de vacaciones por trabajador y periodo, con el saldo total acumulado",
+        "tags" : [ "Reportes" ]
+      }
+    },
+    "/api/v1/usuarios" : {
+      "get" : {
+        "operationId" : "listar_1",
+        "parameters" : [ {
+          "in" : "query",
+          "name" : "tenantId",
+          "required" : false,
+          "schema" : {
+            "format" : "uuid",
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "pageable",
+          "required" : true,
+          "schema" : {
+            "$ref" : "#/components/schemas/Pageable"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/PaginaUsuarioResponse"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "tags" : [ "Usuarios" ]
+      },
+      "post" : {
+        "operationId" : "crear",
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/UsuarioRequest"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/UsuarioResponse"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "tags" : [ "Usuarios" ]
+      }
+    },
+    "/api/v1/usuarios/{id}" : {
+      "get" : {
+        "operationId" : "obtener",
+        "parameters" : [ {
+          "in" : "path",
+          "name" : "id",
+          "required" : true,
+          "schema" : {
+            "format" : "uuid",
+            "type" : "string"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/UsuarioResponse"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "tags" : [ "Usuarios" ]
+      },
+      "put" : {
+        "operationId" : "actualizar",
+        "parameters" : [ {
+          "in" : "path",
+          "name" : "id",
+          "required" : true,
+          "schema" : {
+            "format" : "uuid",
+            "type" : "string"
+          }
+        } ],
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/ActualizarUsuarioRequest"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/UsuarioResponse"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "tags" : [ "Usuarios" ]
+      }
+    },
+    "/api/v1/usuarios/{id}/estado" : {
+      "patch" : {
+        "operationId" : "cambiarEstado",
+        "parameters" : [ {
+          "in" : "path",
+          "name" : "id",
+          "required" : true,
+          "schema" : {
+            "format" : "uuid",
+            "type" : "string"
+          }
+        } ],
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/EstadoUsuarioRequest"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/UsuarioResponse"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "tags" : [ "Usuarios" ]
+      }
+    },
+    "/api/v1/usuarios/{id}/reset-password" : {
+      "post" : {
+        "operationId" : "resetearPassword",
+        "parameters" : [ {
+          "in" : "path",
+          "name" : "id",
+          "required" : true,
+          "schema" : {
+            "format" : "uuid",
+            "type" : "string"
+          }
+        } ],
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/ResetPasswordRequest"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "204" : {
+            "description" : "No Content"
+          }
+        },
+        "tags" : [ "Usuarios" ]
+      }
+    },
+    "/api/v1/vacaciones/periodos/{id}/venta" : {
+      "post" : {
+        "operationId" : "vender",
+        "parameters" : [ {
+          "in" : "path",
+          "name" : "id",
+          "required" : true,
+          "schema" : {
+            "format" : "uuid",
+            "type" : "string"
+          }
+        } ],
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/VentaDiasRequest"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "204" : {
+            "description" : "No Content"
+          }
+        },
+        "tags" : [ "Vacaciones" ]
+      }
+    },
+    "/api/v1/vacaciones/saldo/mio" : {
+      "get" : {
+        "operationId" : "miSaldo",
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/SaldoVacaciones"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "tags" : [ "Vacaciones" ]
+      }
+    },
+    "/api/v1/vacaciones/solicitudes" : {
+      "get" : {
+        "operationId" : "listar",
+        "parameters" : [ {
+          "in" : "query",
+          "name" : "estado",
+          "required" : false,
+          "schema" : {
+            "enum" : [ "SOLICITADA", "APROBADA_JEFE", "APROBADA_RRHH", "EN_GOCE", "FINALIZADA", "RECHAZADA", "CANCELADA" ],
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "empleadoId",
+          "required" : false,
+          "schema" : {
+            "format" : "uuid",
+            "type" : "string"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "items" : {
+                    "$ref" : "#/components/schemas/SolicitudVacacionesResponse"
+                  },
+                  "type" : "array"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "tags" : [ "Vacaciones" ]
+      },
+      "post" : {
+        "operationId" : "solicitar",
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/SolicitudVacacionesRequest"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/SolicitudVacacionesResponse"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "tags" : [ "Vacaciones" ]
+      }
+    },
+    "/api/v1/vacaciones/solicitudes/{id}/aprobar-jefe" : {
+      "post" : {
+        "operationId" : "aprobarJefe",
+        "parameters" : [ {
+          "in" : "path",
+          "name" : "id",
+          "required" : true,
+          "schema" : {
+            "format" : "uuid",
+            "type" : "string"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/SolicitudVacacionesResponse"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "tags" : [ "Vacaciones" ]
+      }
+    },
+    "/api/v1/vacaciones/solicitudes/{id}/aprobar-rrhh" : {
+      "post" : {
+        "operationId" : "aprobarRrhh",
+        "parameters" : [ {
+          "in" : "path",
+          "name" : "id",
+          "required" : true,
+          "schema" : {
+            "format" : "uuid",
+            "type" : "string"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/SolicitudVacacionesResponse"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "tags" : [ "Vacaciones" ]
+      }
+    },
+    "/api/v1/vacaciones/solicitudes/{id}/cancelar" : {
+      "post" : {
+        "operationId" : "cancelar",
+        "parameters" : [ {
+          "in" : "path",
+          "name" : "id",
+          "required" : true,
+          "schema" : {
+            "format" : "uuid",
+            "type" : "string"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/SolicitudVacacionesResponse"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "tags" : [ "Vacaciones" ]
+      }
+    },
+    "/api/v1/vacaciones/solicitudes/{id}/rechazar" : {
+      "post" : {
+        "operationId" : "rechazar",
+        "parameters" : [ {
+          "in" : "path",
+          "name" : "id",
+          "required" : true,
+          "schema" : {
+            "format" : "uuid",
+            "type" : "string"
+          }
+        } ],
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/RechazoRequest"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/SolicitudVacacionesResponse"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "tags" : [ "Vacaciones" ]
+      }
+    }
+  },
+  "security" : [ {
+    "bearer-jwt" : [ ]
+  } ],
+  "tags" : [ {
+    "description" : "Marcaciones, asistencia consolidada y resumen mensual",
+    "name" : "Asistencia"
+  }, {
+    "description" : "Personal de la empresa, contratos y familiares (RRHH / admin de empresa)",
+    "name" : "Empleados"
+  }, {
+    "description" : "Alta y administración de empresas cliente (solo administrador de la plataforma)",
+    "name" : "Empresas"
+  }, {
+    "description" : "Reportes de solo lectura con SQL nativo y exportación a Excel",
+    "name" : "Reportes"
+  }, {
+    "description" : "Áreas de la empresa (lectura: todos; escritura: RRHH / admin de empresa)",
+    "name" : "Áreas"
+  }, {
+    "description" : "Historial de cambios de entidades sensibles",
+    "name" : "Auditoría"
+  }, {
+    "description" : "Permisos y licencias, resueltos por RRHH",
+    "name" : "Permisos"
+  }, {
+    "description" : "Boletas de pago en PDF: generación masiva asíncrona, estado y descarga",
+    "name" : "Boletas"
+  }, {
+    "description" : "Turnos de trabajo y su asignación a empleados",
+    "name" : "Horarios"
+  }, {
+    "description" : "Planilla mensual, gratificación y CTS: cálculo, validación, cierre y anulación",
+    "name" : "Planillas"
+  }, {
+    "description" : "Administración de usuarios de la empresa",
+    "name" : "Usuarios"
+  }, {
+    "description" : "Cargos por área (lectura: todos; escritura: RRHH / admin de empresa)",
+    "name" : "Cargos"
+  }, {
+    "description" : "Saldo, solicitudes y aprobación (jefe directo y luego RRHH)",
+    "name" : "Vacaciones"
+  }, {
+    "description" : "Inicio de sesión, renovación de tokens y perfil",
+    "name" : "Autenticación"
+  }, {
+    "description" : "Solicitud y aprobación de horas extra (RRHH o jefe directo)",
+    "name" : "Horas extra"
+  }, {
+    "description" : "Carga masiva desde Excel, validada fila a fila",
+    "name" : "Importaciones"
+  }, {
+    "description" : "AFP, parámetros legales y feriados",
+    "name" : "Catálogos globales"
+  }, {
+    "description" : "DNI, RUC y tipo de cambio desde un servicio externo (con reintentos y cortacircuito)",
+    "name" : "Consultas externas"
+  } ]
+}

@@ -34,3 +34,44 @@ jobs:
         run: |
           curl -sSfL https://github.com/gitleaks/gitleaks/releases/download/v8.21.2/gitleaks_8.21.2_linux_x64.tar.gz | tar -xz gitleaks
           ./gitleaks detect --source . --redact --verbose
+
+  contrato:
+    name: Contrato OpenAPI
+    # Compara el contrato del PR con el de la rama destino: un cambio que rompa la API vigente sin versionarla falla.
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    env:
+      CONTRATO: docs/openapi/openapi.json
+      OASDIFF_VERSION: '1.36.0'
+      OASDIFF_SHA256: dba65661f6d0f178a3e4884c309f19527a849388bb9df0e81545db76dbb697d6
+      RAMA_DESTINO: ${{ github.base_ref }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Contrato de la rama destino
+        id: base
+        run: |
+          if git cat-file -e "origin/${RAMA_DESTINO}:${CONTRATO}" 2>/dev/null; then
+            git show "origin/${RAMA_DESTINO}:${CONTRATO}" > "${RUNNER_TEMP}/openapi-base.json"
+            echo "existe=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "::notice::${RAMA_DESTINO} todavía no tiene ${CONTRATO}: no hay contra qué comparar."
+            echo "existe=false" >> "$GITHUB_OUTPUT"
+          fi
+      - name: Instalar oasdiff (versión fijada y verificada)
+        if: steps.base.outputs.existe == 'true'
+        run: |
+          curl -sSfL -o oasdiff.tar.gz "https://github.com/oasdiff/oasdiff/releases/download/v${OASDIFF_VERSION}/oasdiff_${OASDIFF_VERSION}_linux_amd64.tar.gz"
+          echo "${OASDIFF_SHA256}  oasdiff.tar.gz" | sha256sum -c -
+          tar -xzf oasdiff.tar.gz oasdiff
+      - name: Cambios del contrato (informativo)
+        if: steps.base.outputs.existe == 'true'
+        run: ./oasdiff changelog "${RUNNER_TEMP}/openapi-base.json" "${CONTRATO}"
+      - name: Cambios que rompen la compatibilidad
+        if: steps.base.outputs.existe == 'true'
+        run: |
+          ./oasdiff breaking "${RUNNER_TEMP}/openapi-base.json" "${CONTRATO}" --fail-on ERR || {
+            echo "::error::Este PR rompe la compatibilidad de la API vigente. Conserva /api/v1 tal como está y publica el cambio en una versión nueva (/api/v2); ver docs/contrato-api.md."
+            exit 1
+          }
