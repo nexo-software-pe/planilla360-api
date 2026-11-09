@@ -128,6 +128,22 @@ class CalculadoraLineaMensualTests {
     }
 
     @Test
+    void julioTodaviaProyectaDosGratificacionesYAgostoUna() {
+        Dinero fija = Dinero.de("10000");
+        Dinero porGratificacion = new CalculadoraGratificacion()
+                .calcular(fija, Dinero.CERO, List.of(), 6, RegimenLaboral.GENERAL, referencia()).total();
+        CalculadoraRenta5ta renta = new CalculadoraRenta5ta();
+
+        LineaPlanilla julio = calcular(datos().sinHijos().basico("10000").build(), 7);
+        LineaPlanilla agosto = calcular(datos().sinHijos().basico("10000").build(), 8);
+
+        assertThat(julio.retencion5ta()).isEqualTo(renta.retencionMensual(
+                fija, 6, porGratificacion.multiplicar(BigDecimal.valueOf(2)), Dinero.CERO, referencia()));
+        assertThat(agosto.retencion5ta()).isEqualTo(renta.retencionMensual(
+                fija, 5, porGratificacion, Dinero.CERO, referencia()));
+    }
+
+    @Test
     void loYaPercibidoEnElAnioAumentaLaRetencion() {
         LineaPlanilla sinPercibido = calcular(datos().sinHijos().basico("10000").build(), 7);
         LineaPlanilla conPercibido = calcular(datos().sinHijos().basico("10000").percibido("60000").build(), 7);
@@ -149,6 +165,13 @@ class CalculadoraLineaMensualTests {
     void losDiasLaboradosDebenEstarEntreUnoYLosDiasDelMes(int dias) {
         assertThatThrownBy(() -> calcular(datos().dias(dias).build(), 3))
                 .isInstanceOf(IllegalArgumentException.class).hasMessageContaining("días laborados");
+    }
+
+    @Test
+    void quienTrabajoUnSoloDiaDelMesTambienSeCalcula() {
+        LineaPlanilla linea = calcular(datos().dias(1).build(), 3);
+
+        assertThat(linea.basico()).isEqualTo(Dinero.de("96.77"));
     }
 
     @Test

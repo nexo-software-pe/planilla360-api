@@ -13,7 +13,7 @@ class JornadaLaboralTests {
 
     @ParameterizedTest(name = "{0} h semanales en {1} días -> {2} h diarias")
     @CsvSource({
-        "48, 6, 8", "36, 6, 6", "40, 5, 8", "30, 5, 6", "20, 4, 5", "24, 5, 5", "48, 5, 8", "1, 7, 1", "44, 5, 8"})
+        "48, 1, 8", "48, 6, 8", "36, 6, 6", "40, 5, 8", "30, 5, 6", "20, 4, 5", "24, 5, 5", "48, 5, 8", "1, 7, 1", "44, 5, 8"})
     void sinHorarioDivideLaJornadaSemanalEntreLosDiasLaborablesDelContrato(int semanal, int dias, int diarias) {
         assertThat(JornadaLaboral.horasDiarias(null, semanal, dias)).isEqualTo(diarias);
     }
