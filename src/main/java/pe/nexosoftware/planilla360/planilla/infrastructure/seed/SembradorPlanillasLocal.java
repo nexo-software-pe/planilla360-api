@@ -1,7 +1,6 @@
 package pe.nexosoftware.planilla360.planilla.infrastructure.seed;
 
 import java.time.Clock;
-import java.time.Instant;
 import java.time.YearMonth;
 import java.time.ZoneId;
 import java.util.ArrayList;
@@ -14,23 +13,22 @@ import org.springframework.boot.ApplicationRunner;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;
-import org.springframework.transaction.support.TransactionTemplate;
 import pe.nexosoftware.planilla360.compartido.dominio.Periodo;
+import pe.nexosoftware.planilla360.compartido.eventos.CargaHistorica;
 import pe.nexosoftware.planilla360.compartido.paginacion.Pagina;
 import pe.nexosoftware.planilla360.empresa.EmpresaApi;
 import pe.nexosoftware.planilla360.planilla.application.model.FiltroPlanillas;
 import pe.nexosoftware.planilla360.planilla.application.model.ResumenPlanilla;
+import pe.nexosoftware.planilla360.planilla.application.port.in.CerrarPlanillaUseCase;
 import pe.nexosoftware.planilla360.planilla.application.port.in.GestionarPlanillasUseCase;
-import pe.nexosoftware.planilla360.planilla.application.port.out.PlanillaPort;
-import pe.nexosoftware.planilla360.planilla.domain.model.Planilla;
 import pe.nexosoftware.planilla360.planilla.domain.model.TipoPlanilla;
-import pe.nexosoftware.planilla360.planilla.domain.validation.ResultadoValidacion;
 
 /**
  * Solo perfil {@code local}: deja a cada empresa con seis meses de planillas cerradas (con la gratificación de julio y
- * la CTS de mayo cuando caen en la ventana) para poder probar reportes, boletas y anulaciones sin empezar de cero.
- * Usa los casos de uso reales, así que los montos son los que calcularía el sistema. Es idempotente: si la empresa ya
- * tiene planillas no hace nada. No publica eventos: son datos históricos, no cierres nuevos.
+ * la CTS de mayo y noviembre cuando caen en la ventana) y la planilla del mes en curso en borrador, lista para
+ * calcular y cerrar. Usa los casos de uso reales, incluido el cierre con todas sus validaciones, así que los montos y
+ * las reglas son las del sistema; la asistencia del seed cubre el periodo completo. Es idempotente: si la empresa ya
+ * tiene planillas no hace nada. Los cierres históricos no disparan boletas ni correos ({@link CargaHistorica}).
  */
 @Component
 @Profile("local")
@@ -43,20 +41,17 @@ class SembradorPlanillasLocal implements ApplicationRunner {
 
     private final EmpresaApi empresas;
     private final GestionarPlanillasUseCase planillas;
-    private final PlanillaPort repositorio;
-    private final TransactionTemplate transaccion;
+    private final CerrarPlanillaUseCase cierre;
     private final Clock reloj;
 
     SembradorPlanillasLocal(
             EmpresaApi empresas,
             GestionarPlanillasUseCase planillas,
-            PlanillaPort repositorio,
-            TransactionTemplate transaccion,
+            CerrarPlanillaUseCase cierre,
             Clock reloj) {
         this.empresas = empresas;
         this.planillas = planillas;
-        this.repositorio = repositorio;
-        this.transaccion = transaccion;
+        this.cierre = cierre;
         this.reloj = reloj;
     }
 
@@ -71,18 +66,24 @@ class SembradorPlanillasLocal implements ApplicationRunner {
             return;
         }
         int cerradas = 0;
-        for (Periodo periodo : mesesDeHistoria()) {
-            for (TipoPlanilla tipo : tiposDe(periodo)) {
-                try {
-                    cerrarDirecto(planillas.generar(periodo, tipo).id(), empresaId + "-" + tipo + "-" + periodo);
-                    cerradas++;
-                } catch (RuntimeException e) {
-                    LOG.warn("Seed de planillas: no se pudo generar {} {} de la empresa {}: {}", tipo, periodo,
-                            empresaId, e.getMessage());
+        try (CargaHistorica carga = CargaHistorica.iniciar()) {
+            for (Periodo periodo : mesesDeHistoria()) {
+                for (TipoPlanilla tipo : tiposDe(periodo)) {
+                    try {
+                        UUID id = planillas.generar(periodo, tipo).id();
+                        cierre.cerrar(id, empresaId + "-" + tipo + "-" + periodo);
+                        cerradas++;
+                    } catch (RuntimeException e) {
+                        LOG.warn("Seed de planillas: no se pudo cerrar {} {} de la empresa {}: {}", tipo, periodo,
+                                empresaId, e.getMessage());
+                    }
                 }
             }
         }
-        LOG.info("Seed de planillas: empresa {} con {} planillas cerradas", empresaId, cerradas);
+        Periodo actual = new Periodo(YearMonth.from(reloj.instant().atZone(LIMA)));
+        planillas.crear(actual, TipoPlanilla.MENSUAL);
+        LOG.info("Seed de planillas: empresa {} con {} planillas cerradas y la de {} en borrador", empresaId, cerradas,
+                actual);
     }
 
     private List<Periodo> mesesDeHistoria() {
@@ -104,14 +105,5 @@ class SembradorPlanillasLocal implements ApplicationRunner {
             tipos.add(TipoPlanilla.CTS);
         }
         return tipos;
-    }
-
-    /** Cierra sin pasar por las validaciones: la asistencia del seed solo cubre las últimas dos semanas. */
-    private void cerrarDirecto(UUID planillaId, String clave) {
-        transaccion.executeWithoutResult(estado -> {
-            Planilla planilla = repositorio.buscarParaActualizar(planillaId).orElseThrow();
-            planilla.cerrar(clave, new ResultadoValidacion(List.of()), Instant.now(reloj));
-            repositorio.guardar(planilla);
-        });
     }
 }

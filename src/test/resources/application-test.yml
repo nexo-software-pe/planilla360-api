@@ -5,7 +5,20 @@ spring:
   cache:
     type: simple
 
+  rabbitmq:
+    listener:
+      simple:
+        retry:
+          initial-interval: 50ms
+          max-interval: 100ms
+
 app:
+  messaging:
+    enabled: false
+  storage:
+    tipo: memoria
+  integracion:
+    modo: stub
   security:
     jwt:
       generar-si-falta: true

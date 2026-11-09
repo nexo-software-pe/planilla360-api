@@ -16,6 +16,8 @@ import pe.nexosoftware.planilla360.catalogo.dto.AfpResponse;
 import pe.nexosoftware.planilla360.catalogo.dto.FeriadoResponse;
 import pe.nexosoftware.planilla360.catalogo.dto.ParametroLegalRequest;
 import pe.nexosoftware.planilla360.catalogo.dto.ParametroLegalResponse;
+import pe.nexosoftware.planilla360.catalogo.entity.Area;
+import pe.nexosoftware.planilla360.catalogo.entity.Cargo;
 import pe.nexosoftware.planilla360.catalogo.entity.ParametroLegal;
 import pe.nexosoftware.planilla360.catalogo.mapper.CatalogoMapper;
 import pe.nexosoftware.planilla360.catalogo.repository.AfpRepository;
@@ -90,6 +92,34 @@ public class CatalogoService implements CatalogoApi {
     @Override
     public boolean existeCargo(UUID id) {
         return cargos.existsById(id);
+    }
+
+    @Override
+    public Optional<UUID> areaIdPorNombre(String nombre) {
+        return areas.findByNombreIgnoreCase(nombre.trim()).map(Area::getId);
+    }
+
+    @Override
+    public Optional<UUID> cargoIdPorNombre(UUID areaId, String nombre) {
+        return cargos.findByAreaIdAndNombreIgnoreCase(areaId, nombre.trim()).map(Cargo::getId);
+    }
+
+    @Override
+    public Optional<String> nombreDeArea(UUID id) {
+        return areas.findById(id).map(Area::getNombre);
+    }
+
+    @Override
+    public Optional<String> nombreDeCargo(UUID id) {
+        return cargos.findById(id).map(Cargo::getNombre);
+    }
+
+    @Override
+    public Optional<UUID> afpIdPorNombre(String nombre) {
+        return cache.afps().stream()
+                .filter(a -> a.nombre().equalsIgnoreCase(nombre.trim()))
+                .map(AfpResponse::id)
+                .findFirst();
     }
 
     @Override

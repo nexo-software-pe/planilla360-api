@@ -1,0 +1,44 @@
+{
+  "mappings": [
+    {
+      "request": { "method": "GET", "urlPathPattern": "/dni/[0-9]{8}" },
+      "response": {
+        "status": 200,
+        "headers": { "Content-Type": "application/json" },
+        "jsonBody": {
+          "dni": "{{request.pathSegments.[1]}}",
+          "nombres": "JUAN CARLOS",
+          "apellidoPaterno": "PEREZ",
+          "apellidoMaterno": "GOMEZ"
+        }
+      }
+    },
+    {
+      "request": { "method": "GET", "urlPathPattern": "/dni/00000000" },
+      "priority": 1,
+      "response": { "status": 404, "headers": { "Content-Type": "application/json" }, "jsonBody": { "mensaje": "DNI no encontrado" } }
+    },
+    {
+      "request": { "method": "GET", "urlPathPattern": "/ruc/[0-9]{11}" },
+      "response": {
+        "status": 200,
+        "headers": { "Content-Type": "application/json" },
+        "jsonBody": {
+          "ruc": "{{request.pathSegments.[1]}}",
+          "razonSocial": "EMPRESA EJEMPLO S.A.C.",
+          "estado": "ACTIVO",
+          "condicion": "HABIDO",
+          "direccion": "AV. EJEMPLO 123, LIMA"
+        }
+      }
+    },
+    {
+      "request": { "method": "GET", "urlPath": "/tipo-cambio" },
+      "response": {
+        "status": 200,
+        "headers": { "Content-Type": "application/json" },
+        "jsonBody": { "fecha": "{{now format='yyyy-MM-dd'}}", "moneda": "USD", "compra": 3.715, "venta": 3.725 }
+      }
+    }
+  ]
+}

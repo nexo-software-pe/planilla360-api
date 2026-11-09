@@ -10,6 +10,8 @@ public interface CargoRepository extends JpaRepository<Cargo, UUID> {
 
     Page<Cargo> findByAreaId(UUID areaId, Pageable pageable);
 
+    java.util.Optional<Cargo> findByAreaIdAndNombreIgnoreCase(UUID areaId, String nombre);
+
     boolean existsByAreaId(UUID areaId);
 
     boolean existsByAreaIdAndNombreIgnoreCase(UUID areaId, String nombre);

@@ -24,4 +24,13 @@ public interface EmpleadoApi {
 
     /** Hijos registrados del empleado. */
     List<HijoResumen> hijosDe(UUID empleadoId);
+
+    /** Datos de identificación (DNI, correo, área y cargo con su nombre) de un empleado de la empresa. */
+    Optional<FichaEmpleado> fichaDe(UUID empleadoId);
+
+    /** Da de alta al empleado con su primer contrato, en una sola transacción. Devuelve su identificador. */
+    UUID registrar(NuevoEmpleado datos);
+
+    /** Ya hay un empleado de la empresa con ese DNI. */
+    boolean existeDni(String dni);
 }

@@ -29,4 +29,17 @@ public interface CatalogoApi {
     boolean existeAfp(UUID id);
 
     boolean esFeriado(LocalDate fecha);
+
+    /** Área de la empresa del contexto por su nombre (sin distinguir mayúsculas). */
+    Optional<UUID> areaIdPorNombre(String nombre);
+
+    /** Cargo de la empresa del contexto por su nombre dentro del área indicada (sin distinguir mayúsculas). */
+    Optional<UUID> cargoIdPorNombre(UUID areaId, String nombre);
+
+    Optional<String> nombreDeArea(UUID id);
+
+    Optional<String> nombreDeCargo(UUID id);
+
+    /** AFP por su nombre (sin distinguir mayúsculas). */
+    Optional<UUID> afpIdPorNombre(String nombre);
 }

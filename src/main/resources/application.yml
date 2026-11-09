@@ -22,6 +22,36 @@ spring:
     type: ${CACHE_TYPE:simple}
     redis:
       time-to-live: 1h
+  rabbitmq:
+    host: ${RABBITMQ_HOST:127.0.0.1}
+    port: ${RABBITMQ_PORT:5672}
+    username: ${RABBITMQ_USER:planilla360}
+    password: ${RABBITMQ_PASSWORD:}
+    listener:
+      simple:
+        concurrency: 4
+        max-concurrency: 8
+        default-requeue-rejected: false
+        retry:
+          enabled: true
+          max-retries: 3
+          initial-interval: 1s
+          multiplier: 2
+          max-interval: 10s
+  mail:
+    host: ${MAIL_HOST:127.0.0.1}
+    port: ${MAIL_PORT:1025}
+    username: ${MAIL_USER:}
+    password: ${MAIL_PASSWORD:}
+    properties:
+      mail.smtp.localhost: planilla360-api  # evita la resolución inversa del nombre del equipo, lenta en algunos Windows
+      mail.smtp.connectiontimeout: 5000
+      mail.smtp.timeout: 10000
+      mail.smtp.writetimeout: 10000
+  servlet:
+    multipart:
+      max-file-size: 5MB
+      max-request-size: 6MB
   data:
     redis:
       host: ${REDIS_HOST:localhost}
@@ -50,8 +80,39 @@ management:
   health:
     redis:
       enabled: ${REDIS_HEALTH_ENABLED:false}
+    rabbit:
+      enabled: ${MESSAGING_ENABLED:false}
+    mail:
+      enabled: false
 
 app:
+  # false = sin RabbitMQ: las boletas y los correos se procesan en el mismo proceso (sin reintentos ni DLQ).
+  messaging:
+    enabled: ${MESSAGING_ENABLED:false}
+  # tipo: s3 (MinIO en local, Cloudflare R2 en la nube) o memoria (sin servicios externos).
+  storage:
+    tipo: ${STORAGE_TIPO:memoria}
+    endpoint: ${STORAGE_ENDPOINT:http://127.0.0.1:9000}
+    bucket: ${STORAGE_BUCKET:planilla360-boletas}
+    access-key: ${STORAGE_ACCESS_KEY:}
+    secret-key: ${STORAGE_SECRET_KEY:}
+    region: ${STORAGE_REGION:us-east-1}
+    crear-bucket: ${STORAGE_CREAR_BUCKET:false}
+  notificaciones:
+    habilitadas: ${NOTIFICACIONES_HABILITADAS:false}
+    remitente: ${MAIL_REMITENTE:no-responder@planilla360.ejemplo.pe}
+  # modo: stub (respuestas ficticias en el mismo proceso) o http (servicio externo; WireMock en local).
+  integracion:
+    modo: ${INTEGRACION_MODO:stub}
+    base-url: ${INTEGRACION_BASE_URL:http://127.0.0.1:8099}
+    timeout: 2s
+    reintentos: 3
+    espera-reintento: 200ms
+    cache-tipo-cambio: 30m
+    cortacircuito:
+      ventana: 10
+      tasa-fallos: 50
+      espera-abierto: 30s
   cors:
     allowed-origins: ${CORS_ALLOWED_ORIGINS:}
   security:
