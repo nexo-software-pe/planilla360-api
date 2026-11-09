@@ -1,13 +1,5 @@
-# Niveles de severidad de oasdiff para el job "Contrato OpenAPI" (ver docs/contrato-api.md).
-# Solo se elevan a ERR (el job falla) los cambios que rompen a los clientes de /api/v1.
-# Todo lo demás conserva el nivel por defecto de oasdiff (WARN o INFO) y solo se informa.
-# Formato: <regla> <nivel>
-
-# Quitar un campo o propiedad de una respuesta
 response-required-property-removed err
 response-optional-property-removed err
-
-# Volver obligatorio un parámetro o un campo de la petición
 request-parameter-became-required err
 request-property-became-required err
 request-body-became-required err
@@ -15,15 +7,11 @@ new-required-request-parameter err
 new-required-request-property err
 new-required-request-header-property err
 request-header-property-became-required err
-
-# Cambiar el tipo de un campo, parámetro o cuerpo
 response-property-type-changed err
 response-body-type-changed err
 request-property-type-changed err
 request-parameter-type-changed err
 request-parameter-property-type-changed err
 request-body-type-changed err
-
-# Quitar un valor de un enum de respuesta
 response-property-enum-value-removed err
 response-mediatype-enum-value-removed err

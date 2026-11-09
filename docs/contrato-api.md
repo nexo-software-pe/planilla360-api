@@ -45,3 +45,16 @@ En Windows, desde PowerShell: `.\mvnw.cmd test "-Dtest=ContratoOpenApiTests" "-D
 - oasdiff se descarga con versión fija y se verifica su `sha256` antes de ejecutarlo; para actualizarlo hay que cambiar `OASDIFF_VERSION` y `OASDIFF_SHA256` en `.github/workflows/ci.yml` (el hash está en el `checksums.txt` de la release).
 - El primer PR que introdujo el contrato no tenía contra qué compararse: si la rama destino no tiene el archivo, el job avisa y termina en verde.
 - Para que este check sea **obligatorio** para fusionar, añade «Contrato OpenAPI» a los checks requeridos de la protección de ramas `staging` y `main`.
+
+## Qué falla y qué solo avisa (reglas puntuales)
+
+oasdiff trae sus propios niveles (ERR, WARN, INFO). Algunos cambios que rompen a los clientes son solo WARN por defecto (por ejemplo, quitar un campo opcional de una respuesta), así que `.github/oasdiff-niveles.txt` eleva a **ERR** únicamente estas reglas; el resto conserva su nivel y solo se informa:
+
+| Cambio que rompe clientes | Reglas |
+|---|---|
+| Quitar un campo o propiedad de una respuesta | `response-required-property-removed`, `response-optional-property-removed` |
+| Volver obligatorio un parámetro o un campo de la petición | `request-parameter-became-required`, `request-property-became-required`, `request-body-became-required`, `request-header-property-became-required`, `new-required-request-parameter`, `new-required-request-property`, `new-required-request-header-property` |
+| Cambiar el tipo de un campo, parámetro o cuerpo | `response-property-type-changed`, `response-body-type-changed`, `request-property-type-changed`, `request-parameter-type-changed`, `request-parameter-property-type-changed`, `request-body-type-changed` |
+| Quitar un valor de un enum de respuesta | `response-property-enum-value-removed`, `response-mediatype-enum-value-removed` |
+
+El archivo solo admite líneas `<regla> <nivel>` (sin comentarios ni líneas en blanco). Quitar o renombrar rutas, métodos o parámetros ya era ERR por defecto. Para ver todas las reglas y su nivel: `oasdiff checks`.
