@@ -55,8 +55,8 @@ services:
       retries: 10
 
   minio:
-    # MinIO dejó de publicar imágenes en Docker Hub y Quay; esta es la imagen mantenida de Chainguard (sin shell).
-    image: cgr.dev/chainguard/minio:latest
+    # MinIO dejó de publicar imágenes en Docker Hub y Quay; imagen mantenida de Chainguard fijada por digest (sin shell).
+    image: cgr.dev/chainguard/minio@sha256:a1ac4589a5f8136b616e667b48a0bea9719bb10bd45799ea946f24bbedfafde4
     profiles: [storage, full]
     command: ["server", "/data", "--console-address", ":9001"]
     environment:

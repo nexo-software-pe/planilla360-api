@@ -94,7 +94,7 @@ Anular (`POST /{id}/anular`) solo lo puede hacer el administrador de la empresa 
 | `app` | PostgreSQL + la API en contenedor (`docker compose --profile app up -d --build`) |
 | `full` | Todo lo anterior, salvo la API |
 
-La imagen de MinIO es la de Chainguard (`cgr.dev/chainguard/minio`): MinIO dejó de publicar imágenes oficiales en Docker Hub y Quay.
+La imagen de MinIO es la de Chainguard (`cgr.dev/chainguard/minio`, fijada por digest en `compose.yaml`): MinIO dejó de publicar imágenes oficiales en Docker Hub y Quay.
 
 ## Cómo verificarlo
 ```bash

@@ -16,7 +16,7 @@ import org.testcontainers.junit.jupiter.Testcontainers;
 class S3AlmacenArchivosTests {
 
     @Container
-    static final GenericContainer<?> MINIO = new GenericContainer<>("cgr.dev/chainguard/minio:latest")
+    static final GenericContainer<?> MINIO = new GenericContainer<>("cgr.dev/chainguard/minio@sha256:a1ac4589a5f8136b616e667b48a0bea9719bb10bd45799ea946f24bbedfafde4")
             .withCommand("server", "/data")
             .withEnv("MINIO_ROOT_USER", "prueba")
             .withEnv("MINIO_ROOT_PASSWORD", "prueba-12345")
