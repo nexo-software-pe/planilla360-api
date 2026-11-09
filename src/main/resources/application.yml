@@ -63,6 +63,11 @@ spring:
       pageable:
         max-page-size: 100
 
+logging:
+  pattern:
+    # Con logs de texto (local) cada línea lleva el traceId de la petición; en JSON va como campo propio.
+    correlation: "[%X{traceId:-}] "
+
 server:
   port: ${PORT:8080}
   shutdown: graceful
@@ -71,12 +76,28 @@ management:
   endpoints:
     web:
       exposure:
-        include: health,info
+        # /actuator/prometheus exige HTTP Basic (ver MetricsSecurityConfig y app.metrics).
+        include: health,info,prometheus
   endpoint:
     health:
       probes:
         enabled: true
       show-details: never
+      group:
+        # Liveness: el proceso vive (solo su propio estado; nunca depende de la base de datos).
+        liveness:
+          include: livenessState
+        # Readiness: puede recibir tráfico solo si la base de datos responde.
+        readiness:
+          include: readinessState,db
+  metrics:
+    tags:
+      application: ${spring.application.name}
+    distribution:
+      percentiles-histogram:
+        http.server.requests: true
+      slo:
+        http.server.requests: 100ms,300ms,1s
   health:
     redis:
       enabled: ${REDIS_HEALTH_ENABLED:false}
@@ -86,6 +107,11 @@ management:
       enabled: false
 
 app:
+  # Credencial del raspador de Prometheus para /actuator/prometheus. Sin contraseña (por defecto fuera de local)
+  # el endpoint responde siempre 401.
+  metrics:
+    user: ${METRICS_USER:prometheus}
+    password: ${METRICS_PASSWORD:}
   # false = sin RabbitMQ: las boletas y los correos se procesan en el mismo proceso (sin reintentos ni DLQ).
   messaging:
     enabled: ${MESSAGING_ENABLED:false}

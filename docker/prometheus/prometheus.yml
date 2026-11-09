@@ -1,0 +1,23 @@
+# Prometheus local de Planilla360 (perfil "obs" de docker-compose). Solo desarrollo.
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+
+scrape_configs:
+  # La API corre en IntelliJ (o en el contenedor del perfil "app"): se alcanza desde el contenedor por el host.
+  - job_name: planilla360-api
+    metrics_path: /actuator/prometheus
+    basic_auth:
+      username: prometheus
+      # La misma clave de desarrollo que app.metrics.password del perfil local.
+      password_file: /etc/prometheus/metrics-password
+    static_configs:
+      - targets: ["host.docker.internal:8080"]
+
+  # RabbitMQ publica sus propias métricas (plugin rabbitmq_prometheus, ya activo en la imagen): colas por nombre.
+  - job_name: rabbitmq
+    metrics_path: /metrics/detailed
+    params:
+      family: [queue_coarse_metrics, queue_consumer_count]
+    static_configs:
+      - targets: ["rabbitmq:15692"]

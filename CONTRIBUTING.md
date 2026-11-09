@@ -10,6 +10,7 @@
 ## Entorno
 - JDK 21 (LTS). El build falla con otra versión.
 - `./mvnw verify` debe pasar antes de abrir el PR.
+- Si cambias la API (endpoints, parámetros, DTO), actualiza el contrato `docs/openapi/openapi.json` en el mismo PR; `/api/v1` no puede romperse, los cambios incompatibles van en `/api/v2` (ver `docs/contrato-api.md`).
 
 ## Convenciones de código
 - Dominio en español, infraestructura en inglés.
