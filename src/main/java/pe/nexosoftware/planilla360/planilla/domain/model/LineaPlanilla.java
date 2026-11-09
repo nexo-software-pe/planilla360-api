@@ -22,6 +22,7 @@ public record LineaPlanilla(
         Dinero bonos,
         Dinero gratificacion,
         Dinero bonificacionExtraordinaria,
+        Dinero cts,
         RegimenPensionario regimenPensionario,
         DescuentoPension descuentoPension,
         Dinero retencion5ta,
@@ -38,7 +39,7 @@ public record LineaPlanilla(
     }
 
     public Dinero totalIngresos() {
-        return remuneracionAsegurable().sumar(gratificacion).sumar(bonificacionExtraordinaria);
+        return remuneracionAsegurable().sumar(gratificacion).sumar(bonificacionExtraordinaria).sumar(cts);
     }
 
     public Dinero totalDescuentos() {
@@ -59,6 +60,7 @@ public record LineaPlanilla(
         agregar(lista, "GRATIFICACION", "Gratificación", TipoConcepto.INGRESO, gratificacion);
         agregar(lista, "BONIFICACION_EXTRAORDINARIA", "Bonificación extraordinaria (Ley 30334)",
                 TipoConcepto.INGRESO, bonificacionExtraordinaria);
+        agregar(lista, "CTS", "Compensación por tiempo de servicios (depósito)", TipoConcepto.INGRESO, cts);
         switch (regimenPensionario) {
             case Onp onp -> agregar(lista, "ONP", "Aporte ONP", TipoConcepto.DESCUENTO, descuentoPension.aporte());
             case Afp afp -> {
@@ -92,6 +94,7 @@ public record LineaPlanilla(
         private Dinero horasExtra = Dinero.CERO;
         private Dinero bonos = Dinero.CERO;
         private Gratificacion gratificacion;
+        private Dinero cts = Dinero.CERO;
         private RegimenPensionario regimenPensionario;
         private Dinero retencion5ta = Dinero.CERO;
         private Dinero descuentoAsistencia = Dinero.CERO;
@@ -126,6 +129,11 @@ public record LineaPlanilla(
             return this;
         }
 
+        public Builder cts(Dinero valor) {
+            this.cts = valor;
+            return this;
+        }
+
         public Builder regimenPensionario(RegimenPensionario valor) {
             this.regimenPensionario = valor;
             return this;
@@ -155,6 +163,7 @@ public record LineaPlanilla(
             exigirNoNegativo(asignacionFamiliar, "La asignación familiar");
             exigirNoNegativo(horasExtra, "Las horas extra");
             exigirNoNegativo(bonos, "Los bonos");
+            exigirNoNegativo(cts, "La CTS");
             exigirNoNegativo(retencion5ta, "La retención de 5.ª categoría");
             exigirNoNegativo(descuentoAsistencia, "El descuento por asistencia");
             exigirNoNegativo(otrosDescuentos, "Los otros descuentos");
@@ -163,7 +172,7 @@ public record LineaPlanilla(
             Gratificacion semestral = gratificacion == null ? new Gratificacion(Dinero.CERO, Dinero.CERO)
                     : gratificacion;
             return new LineaPlanilla(empleadoId, basico, asignacionFamiliar, horasExtra, bonos, semestral.monto(),
-                    semestral.bonificacionExtraordinaria(), regimenPensionario,
+                    semestral.bonificacionExtraordinaria(), cts, regimenPensionario,
                     regimenPensionario.calcular(asegurable, parametros), retencion5ta, descuentoAsistencia,
                     otrosDescuentos, asegurable.porcentaje(parametros.pctEssalud()));
         }

@@ -32,6 +32,7 @@ public interface AsistenciaWebMapper {
                 g.horario().entrada(),
                 g.horario().salida(),
                 g.horario().toleranciaMin(),
-                g.horario().dias());
+                g.horario().dias(),
+                g.horario().refrigerioMin());
     }
 }

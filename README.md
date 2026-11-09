@@ -30,6 +30,14 @@ Contraseña común: `Planilla360-Local1`
 | Empleado (Textiles Andinos) | `empleado@textilesandinos.ejemplo.pe` |
 | Admin / RRHH (La Espiga, otra empresa) | `admin@laespiga.ejemplo.pe` / `rrhh@laespiga.ejemplo.pe` |
 
+### Probar las planillas
+Al arrancar en `local`, cada empresa queda con seis meses de planillas cerradas (incluidas la gratificación y la CTS que caen en esa ventana). Con el token de RRHH:
+1. `GET /api/v1/planillas` para ver el historial y `GET /api/v1/planillas/{id}/lineas` para ver las boletas.
+2. `POST /api/v1/planillas` con `{"periodo": "2026-11"}` crea el borrador del mes en curso; `POST /api/v1/planillas/{id}/calcular` lo calcula y `GET /api/v1/planillas/{id}/validaciones` lista lo que falta para cerrarlo.
+3. `POST /api/v1/planillas/{id}/cerrar` exige la cabecera `Idempotency-Key`: repetir la petición con la misma clave devuelve la misma planilla sin cerrar de nuevo.
+4. El cierre exige la asistencia del mes consolidada (`POST /api/v1/asistencia/consolidaciones` con cada fecha; el seed local solo trae las dos últimas semanas) y sin solicitudes de vacaciones pendientes; si no, responde 422.
+5. Anular (`POST /{id}/anular`) solo lo puede hacer el administrador de la empresa y mientras no se registre el pago (`POST /{id}/pago`).
+
 ### Perfiles de Docker Compose
 | Perfil | Levanta |
 |---|---|

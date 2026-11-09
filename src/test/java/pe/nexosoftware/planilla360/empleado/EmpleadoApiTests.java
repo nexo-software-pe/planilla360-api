@@ -254,6 +254,27 @@ class EmpleadoApiTests extends PersonalBase {
         enviarContrato(ruta24, "PART_TIME", "1130.00", 24).andExpect(status().isCreated());
     }
 
+    @Test
+    void losDiasLaborablesDelContratoSeGuardanYPorDefectoSonCinco() throws Exception {
+        UUID id = crearEmpleado(a, "Ana", "Seis Dias", "2024-01-01");
+        String ruta = "/api/v1/empleados/" + id + "/contratos";
+
+        enviarContrato(ruta, "INDEFINIDO", "2000.00", 48).andExpect(status().isCreated())
+                .andExpect(jsonPath("$.diasLaborables").value(5));
+
+        Map<String, Object> seisDias = contrato("INDEFINIDO", "2025-06-01", "2000.00", "ONP");
+        seisDias.put("diasLaborables", 6);
+        mvc.perform(post(ruta).header("Authorization", bearer(a.rrhh()))
+                        .contentType(MediaType.APPLICATION_JSON).content(texto(seisDias)))
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.diasLaborables").value(6));
+
+        seisDias.put("diasLaborables", 8);
+        mvc.perform(post(ruta).header("Authorization", bearer(a.rrhh()))
+                        .contentType(MediaType.APPLICATION_JSON).content(texto(seisDias)))
+                .andExpect(status().isBadRequest());
+    }
+
     private org.springframework.test.web.servlet.ResultActions enviarContrato(
             String ruta, String tipo, String sueldo, int jornada) throws Exception {
         Map<String, Object> cuerpo = contrato(tipo, "2025-01-01", sueldo, "ONP");

@@ -1,5 +1,6 @@
 package pe.nexosoftware.planilla360.asistencia.infrastructure.persistence.repository;
 
+import java.time.LocalDate;
 import java.util.Collection;
 import java.util.List;
 import java.util.UUID;
@@ -8,6 +9,8 @@ import pe.nexosoftware.planilla360.asistencia.domain.model.EstadoHoraExtra;
 import pe.nexosoftware.planilla360.asistencia.infrastructure.persistence.entity.HoraExtraEntity;
 
 public interface HoraExtraJpaRepository extends JpaRepository<HoraExtraEntity, UUID> {
+
+    List<HoraExtraEntity> findByEstadoAndFechaBetween(EstadoHoraExtra estado, LocalDate desde, LocalDate hasta);
 
     List<HoraExtraEntity> findAllByOrderByFechaDesc();
 

@@ -6,5 +6,6 @@ import java.util.Set;
 import java.util.UUID;
 
 public record HorarioResponse(
-        UUID id, String nombre, LocalTime entrada, LocalTime salida, int toleranciaMin, Set<DayOfWeek> dias) {
+        UUID id, String nombre, LocalTime entrada, LocalTime salida, int toleranciaMin, Set<DayOfWeek> dias,
+        int refrigerioMin) {
 }

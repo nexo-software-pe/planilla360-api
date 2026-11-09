@@ -182,6 +182,27 @@ class AsistenciaApiTests extends PersonalBase {
     }
 
     @Test
+    void elRefrigerioDelHorarioSeGuardaYSeDevuelve() throws Exception {
+        String base = "{\"nombre\":\"Con refrigerio\",\"entrada\":\"08:00\",\"salida\":\"17:00\",\"toleranciaMin\":5,"
+                + "\"dias\":[\"MONDAY\"]";
+        mvc.perform(post("/api/v1/horarios").header("Authorization", bearer(a.rrhh()))
+                        .contentType(MediaType.APPLICATION_JSON).content(base + ",\"refrigerioMin\":60}"))
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.refrigerioMin").value(60));
+
+        mvc.perform(post("/api/v1/horarios").header("Authorization", bearer(a.rrhh()))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(base.replace("Con refrigerio", "Sin refrigerio") + "}"))
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.refrigerioMin").value(0));
+
+        mvc.perform(post("/api/v1/horarios").header("Authorization", bearer(a.rrhh()))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(base.replace("Con refrigerio", "Absurdo") + ",\"refrigerioMin\":600}"))
+                .andExpect(status().isUnprocessableEntity());
+    }
+
+    @Test
     void unHorarioInvalidoOSuNombreRepetidoSeRechazan() throws Exception {
         String sinTolerancia = "{\"nombre\":\"Turno\",\"entrada\":\"17:00\",\"salida\":\"08:00\",\"toleranciaMin\":5,\"dias\":[\"MONDAY\"]}";
         mvc.perform(post("/api/v1/horarios").header("Authorization", bearer(a.rrhh()))

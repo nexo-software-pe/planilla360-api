@@ -33,7 +33,8 @@ class HorarioPersistenceAdapter implements HorarioPort {
     @Override
     public HorarioGuardado guardar(String nombre, Horario horario) {
         HorarioEntity entidad = horarios.saveAndFlush(new HorarioEntity(
-                nombre, horario.entrada(), horario.salida(), horario.toleranciaMin(), serializarDias(horario.dias())));
+                nombre, horario.entrada(), horario.salida(), horario.toleranciaMin(),
+                horario.refrigerioMin(), serializarDias(horario.dias())));
         return aGuardado(entidad);
     }
 
@@ -87,7 +88,8 @@ class HorarioPersistenceAdapter implements HorarioPort {
                 entidad.getHoraEntrada(),
                 entidad.getHoraSalida(),
                 entidad.getToleranciaMin(),
-                deserializarDias(entidad.getDias()));
+                deserializarDias(entidad.getDias()),
+                entidad.getRefrigerioMin());
     }
 
     private static String serializarDias(Set<DayOfWeek> dias) {

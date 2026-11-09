@@ -1,5 +1,6 @@
 package pe.nexosoftware.planilla360.vacaciones.infrastructure.persistence.adapter;
 
+import java.time.LocalDate;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
@@ -43,6 +44,16 @@ class PermisoPersistenceAdapter implements PermisoPort {
     @Override
     public Optional<Permiso> buscar(UUID id) {
         return repository.findById(id).map(PermisoPersistenceAdapter::aDominio);
+    }
+
+    @Override
+    public List<Permiso> aprobadosSinGoceQueSolapan(LocalDate desde, LocalDate hasta) {
+        return repository
+                .findByEstadoAndConGoceFalseAndDesdeLessThanEqualAndHastaGreaterThanEqual(
+                        EstadoPermiso.APROBADO, hasta, desde)
+                .stream()
+                .map(PermisoPersistenceAdapter::aDominio)
+                .toList();
     }
 
     @Override

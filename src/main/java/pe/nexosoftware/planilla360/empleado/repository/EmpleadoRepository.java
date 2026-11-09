@@ -17,4 +17,8 @@ public interface EmpleadoRepository extends JpaRepository<Empleado, UUID>, JpaSp
     @Query("select e from Empleado e where e.fechaIngreso <= :fecha "
             + "and (e.fechaCese is null or e.fechaCese >= :fecha) order by e.apellidos, e.nombres")
     List<Empleado> findVigentesEn(@Param("fecha") LocalDate fecha);
+
+    @Query("select e from Empleado e where e.fechaIngreso <= :hasta "
+            + "and (e.fechaCese is null or e.fechaCese >= :desde) order by e.apellidos, e.nombres")
+    List<Empleado> findVigentesEntre(@Param("desde") LocalDate desde, @Param("hasta") LocalDate hasta);
 }

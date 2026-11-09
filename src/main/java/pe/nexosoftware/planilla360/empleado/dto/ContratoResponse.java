@@ -15,6 +15,7 @@ public record ContratoResponse(
         LocalDate fechaFin,
         BigDecimal sueldoBasico,
         int jornadaSemanal,
+        int diasLaborables,
         TipoRegimenPensionario regimenPensionario,
         UUID afpId,
         TipoComision tipoComision,
