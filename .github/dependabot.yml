@@ -1,0 +1,54 @@
+# Actualizaciones automáticas de dependencias. Los PR van a `staging` (como cualquier otro cambio),
+# con commits convencionales y agrupados para no inundar la bandeja.
+version: 2
+updates:
+  - package-ecosystem: maven
+    directory: /
+    target-branch: staging
+    schedule:
+      interval: weekly
+      day: monday
+      time: '06:00'
+      timezone: America/Lima
+    open-pull-requests-limit: 5
+    commit-message:
+      prefix: 'chore(deps)'
+    ignore:
+      # Spring Boot y sus bibliotecas gestionadas suben de mayor a propósito (lo decide el equipo).
+      - dependency-name: 'org.springframework.boot:*'
+        update-types: ['version-update:semver-major']
+    groups:
+      spring:
+        patterns: ['org.springframework*', 'org.springdoc*']
+        update-types: [minor, patch]
+      pruebas:
+        patterns: ['org.testcontainers*', 'org.wiremock*', 'org.mockito*', 'org.assertj*', 'io.cucumber*', 'com.tngtech.archunit*', 'org.awaitility*']
+        update-types: [minor, patch]
+      resto:
+        patterns: ['*']
+        update-types: [minor, patch]
+
+  - package-ecosystem: docker
+    directory: /
+    target-branch: staging
+    schedule:
+      interval: weekly
+      day: monday
+      time: '06:00'
+      timezone: America/Lima
+    commit-message:
+      prefix: 'chore(deps)'
+
+  - package-ecosystem: github-actions
+    directory: /
+    target-branch: staging
+    schedule:
+      interval: weekly
+      day: monday
+      time: '06:00'
+      timezone: America/Lima
+    commit-message:
+      prefix: 'ci(deps)'
+    groups:
+      acciones:
+        patterns: ['*']
