@@ -25,7 +25,7 @@ Java 21 · Spring Boot 4.1 · Spring Modulith · Spring Security (JWT) · Spring
    docker compose --profile full up -d
    ```
    Si solo quieres la base de datos: `docker compose --profile core up -d` y arranca la API con la mensajería apagada (`MESSAGING_ENABLED=false STORAGE_TIPO=memoria INTEGRACION_MODO=stub`, ver «Interruptores»).
-3. Arranca la API (perfil `local`, el predeterminado). En el primer arranque Flyway crea el esquema y carga los datos ficticios.
+3. Arranca la API (perfil `local`, el predeterminado). En el primer arranque Flyway crea el esquema y carga los datos ficticios: con la base ya sembrada tarda unos 25 s; en una base vacía, más.
    - Git Bash: `./mvnw spring-boot:run`
    - PowerShell: `.\mvnw.cmd spring-boot:run` (si falla, usa Git Bash)
    - IntelliJ: abre la carpeta como proyecto Maven, *File → Project Structure → SDK* = 21 y ejecuta `Planilla360ApiApplication` (el perfil `local` se aplica solo).
@@ -44,7 +44,7 @@ Salud de la aplicación: http://localhost:8080/actuator/health
 | Prometheus | http://localhost:9090 | métricas (perfil `obs`) |
 | WireMock | http://localhost:8099 | servicio externo simulado de DNI, RUC y tipo de cambio (`docker/wiremock/mappings`) |
 
-PostgreSQL escucha en `127.0.0.1:5432`. Los puertos escuchan solo en `127.0.0.1`. Si otro programa usa uno (por ejemplo, el 8099 de WireMock), cámbialo en `.env` (copia de `.env.example`; variable `WIREMOCK_PORT`) y ajusta `INTEGRACION_BASE_URL`. Las claves de esta tabla son solo para tu máquina.
+PostgreSQL escucha en `127.0.0.1:5432`. Los puertos escuchan solo en `127.0.0.1`. Si otro programa usa uno (por ejemplo, el 8099 de WireMock), crea un `.env` con **solo** esa variable (por ejemplo `WIREMOCK_PORT=8199`) y ajusta `INTEGRACION_BASE_URL`. Ojo: `.env` lo lee Docker Compose, pero la API (`spring-boot:run` o IntelliJ) **no**; si copias `.env.example` completo, exporta también `DB_PASSWORD`, `STORAGE_SECRET_KEY` y `RABBITMQ_PASSWORD` con los mismos valores que pusiste para los contenedores, o la API no podrá autenticarse. Las claves de esta tabla son solo para tu máquina.
 
 ### Reiniciar la base local desde cero
 Los datos ficticios (empleados, seis meses de asistencia y planillas) se cargan al arrancar la primera vez y quedan **anclados a la fecha de ese día**. Para empezar de cero, o para que el seed se vuelva a calcular con la fecha de hoy (conviene hacerlo al cambiar de mes):
@@ -96,7 +96,7 @@ Anular (`POST /{id}/anular`) solo lo puede hacer el administrador de la empresa 
 | Variable | Valor | Efecto |
 |---|---|---|
 | `MESSAGING_ENABLED` | `true` (local) / `false` | con `false` no hace falta RabbitMQ: las boletas y los correos se procesan en el mismo proceso, sin reintentos ni DLQ |
-| `STORAGE_TIPO` | `s3` (local: MinIO; nube: R2) / `memoria` | `memoria` no necesita MinIO, pero los PDF se pierden al reiniciar |
+| `STORAGE_TIPO` | `s3` (MinIO en local) / `memoria` | `memoria` no necesita MinIO, pero los PDF se pierden al reiniciar |
 | `NOTIFICACIONES_HABILITADAS` | `true` (local) / `false` | con `false` no se envían correos |
 | `INTEGRACION_MODO` | `http` (local: WireMock) / `stub` | `stub` responde datos ficticios sin servicio externo |
 
@@ -147,7 +147,7 @@ Las migraciones están en `src/main/resources/db/migration` y los datos ficticio
 ## Mapa de documentación
 | Documento | Contenido |
 |---|---|
-| [CONTRIBUTING.md](CONTRIBUTING.md) | flujo de trabajo, ramas, commits y definición de hecho |
+| [CONTRIBUTING.md](CONTRIBUTING.md) | flujo de trabajo, ramas y commits |
 | [CLAUDE.md](CLAUDE.md) | convenciones, mapa del código y usuarios de desarrollo |
 | [docs/observabilidad.md](docs/observabilidad.md) | métricas, logs con `traceId`, Prometheus y Grafana |
 | [docs/contrato-api.md](docs/contrato-api.md) | contrato OpenAPI versionado y reglas de compatibilidad |
