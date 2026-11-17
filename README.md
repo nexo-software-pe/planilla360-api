@@ -25,7 +25,7 @@ Java 21 · Spring Boot 4.1 · Spring Modulith · Spring Security (JWT) · Spring
    docker compose --profile full up -d
    ```
    Si solo quieres la base de datos: `docker compose --profile core up -d` y arranca la API con la mensajería apagada (`MESSAGING_ENABLED=false STORAGE_TIPO=memoria INTEGRACION_MODO=stub`, ver «Interruptores»).
-3. Arranca la API (perfil `local`, el predeterminado). En el primer arranque Flyway crea el esquema y carga los datos ficticios: con la base ya sembrada tarda unos 25 s; en una base vacía, más.
+3. Arranca la API (perfil `local`, el predeterminado). El primer arranque tarda más porque Flyway crea el esquema y carga el seed de datos ficticios; los siguientes, unos 25 s.
    - Git Bash: `./mvnw spring-boot:run`
    - PowerShell: `.\mvnw.cmd spring-boot:run` (si falla, usa Git Bash)
    - IntelliJ: abre la carpeta como proyecto Maven, *File → Project Structure → SDK* = 21 y ejecuta `Planilla360ApiApplication` (el perfil `local` se aplica solo).
@@ -44,7 +44,7 @@ Salud de la aplicación: http://localhost:8080/actuator/health
 | Prometheus | http://localhost:9090 | métricas (perfil `obs`) |
 | WireMock | http://localhost:8099 | servicio externo simulado de DNI, RUC y tipo de cambio (`docker/wiremock/mappings`) |
 
-PostgreSQL escucha en `127.0.0.1:5432`. Los puertos escuchan solo en `127.0.0.1`. Si otro programa usa uno (por ejemplo, el 8099 de WireMock), crea un `.env` con **solo** esa variable (por ejemplo `WIREMOCK_PORT=8199`) y ajusta `INTEGRACION_BASE_URL`. Ojo: `.env` lo lee Docker Compose, pero la API (`spring-boot:run` o IntelliJ) **no**; si copias `.env.example` completo, exporta también `DB_PASSWORD`, `STORAGE_SECRET_KEY` y `RABBITMQ_PASSWORD` con los mismos valores que pusiste para los contenedores, o la API no podrá autenticarse. Las claves de esta tabla son solo para tu máquina.
+PostgreSQL escucha en `127.0.0.1:5432`. Los puertos escuchan solo en `127.0.0.1`. Si otro programa usa uno (por ejemplo, el 8099 de WireMock), crea un `.env` con **solo** esa variable (por ejemplo `WIREMOCK_PORT=8199`) y ajusta `INTEGRACION_BASE_URL` (esa variable se exporta en la consola o en la configuración de ejecución de IntelliJ, no en `.env`). Ojo: `.env` lo lee Docker Compose, pero la API (`spring-boot:run` o IntelliJ) **no**; si copias `.env.example` completo, exporta también `DB_PASSWORD`, `STORAGE_SECRET_KEY` y `RABBITMQ_PASSWORD` con los mismos valores que pusiste para los contenedores, o la API no podrá autenticarse. Las claves de esta tabla son solo para tu máquina.
 
 ### Reiniciar la base local desde cero
 Los datos ficticios (empleados, seis meses de asistencia y planillas) se cargan al arrancar la primera vez y quedan **anclados a la fecha de ese día**. Para empezar de cero, o para que el seed se vuelva a calcular con la fecha de hoy (conviene hacerlo al cambiar de mes):
