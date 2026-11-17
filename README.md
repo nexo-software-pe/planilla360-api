@@ -147,6 +147,7 @@ Las migraciones están en `src/main/resources/db/migration` y los datos ficticio
 ## Mapa de documentación
 | Documento | Contenido |
 |---|---|
+| [docs/ONBOARDING.md](docs/ONBOARDING.md) | guía del primer día, recorrido del código y problemas frecuentes |
 | [CONTRIBUTING.md](CONTRIBUTING.md) | flujo de trabajo, ramas y commits |
 | [CLAUDE.md](CLAUDE.md) | convenciones, mapa del código y usuarios de desarrollo |
 | [docs/observabilidad.md](docs/observabilidad.md) | métricas, logs con `traceId`, Prometheus y Grafana |
