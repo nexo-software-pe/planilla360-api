@@ -22,6 +22,15 @@ jobs:
           cache: maven
       - name: Verify (compila, tests, Checkstyle, Spotless)
         run: ./mvnw -B -ntp verify
+      # Lo que SonarCloud necesita (clases compiladas y cobertura); evita repetir el build en su job.
+      - name: Guardar clases y cobertura para el análisis
+        uses: actions/upload-artifact@v4
+        with:
+          name: analisis
+          path: |
+            target/classes
+            target/site/jacoco/jacoco.xml
+          retention-days: 3
 
   secrets:
     name: Escaneo de secretos
@@ -34,6 +43,41 @@ jobs:
         run: |
           curl -sSfL https://github.com/gitleaks/gitleaks/releases/download/v8.21.2/gitleaks_8.21.2_linux_x64.tar.gz | tar -xz gitleaks
           ./gitleaks detect --source . --redact --verbose
+
+  sonar:
+    name: SonarCloud
+    needs: build
+    # Dependabot no recibe los secretos de la organización; sus PR no se analizan.
+    if: github.actor != 'dependabot[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+      - uses: actions/download-artifact@v4
+        with:
+          name: analisis
+          path: target
+      - name: Análisis y quality gate
+        uses: SonarSource/sonarqube-scan-action@e805d875275f728fac1885b413934be6d7c63f65 # v8.4.1
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+        with:
+          args: >
+            -Dsonar.host.url=https://sonarcloud.io
+            -Dsonar.organization=nexo-software-pe
+            -Dsonar.projectKey=nexo-software-pe_planilla360-api
+            -Dsonar.sources=src/main/java,src/main/resources
+            -Dsonar.tests=src/test/java
+            -Dsonar.java.binaries=target/classes
+            -Dsonar.java.source=21
+            -Dsonar.coverage.jacoco.xmlReportPaths=target/site/jacoco/jacoco.xml
+            -Dsonar.exclusions=src/main/resources/db/**
+            -Dsonar.qualitygate.wait=true
 
   contrato:
     name: Contrato OpenAPI
@@ -76,3 +120,30 @@ jobs:
             echo "::error::Este PR rompe la compatibilidad de la API vigente. Conserva /api/v1 tal como está y publica el cambio en una versión nueva (/api/v2); ver docs/contrato-api.md."
             exit 1
           }
+
+  imagen:
+    name: Imagen Docker y Trivy
+    runs-on: ubuntu-latest
+    env:
+      IMAGEN: planilla360-api:${{ github.sha }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: docker/setup-buildx-action@f87e5991a6d7451dcb8d9637bfbc97413f497069 # v4.4.1
+      - name: Construir la imagen (sin publicarla)
+        uses: docker/build-push-action@c3c9e263c25d99ce0380d002d59b67737d91b0dc # v7.4.0
+        with:
+          context: .
+          load: true
+          tags: ${{ env.IMAGEN }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+      - name: Trivy (vulnerabilidades y secretos en la imagen)
+        uses: aquasecurity/trivy-action@ed142fd0673e97e23eac54620cfb913e5ce36c25 # v0.36.0
+        with:
+          image-ref: ${{ env.IMAGEN }}
+          scanners: vuln,secret
+          severity: CRITICAL,HIGH
+          # Solo lo que ya tiene arreglo publicado: lo demás no se puede corregir actualizando.
+          ignore-unfixed: true
+          exit-code: '1'
+          format: table

@@ -22,6 +22,8 @@
 	</scm>
 	<properties>
 		<java.version>21</java.version>
+		<!-- Trivy: CVE-2026-63337, 69219, 69220 y 75516 (HIGH) arreglados en 5.34.0; Spring Boot 4.1.2 trae 5.30.0 -->
+		<rabbit-amqp-client.version>5.34.0</rabbit-amqp-client.version>
 		<spring-modulith.version>2.1.1</spring-modulith.version>
 		<checkstyle.version>10.21.4</checkstyle.version>
 		<springdoc.version>3.2.0</springdoc.version>

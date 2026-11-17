@@ -14,10 +14,12 @@ COPY config/ config/
 COPY src/ src/
 # Las pruebas y el estilo ya los valida el CI; aquí solo se empaqueta.
 RUN ./mvnw -B -ntp -q package -DskipTests -Dcheckstyle.skip -Dspotless.check.skip \
-    && java -Djarmode=tools -jar target/planilla360-api-*.jar extract --layers --destination /workspace/extracted
+    && java -Djarmode=tools -jar target/planilla360-api-*.jar extract --layers --destination /workspace/extracted     && mv /workspace/extracted/application/planilla360-api-*.jar /workspace/extracted/application/app.jar
 
 # ---- Etapa 2: ejecución ----
 FROM eclipse-temurin:21-jre-alpine
+# Enlaza la imagen con el repositorio (GitHub Container Registry la publica con la visibilidad del repo).
+LABEL org.opencontainers.image.source="https://github.com/nexo-software-pe/planilla360-api"       org.opencontainers.image.title="planilla360-api"       org.opencontainers.image.vendor="Nexo Software S.A.C."
 RUN addgroup -S app && adduser -S app -G app
 WORKDIR /app
 
@@ -34,4 +36,5 @@ ENV JAVA_TOOL_OPTIONS="-XX:MaxRAMPercentage=75 -XX:+ExitOnOutOfMemoryError"
 HEALTHCHECK --interval=30s --timeout=3s --start-period=60s --retries=3 \
     CMD wget -qO- http://localhost:8080/actuator/health/liveness || exit 1
 
-ENTRYPOINT ["java", "-jar", "planilla360-api-0.1.0-SNAPSHOT.jar"]
+# El jar se renombra a app.jar en la etapa de compilación: el nombre no depende de la versión del release.
+ENTRYPOINT ["java", "-jar", "app.jar"]
