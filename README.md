@@ -1,22 +1,35 @@
 # planilla360-api
 
-API REST de **Planilla360**, el SaaS de RRHH y planillas de Nexo Software S.A.C. para pymes peruanas.
+API REST de **Planilla360**, el SaaS multi-empresa de RRHH y planillas de Nexo Software S.A.C. para pymes peruanas. Gestiona empresas cliente, empleados, asistencia, vacaciones, planillas (mensual, gratificación y CTS), boletas en PDF con aviso por correo, importación desde Excel y reportes. Cada empresa ve solo sus datos (multi-tenant por columna `tenant_id`).
+
+## Stack
+Java 21 · Spring Boot 4.1 · Spring Modulith · Spring Security (JWT) · Spring Data JPA + Flyway · PostgreSQL · Redis · RabbitMQ · MinIO (S3) · Maven Wrapper. Pruebas con JUnit 5, Testcontainers, ArchUnit, Cucumber y PIT. El detalle completo está en [CLAUDE.md](CLAUDE.md).
 
 ## Requisitos
-- JDK 21 (en IntelliJ: *File → Project Structure → SDK* = 21)
-- Docker Desktop (base de datos local y pruebas con Testcontainers)
+- **Git**.
+- **JDK 21** (LTS). El build falla con otra versión (maven-enforcer). Si tu `java` por defecto es otro (por ejemplo 26), apunta `JAVA_HOME` al 21 antes de usar `./mvnw`:
+  - Git Bash: `export JAVA_HOME="/c/Program Files/Java/jdk-21"`
+  - PowerShell: `$env:JAVA_HOME = "C:\Program Files\Java\jdk-21"`
 
-## Cómo correrlo
-1. Levanta la infraestructura local (PostgreSQL, Redis, RabbitMQ, MinIO, Mailpit y WireMock):
+  Ajusta la ruta a donde tengas instalado el JDK 21. Compruébalo con `./mvnw -v` (debe decir `Java version: 21...`).
+- **Docker Desktop** encendido (base de datos local y pruebas con Testcontainers). Compruébalo con `docker info`.
+
+## Inicio rápido
+1. Clona el repositorio y entra en él:
+   ```bash
+   git clone https://github.com/nexo-software-pe/planilla360-api.git
+   cd planilla360-api
+   ```
+2. Levanta la infraestructura local (PostgreSQL, Redis, RabbitMQ, MinIO, Mailpit, WireMock, Prometheus y Grafana). No necesita ningún archivo `.env`: los valores por defecto sirven para desarrollo.
    ```bash
    docker compose --profile full up -d
    ```
-   Si solo quieres la base de datos: `docker compose --profile core up -d` y arranca con la mensajería apagada (`MESSAGING_ENABLED=false STORAGE_TIPO=memoria INTEGRACION_MODO=stub`, ver más abajo).
-2. Arranca la API (perfil `local`, también desde IntelliJ ejecutando `Planilla360ApiApplication`):
-   ```bash
-   ./mvnw spring-boot:run
-   ```
-3. Abre http://localhost:8080/swagger-ui.html, haz `POST /api/v1/auth/login` con un usuario de desarrollo y pega el `accessToken` en *Authorize*.
+   Si solo quieres la base de datos: `docker compose --profile core up -d` y arranca la API con la mensajería apagada (`MESSAGING_ENABLED=false STORAGE_TIPO=memoria INTEGRACION_MODO=stub`, ver «Interruptores»).
+3. Arranca la API (perfil `local`, el predeterminado). En el primer arranque Flyway crea el esquema y carga los datos ficticios.
+   - Git Bash: `./mvnw spring-boot:run`
+   - PowerShell: `.\mvnw.cmd spring-boot:run` (si falla, usa Git Bash)
+   - IntelliJ: abre la carpeta como proyecto Maven, *File → Project Structure → SDK* = 21 y ejecuta `Planilla360ApiApplication` (el perfil `local` se aplica solo).
+4. Abre http://localhost:8080/swagger-ui.html, ejecuta `POST /api/v1/auth/login` con un usuario de desarrollo (ver más abajo; por ejemplo `rrhh@textilesandinos.ejemplo.pe` y la contraseña común) y copia el `accessToken` de la respuesta. Pulsa *Authorize*, pégalo y ya puedes probar el resto de endpoints.
 
 Salud de la aplicación: http://localhost:8080/actuator/health
 
@@ -27,9 +40,11 @@ Salud de la aplicación: http://localhost:8080/actuator/health
 | Mailpit | http://localhost:8025 | bandeja donde llegan los correos (avisos de boleta) |
 | MinIO | http://localhost:9001 (usuario `planilla360`, clave `planilla360-local`) | PDF de las boletas, bucket `planilla360-boletas` (se crea solo) |
 | RabbitMQ | http://localhost:15672 (usuario `planilla360`, clave `planilla360`) | colas `boletas.generar`, `notificaciones.correo` y sus DLQ |
+| Grafana | http://localhost:3000 (usuario `admin`, clave `planilla360-local`) | dashboard de la API (perfil `obs`) |
+| Prometheus | http://localhost:9090 | métricas (perfil `obs`) |
 | WireMock | http://localhost:8099 | servicio externo simulado de DNI, RUC y tipo de cambio (`docker/wiremock/mappings`) |
 
-Los puertos escuchan solo en `127.0.0.1`. Si otro programa usa uno (por ejemplo, el 8099 de WireMock), cámbialo en `.env` (`WIREMOCK_PORT`) y ajusta `INTEGRACION_BASE_URL`.
+PostgreSQL escucha en `127.0.0.1:5432`. Los puertos escuchan solo en `127.0.0.1`. Si otro programa usa uno (por ejemplo, el 8099 de WireMock), cámbialo en `.env` (copia de `.env.example`; variable `WIREMOCK_PORT`) y ajusta `INTEGRACION_BASE_URL`. Las claves de esta tabla son solo para tu máquina.
 
 ### Reiniciar la base local desde cero
 Los datos ficticios (empleados, seis meses de asistencia y planillas) se cargan al arrancar la primera vez y quedan **anclados a la fecha de ese día**. Para empezar de cero, o para que el seed se vuelva a calcular con la fecha de hoy (conviene hacerlo al cambiar de mes):
@@ -72,7 +87,7 @@ Con el token de RRHH (`rrhh@textilesandinos.ejemplo.pe`):
 
 Anular (`POST /{id}/anular`) solo lo puede hacer el administrador de la empresa y mientras no se registre el pago (`POST /{id}/pago`).
 
-### Otras funciones de la Fase 5b
+### Otras funciones
 - **Importación de empleados desde Excel:** `GET /api/v1/importaciones/empleados/plantilla.xlsx` baja la plantilla; `POST /api/v1/importaciones/empleados` (multipart `archivo`) valida fila por fila y por defecto solo simula (`simular=true`); con `simular=false` guarda las filas válidas.
 - **Reportes** (`/api/v1/reportes`): `tardanzas-por-area`, `costo-laboral`, `vacaciones-pendientes` y `planilla-mensual.xlsx`, con SQL nativo.
 - **Consultas externas** (`/api/v1/consultas`): `dni/{dni}`, `ruc/{ruc}` y `tipo-cambio`, con reintentos y cortacircuito (Resilience4j). Para ver el cortacircuito: `docker compose stop wiremock` y repite la consulta (503); al reanudarlo se recupera.
@@ -93,29 +108,48 @@ Anular (`POST /{id}/anular`) solo lo puede hacer el administrador de la empresa 
 | `storage` | PostgreSQL + MinIO + Mailpit + WireMock |
 | `app` | PostgreSQL + la API en contenedor (`docker compose --profile app up -d --build`) |
 | `obs` | Prometheus + Grafana (se combina con los demás: `--profile messaging --profile obs`) |
-| `full` | Todo lo anterior, salvo la API |
+| `full` | Todo lo anterior (incluido `obs`), salvo la API |
 
 La imagen de MinIO es la de Chainguard (`cgr.dev/chainguard/minio`, fijada por digest en `compose.yaml`): MinIO dejó de publicar imágenes oficiales en Docker Hub y Quay.
 
 ### Observabilidad
-Salud (`/actuator/health/liveness` y `/readiness`), métricas con Micrometer, logs con `traceId` por petición (JSON en staging/prod) y un dashboard de Grafana ya provisionado:
-
-```bash
-docker compose --profile messaging --profile storage --profile obs up -d
-```
-
-Grafana: http://localhost:3000 (`admin` / `planilla360-local`) · Prometheus: http://localhost:9090. Todo el detalle en [docs/observabilidad.md](docs/observabilidad.md).
+Salud (`/actuator/health/liveness` y `/readiness`), métricas con Micrometer, logs con `traceId` por petición y un dashboard de Grafana ya provisionado (Grafana http://localhost:3000, Prometheus http://localhost:9090; ambos arrancan con `--profile full` o `--profile obs`). Todo el detalle en [docs/observabilidad.md](docs/observabilidad.md).
 
 ### Contrato de la API
 El contrato OpenAPI está versionado en [docs/openapi/openapi.json](docs/openapi/openapi.json). Si cambias un endpoint o un DTO, regenéralo (`./mvnw test -Dtest=ContratoOpenApiTests -Dcontrato.actualizar=true`); el CI falla si el cambio rompe `/api/v1`. Ver [docs/contrato-api.md](docs/contrato-api.md).
 
-## Cómo verificarlo
+## Pruebas
+Requieren Docker Desktop encendido y `JAVA_HOME` en el JDK 21.
 ```bash
-./mvnw verify
+./mvnw verify                                  # todo: tests, Checkstyle, Spotless, JaCoCo y PIT
+./mvnw test -Dtest='ValidadorCierreTests*'     # solo unas pruebas (las clases @Nested llevan * al final)
+./mvnw test -Dtest=ContratoOpenApiTests        # solo el contrato OpenAPI
 ```
-Compila, ejecuta las pruebas (unitarias, de integración con Testcontainers, arquitectura, contrato OpenAPI y escenarios Cucumber), Checkstyle, Spotless, cobertura con JaCoCo (mínimo 80 % en el dominio) y mutation testing con PIT sobre el dominio. Los informes quedan en `target/site/jacoco/index.html` y `target/pit-reports/index.html`. Requiere Docker Desktop encendido.
+En PowerShell usa `.\mvnw.cmd` y deja las comillas simples en `-Dtest`. `verify` compila, ejecuta las pruebas (unitarias, de integración con Testcontainers, arquitectura, contrato OpenAPI y escenarios Cucumber), Checkstyle, Spotless, cobertura con JaCoCo (mínimo 80 % en el dominio) y mutation testing con **PIT** sobre el dominio (mínimo 85 %; corre dentro de `verify`). Informes: `target/site/jacoco/index.html` y `target/pit-reports/index.html`.
 
 ## Perfiles de Spring
-`local` (por defecto), `staging`, `prod`. La configuración sensible se entrega por variables de entorno; ver `.env.example`.
+`local` (por defecto), `staging`, `prod`. La configuración sensible se entrega por variables de entorno; ver `.env.example`. En local no hace falta definir nada: la API genera un `JWT_SECRET` efímero (los tokens dejan de valer al reiniciar).
 
-Más información: [CONTRIBUTING.md](CONTRIBUTING.md) y [CLAUDE.md](CLAUDE.md).
+## Estructura del código
+Monolito modular (Spring Modulith) en `src/main/java/pe/nexosoftware/planilla360`, un paquete por módulo:
+
+| Módulo | Responsabilidad |
+|---|---|
+| `compartido` | tenant, seguridad, excepciones, value objects (`Dinero`, `Periodo`), filtros y configuración |
+| `empresa`, `identidad`, `catalogo`, `auditoria` | empresas cliente, login y usuarios, catálogos y parámetros legales, historial de cambios |
+| `empleado` | empleados, contratos y familiares |
+| `asistencia`, `vacaciones`, `planilla` | núcleo del negocio (hexagonal: `domain/`, `application/`, `infrastructure/`) |
+| `boleta`, `notificacion` | boletas PDF, almacenamiento y correos, con RabbitMQ |
+| `importacion`, `reporte`, `integracion` | Excel, reportes con SQL nativo y consultas externas (DNI, RUC, tipo de cambio) |
+
+Las migraciones están en `src/main/resources/db/migration` y los datos ficticios en `db/seed/local`. El mapa detallado de «dónde vive qué» está en [CLAUDE.md](CLAUDE.md).
+
+## Mapa de documentación
+| Documento | Contenido |
+|---|---|
+| [CONTRIBUTING.md](CONTRIBUTING.md) | flujo de trabajo, ramas, commits y definición de hecho |
+| [CLAUDE.md](CLAUDE.md) | convenciones, mapa del código y usuarios de desarrollo |
+| [docs/observabilidad.md](docs/observabilidad.md) | métricas, logs con `traceId`, Prometheus y Grafana |
+| [docs/contrato-api.md](docs/contrato-api.md) | contrato OpenAPI versionado y reglas de compatibilidad |
+| [docs/openapi/openapi.json](docs/openapi/openapi.json) | el contrato de la API |
+| `.env.example` | variables de entorno disponibles |
