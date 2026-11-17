@@ -2,12 +2,16 @@ package pe.nexosoftware.planilla360.planilla.domain.service;
 
 import java.time.DayOfWeek;
 import java.time.LocalDate;
+import java.util.EnumSet;
+import java.util.Set;
 import java.util.function.Predicate;
 import pe.nexosoftware.planilla360.compartido.dominio.Periodo;
 import pe.nexosoftware.planilla360.planilla.domain.excepcion.ReglaDePlanillaException;
 
 /** Días hábiles del mes: de lunes a viernes y que no sean feriado. */
 public final class CalendarioLaboral {
+
+    private static final Set<DayOfWeek> FIN_DE_SEMANA = EnumSet.of(DayOfWeek.SATURDAY, DayOfWeek.SUNDAY);
 
     /** Último día hábil del periodo. */
     public LocalDate ultimoDiaHabil(Periodo periodo, Predicate<LocalDate> esFeriado) {
@@ -24,7 +28,6 @@ public final class CalendarioLaboral {
     }
 
     private static boolean esHabil(LocalDate dia, Predicate<LocalDate> esFeriado) {
-        DayOfWeek semana = dia.getDayOfWeek();
-        return semana != DayOfWeek.SATURDAY && semana != DayOfWeek.SUNDAY && !esFeriado.test(dia);
+        return !FIN_DE_SEMANA.contains(dia.getDayOfWeek()) && !esFeriado.test(dia);
     }
 }
