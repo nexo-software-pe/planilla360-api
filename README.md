@@ -122,7 +122,7 @@ El contrato OpenAPI está versionado en [docs/openapi/openapi.json](docs/openapi
 Requieren Docker Desktop encendido y `JAVA_HOME` en el JDK 21.
 ```bash
 ./mvnw verify                                  # todo: tests, Checkstyle, Spotless, JaCoCo y PIT
-./mvnw test -Dtest='ValidadorCierreTests*'     # solo unas pruebas (las clases @Nested llevan * al final)
+./mvnw test -Dtest='ValidadorCierreTests*'     # solo unas pruebas (el `*` final es opcional: ejecuta y cuenta cada clase `@Nested` por separado)
 ./mvnw test -Dtest=ContratoOpenApiTests        # solo el contrato OpenAPI
 ```
 En PowerShell usa `.\mvnw.cmd` y deja las comillas simples en `-Dtest`. `verify` compila, ejecuta las pruebas (unitarias, de integración con Testcontainers, arquitectura, contrato OpenAPI y escenarios Cucumber), Checkstyle, Spotless, cobertura con JaCoCo (mínimo 80 % en el dominio) y mutation testing con **PIT** sobre el dominio (mínimo 85 %; corre dentro de `verify`). Informes: `target/site/jacoco/index.html` y `target/pit-reports/index.html`.

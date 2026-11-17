@@ -23,7 +23,7 @@ Gracias por contribuir a **planilla360-api**. Esta guía explica cómo trabajamo
 3. **Commits** pequeños y convencionales (ver más abajo).
 4. **PR a `staging`**: usa la plantilla completa (`.github/pull_request_template.md`), enlaza el issue (`Cierra #23`) y espera la revisión y el CI en verde.
 5. **Release**: un PR `staging` → `main` publica lo acumulado en `staging`. Solo se abre cuando `staging` está verde y estable.
-6. **Hotfix**: un incidente urgente se corrige en `hotfix/<n>-<slug>` creada desde `main`, con PR a `main`. Después, `main` se fusiona de vuelta a `staging` para que no se pierda la corrección.
+6. **Hotfix**: un incidente urgente se corrige en `hotfix/<n>-<slug>` creada desde `main`, con PR a `main`. Después, la corrección vuelve a `staging` con un PR `main` → `staging` (está protegida), para que no se pierda.
 
 `main` y `staging` están protegidas: no se hace push directo, todo entra por PR y deben estar verdes los checks **Build y tests**, **Escaneo de secretos** y **Contrato OpenAPI**. Nunca uses `git push --force` en ramas compartidas.
 
@@ -65,11 +65,11 @@ Seguimos [versionado semántico](https://semver.org/lang/es/) (`MAYOR.MENOR.PARC
 
 ```bash
 ./mvnw verify                                  # todo: compila, tests, Checkstyle, Spotless, JaCoCo y PIT
-./mvnw test -Dtest='ValidadorCierreTests*'     # un test o clase (las clases @Nested llevan * al final)
+./mvnw test -Dtest='ValidadorCierreTests*'     # un test o clase (el `*` final es opcional: sirve para ejecutar y contar cada clase `@Nested` por separado)
 ./mvnw test -Dtest=ContratoOpenApiTests        # solo el contrato OpenAPI
 ./mvnw -q validate                             # solo Checkstyle y Spotless (rápido)
 ./mvnw spotless:apply                          # formatea el código (ver más abajo)
-./mvnw org.pitest:pitest-maven:mutationCoverage  # solo PIT
+./mvnw test-compile org.pitest:pitest-maven:mutationCoverage  # solo PIT (compila antes; ya corre dentro de verify)
 ```
 
 `./mvnw verify` debe pasar en tu máquina **antes** de abrir el PR; es el mismo comando que ejecuta el CI.
@@ -80,7 +80,7 @@ Todo lo siguiente corre dentro de `./mvnw verify` y también en el CI.
 - **Checkstyle** (`config/checkstyle/checkstyle.xml`): reglas de estilo sobre `src/main` y `src/test`; un aviso rompe el build. Se ejecuta en la fase `validate` (`./mvnw -q validate`). Lee el mensaje: indica archivo y línea.
 - **Spotless**: comprueba imports sin usar, espacios al final de línea y salto de línea final. Si falla, corrígelo solo con `./mvnw spotless:apply` y vuelve a hacer commit.
 - **JaCoCo**: cobertura mínima **80 %** (líneas y ramas) en los dominios y la aplicación de planilla, asistencia y vacaciones, y en `compartido/dominio`. Informe: `target/site/jacoco/index.html`.
-- **PIT** (mutation testing): puntaje mínimo **85 %** sobre las clases de dominio de `planilla`, `asistencia`, `vacaciones` y `compartido.dominio`. Informe: `target/pit-reports/index.html`; abre las mutaciones «survived» para ver qué aserción falta. PIT solo ejecuta los tests de paquetes `..domain..`, así que los tests del dominio van ahí. Un cambio no se da por bueno si baja alguno de los dos umbrales.
+- **PIT** (mutation testing): puntaje mínimo **85 %** sobre las clases de dominio de `planilla`, `asistencia`, `vacaciones` y `compartido.dominio`. Informe: `target/pit-reports/index.html`; abre las mutaciones «survived» para ver qué aserción falta. PIT solo ejecuta los tests de los paquetes `domain` de planilla, asistencia y vacaciones y de `compartido.dominio`, así que los tests del dominio van ahí. Ya corre dentro de `verify` (ejecución `pitest-dominio`, fase `verify`). Un cambio no se da por bueno si baja alguno de los dos umbrales.
 - **SonarCloud**: análisis estático y de cobertura que corre en el CI (job `SonarCloud`) y evalúa el **quality gate**: un conjunto de condiciones (sin bugs ni vulnerabilidades nuevos, cobertura y duplicación del código nuevo dentro de lo exigido, puntos críticos de seguridad revisados). En un PR solo se mide el código que cambia. Para ver el detalle, abre el check `SonarCloud` en la pestaña *Checks* del PR y sigue el enlace al análisis (o el comentario de SonarCloud), donde cada incidencia indica archivo, línea y cómo corregirla. Si falla el gate, corrige las incidencias en el mismo PR. Los PR de Dependabot no se analizan. Tras un merge a `staging`, revisa también el CI del push: el análisis de la rama ve archivos que el del PR no ve.
 - **Otros checks del CI**: *Escaneo de secretos* (Gitleaks), *Imagen Docker y Trivy* (vulnerabilidades en la imagen) y CodeQL.
 
@@ -136,7 +136,7 @@ Dependabot abre PR semanales hacia `staging` (Maven, Docker y GitHub Actions) co
 1. Espera a que el CI termine (sus PR no se analizan en SonarCloud, no tienen acceso a los secretos).
 2. Lee las notas de versión de lo que sube; en cambios de versión menor o parche suele bastar con que el CI esté verde.
 3. Si falla, arregla el código en la misma rama del PR o comenta `@dependabot rebase` tras el arreglo; si la actualización no es viable, ciérrala con un comentario del motivo.
-4. Los saltos de versión mayor de Spring Boot no se aceptan por Dependabot: los decide el equipo.
+4. Dependabot no propone saltos mayores de Spring Boot: los decide el equipo.
 5. Un PR de dependencias pasa por la misma revisión que cualquier otro.
 
 ## Definition of Done
