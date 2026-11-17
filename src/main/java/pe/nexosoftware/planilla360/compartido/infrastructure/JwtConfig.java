@@ -25,6 +25,7 @@ import pe.nexosoftware.planilla360.compartido.seguridad.JwtClaims;
 class JwtConfig {
 
     private static final Logger LOG = LoggerFactory.getLogger(JwtConfig.class);
+    private static final SecureRandom RANDOM = new SecureRandom();
     private static final int MIN_SECRET_BYTES = 32;
 
     @Bean
@@ -36,7 +37,7 @@ class JwtConfig {
                         "Falta la variable de entorno JWT_SECRET (mínimo 32 caracteres).");
             }
             bytes = new byte[48];
-            new SecureRandom().nextBytes(bytes);
+            RANDOM.nextBytes(bytes);
             LOG.warn("JWT_SECRET no definido: se generó un secreto efímero. Los tokens dejan de ser válidos al reiniciar.");
         } else {
             bytes = props.secret().getBytes(StandardCharsets.UTF_8);
