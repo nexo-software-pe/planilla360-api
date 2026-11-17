@@ -1,0 +1,134 @@
+package pe.nexosoftware.planilla360.arquitectura;
+
+import static org.assertj.core.api.Assertions.assertThat;
+
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
+
+/**
+ * Las variables que comparten Docker Compose y la API en el host llevan el mismo valor por defecto en
+ * {@code .env.example}, {@code compose.yaml} y la configuración del perfil local. Así copiar
+ * {@code .env.example} entero no rompe la autenticación de la API local. No usa Docker ni arranca Spring.
+ */
+class ConfiguracionLocalTests {
+
+  /** Pareja (variable que lee compose, variable que lee la API). Misma variable en ambas si coincide el nombre. */
+  private record Pareja(String compose, String api) {}
+
+  private static final List<Pareja> PAREJAS_DIRECTAS =
+      List.of(
+          new Pareja("POSTGRES_USER", "DB_USER"),
+          new Pareja("POSTGRES_PASSWORD", "DB_PASSWORD"),
+          new Pareja("RABBITMQ_USER", "RABBITMQ_USER"),
+          new Pareja("RABBITMQ_PASSWORD", "RABBITMQ_PASSWORD"),
+          new Pareja("MINIO_ROOT_USER", "STORAGE_ACCESS_KEY"),
+          new Pareja("MINIO_ROOT_PASSWORD", "STORAGE_SECRET_KEY"));
+
+  private static final Pattern PLACEHOLDER_API = Pattern.compile("\\$\\{(\\w+):([^}]*)}");
+  private static final Pattern PLACEHOLDER_COMPOSE = Pattern.compile("\\$\\{(\\w+):-([^}]*)}");
+  private static final Pattern URL_DB = Pattern.compile("^jdbc:postgresql://[^:/]+:(\\d+)/(\\w+)$");
+
+  private final Map<String, String> env = leerEnv(Path.of(".env.example"));
+  private final Map<String, String> compose =
+      leerPlaceholders(Path.of("compose.yaml"), PLACEHOLDER_COMPOSE);
+  private final Map<String, String> api = leerApi();
+
+  @Test
+  @DisplayName("Las parejas usuario/clave de compose y la API tienen el mismo valor en las tres fuentes")
+  void parejasDeCredencialesAlineadas() {
+    for (Pareja p : PAREJAS_DIRECTAS) {
+      String esperado = valor(compose, "compose.yaml", p.compose());
+      assertThat(env.get(p.compose()))
+          .as(mensaje(p.compose(), ".env.example", esperado))
+          .isEqualTo(esperado);
+      assertThat(env.get(p.api()))
+          .as(mensaje(p.api(), ".env.example", esperado))
+          .isEqualTo(esperado);
+      assertThat(valor(api, "application-local.yml / application.yml", p.api()))
+          .as(mensaje(p.api(), "la configuración de la API", esperado))
+          .isEqualTo(esperado);
+    }
+  }
+
+  @Test
+  @DisplayName("POSTGRES_PORT y POSTGRES_DB coinciden con el puerto y el nombre de DB_URL")
+  void puertoYNombreDeBaseAlineados() {
+    String puerto = valor(compose, "compose.yaml", "POSTGRES_PORT");
+    String base = valor(compose, "compose.yaml", "POSTGRES_DB");
+
+    Matcher enEnv = urlDb(env.get("DB_URL"), ".env.example");
+    Matcher enApi = urlDb(valor(api, "application-local.yml", "DB_URL"), "application-local.yml");
+
+    assertThat(env.get("POSTGRES_PORT")).as(mensaje("POSTGRES_PORT", ".env.example", puerto)).isEqualTo(puerto);
+    assertThat(env.get("POSTGRES_DB")).as(mensaje("POSTGRES_DB", ".env.example", base)).isEqualTo(base);
+    assertThat(enEnv.group(1)).as(mensaje("el puerto de DB_URL", ".env.example", puerto)).isEqualTo(puerto);
+    assertThat(enEnv.group(2)).as(mensaje("la base de DB_URL", ".env.example", base)).isEqualTo(base);
+    assertThat(enApi.group(1)).as(mensaje("el puerto de DB_URL", "application-local.yml", puerto)).isEqualTo(puerto);
+    assertThat(enApi.group(2)).as(mensaje("la base de DB_URL", "application-local.yml", base)).isEqualTo(base);
+  }
+
+  private static Matcher urlDb(String url, String fuente) {
+    Matcher m = URL_DB.matcher(String.valueOf(url));
+    assertThat(m.matches())
+        .as("DB_URL en %s debe tener la forma jdbc:postgresql://host:puerto/base y era: %s", fuente, url)
+        .isTrue();
+    return m;
+  }
+
+  private static String mensaje(String variable, String fuente, String esperado) {
+    return "%s en %s debe valer «%s» (el valor por defecto de compose.yaml). Si cambias un valor por defecto,"
+            .formatted(variable, fuente, esperado)
+        + " cámbialo igual en .env.example, compose.yaml y application-local.yml";
+  }
+
+  private static String valor(Map<String, String> fuente, String nombreFuente, String variable) {
+    assertThat(fuente).as("%s debe declarar un valor por defecto para %s", nombreFuente, variable).containsKey(variable);
+    return fuente.get(variable);
+  }
+
+  /** Valores por defecto de la API: el perfil local manda; application.yml completa lo que el local no redefine. */
+  private static Map<String, String> leerApi() {
+    Map<String, String> base =
+        leerPlaceholders(Path.of("src/main/resources/application.yml"), PLACEHOLDER_API);
+    base.putAll(leerPlaceholders(Path.of("src/main/resources/application-local.yml"), PLACEHOLDER_API));
+    return base;
+  }
+
+  private static Map<String, String> leerPlaceholders(Path archivo, Pattern patron) {
+    Map<String, String> valores = new HashMap<>();
+    Matcher m = patron.matcher(leer(archivo));
+    while (m.find()) {
+      valores.putIfAbsent(m.group(1), m.group(2));
+    }
+    return valores;
+  }
+
+  private static Map<String, String> leerEnv(Path archivo) {
+    Map<String, String> valores = new HashMap<>();
+    for (String linea : leer(archivo).split("\\R")) {
+      String t = linea.strip();
+      int igual = t.indexOf('=');
+      if (!t.startsWith("#") && igual > 0) {
+        valores.put(t.substring(0, igual).strip(), t.substring(igual + 1).strip());
+      }
+    }
+    return valores;
+  }
+
+  private static String leer(Path archivo) {
+    try {
+      return Files.readString(archivo, StandardCharsets.UTF_8);
+    } catch (IOException e) {
+      throw new IllegalStateException("No se pudo leer " + archivo, e);
+    }
+  }
+}
