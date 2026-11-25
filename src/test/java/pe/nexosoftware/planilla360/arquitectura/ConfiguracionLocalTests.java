@@ -134,6 +134,29 @@ class ConfiguracionLocalTests {
         .isEqualTo(clavePrometheus);
   }
 
+  @Test
+  @DisplayName("El mensaje de desalineación nombra la fuente de referencia que se le pasa")
+  void mensajeNombraLaFuenteDeReferencia() {
+    assertThat(mensaje("METRICS_PASSWORD", ".env.example", "clave", "docker/prometheus/metrics-password"))
+        .contains("METRICS_PASSWORD en .env.example debe valer «clave»")
+        .contains("el valor de referencia en docker/prometheus/metrics-password")
+        .doesNotContain("valor por defecto de compose.yaml");
+  }
+
+  @Test
+  @DisplayName("El mensaje de valores distintos nombra el archivo de cada aparición")
+  void valoresDistintosNombranElArchivoDeLaAparicion() {
+    Map<String, List<Aparicion>> apariciones =
+        reunir("a: ${X:uno}\nb: ${X:dos}\n", PLACEHOLDER_API, "application-local.yml");
+
+    assertThatThrownBy(() -> valorUnico(apariciones, "X"))
+        .isInstanceOf(AssertionError.class)
+        .hasMessageContaining("application-local.yml")
+        .hasMessageContaining("línea 1")
+        .hasMessageContaining("línea 2")
+        .hasMessageNotContaining("application.yml");
+  }
+
   /** Una aparición de un valor por defecto: su valor y la línea (desde 1) donde está. */
   private record Aparicion(String valor, int linea) {}
 
@@ -182,6 +205,18 @@ class ConfiguracionLocalTests {
         .as("DB_URL en %s debe tener la forma jdbc:postgresql://host:puerto/base y era: %s", fuente, url)
         .isTrue();
     return m;
+  }
+
+  private static String mensaje(String variable, String fuente, String esperado, String referencia) {
+    throw new UnsupportedOperationException();
+  }
+
+  private static Map<String, List<Aparicion>> reunir(String contenido, Pattern patron, String archivo) {
+    throw new UnsupportedOperationException();
+  }
+
+  private static String valorUnico(Map<String, List<Aparicion>> apariciones, String variable) {
+    throw new UnsupportedOperationException();
   }
 
   private static String mensaje(String variable, String fuente, String esperado) {
