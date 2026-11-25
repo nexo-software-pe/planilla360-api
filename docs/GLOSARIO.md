@@ -16,7 +16,9 @@ Convenciones del código: el dominio está en español (`Planilla`, `Gratificaci
 Sistema privado de pensiones. El descuento del mes se compone de tres partes que la boleta muestra por separado: **aporte obligatorio al fondo** (`AFP_APORTE_PCT`, 10 % de referencia), **prima de seguro** (`AFP_PRIMA_PCT`, 1,37 %) y **comisión** de la administradora (distinta por AFP y por tipo de comisión: `FLUJO` o `MIXTA`; cada AFP del catálogo trae ambas). Cada componente se calcula sobre la [remuneración asegurable](#remuneración-asegurable) y se redondea por separado.
 - **Código:** `planilla/domain/regimen/Afp`, `DescuentoPension` (aporte, prima, comisión), `TipoComision`; catálogo en `catalogo` (tabla `afp`).
 - **En la API:** `afpId` y `tipoComision` en el contrato del empleado; `descuentoPension` en la línea de planilla es el **total**; el desglose está en los conceptos de la boleta (`AFP_APORTE`, `AFP_PRIMA`, `AFP_COMISION`).
-- **Nota:** hay dos `Afp` y dos `TipoComision` con el mismo nombre en módulos distintos: los del catálogo y del empleado (`catalogo/entity`, `empleado/model`, datos persistidos) y los del dominio de planilla (`planilla/domain/regimen`, reglas de cálculo). El adaptador `planilla/infrastructure/adapter/PersonalModuloAdapter` los traduce.
+- **Nota:** hay dos `Afp` y dos `TipoComision` con el mismo nombre en módulos distintos.
+  - `Afp`: `catalogo/entity/Afp` (persistida) frente a `planilla/domain/regimen/Afp` (cálculo). `CatalogoModuloAdapter` lee la AFP del catálogo (`AfpResumen`) y la traduce a `AfpVigente` (nombre y comisiones de flujo y mixta); `FabricaRegimenPensionario` construye el `Afp` del dominio con la comisión que corresponde al tipo.
+  - `TipoComision`: `empleado/model/TipoComision` frente a `planilla/domain/regimen/TipoComision`; lo traduce `PersonalModuloAdapter`.
 
 ## Anulación
 Salida definitiva de una planilla: pasa a `ANULADA` y no vuelve atrás. Solo la puede hacer el **administrador de la empresa**, con un **motivo obligatorio**, y solo si la planilla **no tiene pago registrado**. Se permite desde `BORRADOR`, `CALCULADA` y `CERRADA`. El cambio queda en la auditoría con el motivo y el usuario.
