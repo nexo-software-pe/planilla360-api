@@ -1,7 +1,7 @@
 # ADR 0007: Mensajería con reintentos y cola de mensajes muertos
 
-- **Estado:** Aceptado
-- **Fecha:** 2026-11-09 (Fase 5b)
+- **Estado:** Aceptado. Decisión tomada en la Fase 5b; registrada en la Fase 10.
+- **Fecha de la decisión (según el historial de git y la bitácora):** 2026-11-08 a 2026-11-09
 
 ## Contexto
 

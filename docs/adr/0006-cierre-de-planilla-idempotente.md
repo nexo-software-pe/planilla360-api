@@ -1,7 +1,7 @@
 # ADR 0006: Cierre de planilla idempotente
 
-- **Estado:** Aceptado
-- **Fecha:** 2026-11-08 (Fase 5a)
+- **Estado:** Aceptado. Decisión tomada en la Fase 5a; registrada en la Fase 10.
+- **Fecha de la decisión (según el historial de git y la bitácora):** 2026-11-08
 
 ## Contexto
 

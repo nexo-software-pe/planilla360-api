@@ -1,7 +1,7 @@
 # ADR 0009: Contrato OpenAPI versionado
 
-- **Estado:** Aceptado
-- **Fecha:** 2026-11-09 (Fase 6, contrato)
+- **Estado:** Aceptado. Decisión tomada en la Fase 6 (contrato); registrada en la Fase 10.
+- **Fecha de la decisión (según el historial de git y la bitácora):** 2026-11-09
 
 ## Contexto
 
