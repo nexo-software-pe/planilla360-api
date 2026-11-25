@@ -148,7 +148,11 @@ Las migraciones están en `src/main/resources/db/migration` y los datos ficticio
 | Documento | Contenido |
 |---|---|
 | [docs/ONBOARDING.md](docs/ONBOARDING.md) | guía del primer día, recorrido del código y problemas frecuentes |
-| [CONTRIBUTING.md](CONTRIBUTING.md) | flujo de trabajo, ramas y commits |
+| [docs/GLOSARIO.md](docs/GLOSARIO.md) | términos del dominio de planillas y dónde viven en el código |
+| [CONTRIBUTING.md](CONTRIBUTING.md) | flujo de trabajo, ramas, commits y Definition of Done |
+| [docs/adr/README.md](docs/adr/README.md) | índice de las decisiones de arquitectura (ADR 0002 a 0009) |
+| [docs/runbooks/README.md](docs/runbooks/README.md) | guías operativas: cola de mensajes muertos, planilla que no cierra, logs por `traceId`, Dependabot y token de Sonar |
+| [docs/postmortem/PLANTILLA.md](docs/postmortem/PLANTILLA.md) | plantilla para documentar un incidente |
 | [CLAUDE.md](CLAUDE.md) | convenciones, mapa del código y usuarios de desarrollo |
 | [docs/observabilidad.md](docs/observabilidad.md) | métricas, logs con `traceId`, Prometheus y Grafana |
 | [docs/contrato-api.md](docs/contrato-api.md) | contrato OpenAPI versionado y reglas de compatibilidad |

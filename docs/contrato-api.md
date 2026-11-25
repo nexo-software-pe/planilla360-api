@@ -30,7 +30,7 @@ La lista completa de reglas está en la documentación de oasdiff; ante la duda,
 2. Publica la versión nueva en `/api/v2/...` (controller nuevo o prefijo nuevo). Para el contrato es un cambio aditivo, así que el CI pasa.
 3. Anuncia el retiro de v1 con fecha y retíralo en un cambio aparte (ese sí romperá el contrato y requerirá la decisión del equipo).
 
-## Cómo actualizar el contrato tras un cambio intencional
+## Cómo actualizar el contrato tras un cambio deliberado
 
 ```bash
 ./mvnw test -Dtest=ContratoOpenApiTests -Dcontrato.actualizar=true

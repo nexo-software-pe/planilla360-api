@@ -10,7 +10,7 @@ La API la consumen el front y las integraciones de las empresas. Un cambio de en
 ## Decisión
 
 - **Contrato en el repositorio.** `docs/openapi/openapi.json` está versionado y se genera normalizado (claves ordenadas, sin la URL del servidor) para que los diffs sean pequeños.
-- **Test del contrato.** `ContratoOpenApiTests` (corre en `./mvnw verify` y en el CI) levanta la aplicación, lee `/v3/api-docs` y exige que sea idéntico al archivo. Tras un cambio intencional se regenera con `./mvnw test -Dtest=ContratoOpenApiTests -Dcontrato.actualizar=true` y se revisa el diff.
+- **Test del contrato.** `ContratoOpenApiTests` (corre en `./mvnw verify` y en el CI) levanta la aplicación, lee `/v3/api-docs` y exige que sea idéntico al archivo. Tras un cambio deliberado se regenera con `./mvnw test -Dtest=ContratoOpenApiTests -Dcontrato.actualizar=true` y se revisa el diff.
 - **Comparación en el CI.** El job `Contrato OpenAPI` (solo en pull requests) compara el contrato de la rama con el de la rama destino usando oasdiff con versión fija y `sha256` verificado, y falla ante cualquier hallazgo de nivel `ERR`. `.github/oasdiff-niveles.txt` eleva a `ERR` reglas que oasdiff trata como `WARN` por defecto pero que rompen a los clientes (quitar propiedades de respuesta, volver obligatorio un parámetro o campo de petición, cambiar tipos, quitar valores de un enum de respuesta).
 - **`/api/v1` no se rompe.** Un cambio incompatible no se hace en v1: se publica en `/api/v2` (cambio aditivo para el contrato), se anuncia el retiro de v1 con fecha y se retira en un cambio aparte que sí requiere decisión del equipo.
 

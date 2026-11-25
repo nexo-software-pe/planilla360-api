@@ -27,7 +27,7 @@ Micrometer recoge las métricas y el registro de Prometheus las publica en `/act
 `/actuator/prometheus` usa **HTTP Basic con una credencial de servicio** (`app.metrics.user` / `app.metrics.password`, variables `METRICS_USER` / `METRICS_PASSWORD`), no un JWT: un JWT de usuario caduca a los 15 minutos y un raspador necesita una credencial estable. Un JWT de administrador **no** da acceso.
 
 - `local`: la contraseña por defecto es `planilla360-metrics-local` (la misma que lee el Prometheus de compose).
-- `staging` y `prod`: sin `METRICS_PASSWORD` el endpoint responde siempre `401`. En Render el endpoint no se necesita (se usan los logs y las sondas); si algún día se conecta un Prometheus externo, se define la variable como secreto.
+- `staging` y `prod`: sin `METRICS_PASSWORD` el endpoint responde siempre `401`. Si no se necesita el endpoint (basta con los logs y las sondas), no se define la variable; si se conecta un Prometheus externo, se define como secreto fuera del repositorio.
 
 ## Logs
 
