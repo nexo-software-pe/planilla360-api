@@ -1,8 +1,9 @@
 # ADR 0003: Arquitectura hexagonal solo en el núcleo
 
-- **Estado**: Aceptado
-- **Fase**: decisión tomada en el diseño (Fase 0); aplicada en `planilla` (dominio en la Fase 3; aplicación e infraestructura en la Fase 5a) y en `asistencia` y `vacaciones` (Fase 4); registrada en la Fase 10.
-- **Relación**: concreta, para la estructura interna de los módulos, lo decidido en el ADR 0002.
+- **Estado**: Aceptado. Decisión tomada en la Fase 0; registrada en la Fase 10
+- **Fecha de la decisión (según el historial de git y la bitácora)**: 2026-11-07
+- **Aplicación**: en `planilla` (dominio en la Fase 3; aplicación e infraestructura en la Fase 5a) y en `asistencia` y `vacaciones` (Fase 4).
+- **Relación**: concreta, para la estructura interna de los módulos, lo decidido en el [ADR 0002](0002-monolito-modular-con-spring-modulith.md).
 
 ## Contexto
 

@@ -30,7 +30,7 @@ La lista completa de reglas está en la documentación de oasdiff; ante la duda,
 2. Publica la versión nueva en `/api/v2/...` (controller nuevo o prefijo nuevo). Para el contrato es un cambio aditivo, así que el CI pasa.
 3. Anuncia el retiro de v1 con fecha y retíralo en un cambio aparte (ese sí romperá el contrato y requerirá la decisión del equipo).
 
-## Cómo actualizar el contrato tras un cambio intencional
+## Cómo actualizar el contrato tras un cambio deliberado
 
 ```bash
 ./mvnw test -Dtest=ContratoOpenApiTests -Dcontrato.actualizar=true
@@ -44,7 +44,7 @@ En Windows, desde PowerShell: `.\mvnw.cmd test "-Dtest=ContratoOpenApiTests" "-D
 
 - oasdiff se descarga con versión fija y se verifica su `sha256` antes de ejecutarlo; para actualizarlo hay que cambiar `OASDIFF_VERSION` y `OASDIFF_SHA256` en `.github/workflows/ci.yml` (el hash está en el `checksums.txt` de la release).
 - El primer PR que introdujo el contrato no tenía contra qué compararse: si la rama destino no tiene el archivo, el job avisa y termina en verde.
-- Para que este check sea **obligatorio** para fusionar, añade «Contrato OpenAPI» a los checks requeridos de la protección de ramas `staging` y `main`.
+- El check «Contrato OpenAPI» es **obligatorio** para fusionar: está entre los checks requeridos de la protección de `staging` y de `main`, junto con «Build y tests» y «Escaneo de secretos».
 
 ## Qué falla y qué solo avisa (reglas puntuales)
 

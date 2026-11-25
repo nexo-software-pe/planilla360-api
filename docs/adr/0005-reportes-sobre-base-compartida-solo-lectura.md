@@ -1,8 +1,9 @@
 # ADR 0005: Reportes sobre la base compartida, en solo lectura
 
-- **Estado**: Aceptado
-- **Fase**: decisión tomada en el diseño (Fase 0); implementada en la Fase 5b (módulo `reporte` y vista de la migración V8); registrada en la Fase 10.
-- **Relación**: es la excepción acotada a la regla de fronteras del ADR 0002 y depende del filtro por tenant del ADR 0004.
+- **Estado**: Aceptado. Decisión tomada en la Fase 0; registrada en la Fase 10
+- **Fecha de la decisión (según el historial de git y la bitácora)**: 2026-11-07
+- **Aplicación**: implementada en la Fase 5b (módulo `reporte` y vista de la migración V8).
+- **Relación**: es la excepción acotada a la regla de fronteras del [ADR 0002](0002-monolito-modular-con-spring-modulith.md) y depende del filtro por tenant del [ADR 0004](0004-multi-tenant-por-columna.md).
 
 ## Contexto
 
@@ -26,7 +27,7 @@ El módulo `reporte` lee directamente de la base compartida con **SQL nativo de 
 - Matiz respecto al diseño original, que hablaba de lectura «solo vistas SQL»: la implementación usa una
   vista para planilla, pero tardanzas y vacaciones leen tablas directamente. La decisión de fondo (base
   compartida en solo lectura) no cambia; lo que se amplió es el alcance de lo que se lee.
-- **Cada consulta filtra por `tenant_id`** (ADR 0004): la vista expone la columna y las consultas la piden
+- **Cada consulta filtra por `tenant_id`** ([ADR 0004](0004-multi-tenant-por-columna.md)): la vista expone la columna y las consultas la piden
   como parámetro en cada tabla.
 - `reporte` no modifica datos de otros módulos; solo lee.
 - Es una decisión consciente de **Shared Database en solo lectura**, acotada a este módulo; los demás
@@ -40,7 +41,7 @@ El módulo `reporte` lee directamente de la base compartida con **SQL nativo de 
   `ReporteApiTests` ejecuta las consultas contra PostgreSQL real, por lo que un cambio incompatible falla
   en el build.
 - Se rompe a propósito la regla de «hablar solo por API pública» para este caso de lectura; queda acotado
-  a un módulo y documentado aquí. El resto del sistema mantiene las fronteras del ADR 0002.
+  a un módulo y documentado aquí. El resto del sistema mantiene las fronteras del [ADR 0002](0002-monolito-modular-con-spring-modulith.md).
 - El aislamiento por empresa recae en el filtro explícito de cada consulta; se cubre con pruebas.
 - Los reportes asumen PostgreSQL como base (CTE, funciones de ventana y `ROLLUP`).
 

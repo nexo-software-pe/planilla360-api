@@ -1,7 +1,8 @@
 # ADR 0002: Monolito modular con Spring Modulith
 
-- **Estado**: Aceptado
-- **Fase**: decisión tomada en el diseño (Fase 0) y aplicada desde el esqueleto inicial de la API (Fase 1, con `ModulithStructureTests`); registrada en la Fase 10.
+- **Estado**: Aceptado. Decisión tomada en la Fase 0; registrada en la Fase 10
+- **Fecha de la decisión (según el historial de git y la bitácora)**: 2026-11-07
+- **Aplicación**: desde el esqueleto inicial de la API (Fase 1, con `ModulithStructureTests`).
 
 ## Contexto
 
@@ -58,7 +59,7 @@ código):
 
 | Módulo | Rol | Estructura interna |
 |---|---|---|
-| `asistencia`, `vacaciones`, `planilla` | Núcleo | Hexagonal (ADR 0003) |
+| `asistencia`, `vacaciones`, `planilla` | Núcleo | Hexagonal ([ADR 0003](0003-hexagonal-solo-en-el-nucleo.md)) |
 | `empleado`, `identidad`, `empresa`, `catalogo`, `boleta`, `importacion`, `reporte`, `auditoria`, `notificacion`, `integracion` | Soporte | Capas clásicas o adaptadores |
 | `compartido` | Kernel | Value objects, tenant, seguridad |
 
@@ -74,11 +75,11 @@ directamente.
 - Un solo artefacto, una sola base de datos y transacciones locales: despliegue y depuración simples.
 - Las fronteras no dependen de la disciplina: el build las comprueba. Romper una regla falla el CI.
 - La comunicación por eventos desacopla flujos (cierre de planilla, boletas, correos) sin que los módulos
-  se conozcan; el trabajo pesado o con reintentos va por mensajería aparte (ver ADR 0007, mensajería con reintentos y DLQ).
+  se conozcan; el trabajo pesado o con reintentos va por mensajería aparte (ver [ADR 0007](0007-mensajeria-con-reintentos-y-dlq.md), mensajería con reintentos y DLQ).
 - Si un módulo (por ejemplo `notificacion`) necesitara escalar solo, sus fronteras ya están definidas y se
   podría extraer; hoy no se justifica.
 - Costo: todo comparte proceso y ciclo de despliegue, y los módulos comparten la base de datos físicamente
-  (ver ADR 0005 para el caso de lectura de reportes).
+  (ver [ADR 0005](0005-reportes-sobre-base-compartida-solo-lectura.md) para el caso de lectura de reportes).
 
 ## Alternativas consideradas
 

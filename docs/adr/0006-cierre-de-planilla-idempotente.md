@@ -30,7 +30,7 @@ Repetir la petición con la misma clave devuelve la misma planilla cerrada, con 
 
 ## Alternativas consideradas
 
-- **Sin clave, basándose solo en el estado `CERRADA`:** evita el doble cierre, pero no distingue un reintento legítimo de un segundo cierre intencional ni permite devolver "la misma respuesta".
+- **Sin clave, basándose solo en el estado `CERRADA`:** evita el doble cierre, pero no distingue un reintento legítimo de un segundo cierre deliberado ni permite devolver "la misma respuesta".
 - **Bloqueo optimista (`@Version`):** una de las peticiones simultáneas fallaría con un error de concurrencia que el cliente tendría que interpretar; con el bloqueo pesimista la segunda petición obtiene el resultado correcto.
 - **Almacén de claves en Redis:** añade una dependencia para una garantía que la base de datos ya da de forma transaccional y que debe sobrevivir a la ausencia de Redis (la API degrada sin él).
 - **Tabla aparte de claves de idempotencia:** más general, pero innecesaria mientras solo el cierre sea idempotente; la clave vive en la propia planilla.
