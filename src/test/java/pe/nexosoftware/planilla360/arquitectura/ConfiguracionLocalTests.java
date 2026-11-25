@@ -157,6 +157,18 @@ class ConfiguracionLocalTests {
         .hasMessageNotContaining("application.yml");
   }
 
+  @Test
+  @DisplayName("Una variable ausente hace fallar el check y el mensaje nombra la fuente")
+  void variableAusenteNombraLaFuente() {
+    Map<String, List<Aparicion>> apariciones =
+        reunir("a: ${X:-uno}\n", PLACEHOLDER_COMPOSE, "compose.yaml");
+
+    assertThatThrownBy(() -> valorUnico(apariciones, "compose.yaml", "AUSENTE"))
+        .isInstanceOf(AssertionError.class)
+        .hasMessageContaining("compose.yaml")
+        .hasMessageContaining("AUSENTE");
+  }
+
   /** Una aparición de un valor por defecto: su valor, la línea (desde 1) y el archivo donde está. */
   private record Aparicion(String valor, int linea, String archivo) {}
 
@@ -213,6 +225,11 @@ class ConfiguracionLocalTests {
             .formatted(variable, fuente, esperado, referencia)
         + " alinéalo en todas las fuentes que lo comparten (.env.example, compose.yaml,"
         + " application-local.yml, docker/prometheus/metrics-password)";
+  }
+
+  private static String valorUnico(
+      Map<String, List<Aparicion>> apariciones, String fuente, String variable) {
+    return valorUnico(apariciones, variable);
   }
 
   private static String valor(Map<String, List<Aparicion>> fuente, String variable) {
