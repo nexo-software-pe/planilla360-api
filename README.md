@@ -29,7 +29,17 @@ Java 21 · Spring Boot 4.1 · Spring Modulith · Spring Security (JWT) · Spring
    - Git Bash: `./mvnw spring-boot:run`
    - PowerShell: `.\mvnw.cmd spring-boot:run` (si falla, usa Git Bash)
    - IntelliJ: abre la carpeta como proyecto Maven, *File → Project Structure → SDK* = 21 y ejecuta `Planilla360ApiApplication` (el perfil `local` se aplica solo).
-4. Abre http://localhost:8080/swagger-ui.html, ejecuta `POST /api/v1/auth/login` con un usuario de desarrollo (ver más abajo; por ejemplo `rrhh@textilesandinos.ejemplo.pe` y la contraseña común) y copia el `accessToken` de la respuesta. Pulsa *Authorize*, pégalo y ya puedes probar el resto de endpoints.
+4. Obtén un token. El login es `POST /api/v1/auth/login` con un JSON de dos campos, `email` y `password`, de un usuario de desarrollo (ver más abajo). Por ejemplo, RRHH de Textiles Andinos:
+   ```bash
+   curl -s -X POST http://localhost:8080/api/v1/auth/login \
+     -H "Content-Type: application/json" \
+     -d '{"email":"rrhh@textilesandinos.ejemplo.pe","password":"Planilla360-Local1"}'
+   ```
+   La respuesta (200) trae `accessToken` (JWT; `expiraEnSegundos` es 900), `refreshToken`, `tokenType` (`Bearer`) y los datos del `usuario`. Usa el `accessToken` en cada petición con la cabecera `Authorization: Bearer <accessToken>`:
+   ```bash
+   curl -s -H "Authorization: Bearer <accessToken>" "http://localhost:8080/api/v1/planillas?periodo=2026-11&tipo=MENSUAL"
+   ```
+   También puedes hacerlo en http://localhost:8080/swagger-ui.html: ejecuta `POST /api/v1/auth/login` con ese mismo cuerpo, copia el `accessToken`, pulsa *Authorize*, pégalo y prueba el resto de endpoints.
 
 Salud de la aplicación: http://localhost:8080/actuator/health
 
@@ -58,8 +68,15 @@ docker compose --profile full up -d
 ```
 `down -v` borra **todo** lo local: no hay nada que conservar ahí. Sin la opción `-v` los datos se mantienen. Ojo: el `down` sin `--profile` no detiene los servicios que pertenecen a un perfil.
 
+### Dos copias del repositorio en la misma máquina
+`compose.yaml` fija `name: planilla360`, así que todas las copias del repositorio comparten el mismo proyecto de Docker Compose: los mismos contenedores, red y volúmenes (`planilla360_postgres-data`, etc.). Si ya levantaste la infraestructura desde otra copia, la base de la segunda ya tendrá los datos de la primera.
+
+Para aislar una segunda copia, dale otro nombre de proyecto: `docker compose -p otro --profile full up -d` (y el mismo `-p otro` en `down`, `ps`, etc.) o exporta `COMPOSE_PROJECT_NAME=otro` en la consola. Ambos prevalecen sobre el `name:` del archivo y los volúmenes pasan a llamarse `otro_postgres-data`, etc. Los puertos publicados no cambian (5432, 8025, 9001…), así que mientras la primera copia siga levantada la segunda chocará con ellos: detén la primera o cambia los puertos como se explica en «Servicios locales».
+
+Ojo con `down -v`: borra los volúmenes del proyecto sobre el que actúa. En una copia con el nombre por defecto borra también los datos que comparte con la otra.
+
 ### Usuarios de desarrollo (solo perfil `local`)
-Contraseña común: `Planilla360-Local1`
+Contraseña común: `Planilla360-Local1`. Se envía con el correo en el cuerpo de `POST /api/v1/auth/login` (ejemplo en el paso 4 del inicio rápido).
 
 | Rol | Correo |
 |---|---|

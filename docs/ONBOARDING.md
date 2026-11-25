@@ -102,7 +102,7 @@ Nunca subas secretos, contraseñas ni datos reales de personas.
 ### 4.4 El puerto 8080 está ocupado
 - **Síntoma**: la API no arranca y el log dice `Web server failed to start. Port 8080 was already in use.`
 - **Causa**: otro proceso escucha en el 8080 (una API anterior que no cerraste u otra aplicación).
-- **Cómo diagnosticarlo**: en PowerShell o cmd, `netstat -ano | findstr :8080`. La línea con `LISTENING` termina en el PID del proceso, por ejemplo `TCP    0.0.0.0:8080    0.0.0.0:0    LISTENING    6920` (con Spring suele verse `0.0.0.0:8080` o `[::]:8080`). Para ver qué programa es: `tasklist /FI "PID eq 6920"` (en PowerShell, `tasklist /FI 'PID eq 6920'`).
+- **Cómo diagnosticarlo**: `netstat -ano | findstr LISTENING | findstr :8080` (vale en Git Bash, PowerShell y cmd) muestra solo quien escucha; sin el filtro `LISTENING` salen también conexiones ya cerradas (`TIME_WAIT`, PID 0). La línea termina en el PID del proceso, por ejemplo `TCP    0.0.0.0:8080    0.0.0.0:0    LISTENING    6920` (con Spring suele verse `0.0.0.0:8080` o `[::]:8080`). Para ver qué programa es: en PowerShell o cmd, `tasklist /FI "PID eq 6920"` (en PowerShell, `tasklist /FI 'PID eq 6920'`). En **Git Bash** la `/FI` se convierte en una ruta y falla con `Argumento no válido "C:/Program Files/Git/FI"`: escribe `tasklist //FI "PID eq 6920"`.
 - **Solución**: si el proceso es tuyo y puedes cerrarlo, `taskkill /PID <pid> /F` y vuelve a arrancar. Si no, cambia el puerto de la API con la variable `PORT`: `PORT=8081 ./mvnw spring-boot:run` (PowerShell: `$env:PORT = "8081"; .\mvnw.cmd spring-boot:run`) y abre Swagger en el puerto nuevo. Ojo: el front espera la API en el 8080 por defecto.
 
 ### 4.5 Maven usa un Java que no es el 21
