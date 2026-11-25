@@ -24,8 +24,9 @@ integración o infraestructura, donde esa separación aporta poco.
     JPA ni Hibernate; los controllers no usan repositorios ni entidades; los servicios no conocen los
     controllers; los DTO no dependen de entidades ni repositorios; las entidades JPA viven en paquetes
     `entity`; inyección solo por constructor.
-  - `ArquitecturaHexagonalTests` (`asistencia` y `vacaciones`): el dominio solo depende de su propio
-    paquete `domain`, de `compartido.dominio` y de `java..` (no de `compartido.tenant`, `seguridad` ni
+  - `ArquitecturaHexagonalTests` (`asistencia` y `vacaciones`): el dominio solo depende de
+    `asistencia.domain`, `vacaciones.domain`, `compartido.dominio` y `java..` (la regla no impide que el
+    dominio de uno use el del otro; hoy no ocurre; no de `compartido.tenant`, `seguridad` ni
     `excepcion`) y no conoce `application` ni `infrastructure`; la aplicación no depende de
     `infrastructure`, ni de JPA, Hibernate, Spring Data, Spring Web o HTTP, ni accede a `empleado`,
     `empresa`, `catalogo` ni `identidad`; `infrastructure.web` no depende de `infrastructure.persistence`;
