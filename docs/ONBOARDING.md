@@ -72,12 +72,12 @@ Tip: en IntelliJ, *Go to Implementation* (`Ctrl+Alt+B`) sobre un puerto te lleva
 El flujo completo (rama desde `staging`, Conventional Commits, PR hacia `staging`) está en [CONTRIBUTING.md](../CONTRIBUTING.md); léelo entero antes de empezar.
 
 Consejos propios:
-- Elige un primer issue pequeño y pregunta antes de programar si algo no está claro.
+- Elige un primer issue pequeño (una prueba que falta, un mensaje de error o un párrafo de documentación) y pregunta antes de programar si algo no está claro.
 - En lógica de dominio, **test primero**: un commit `test:` que falla y luego `feat:`/`fix:` en verde.
 - Corre `./mvnw verify` con JDK 21 y Docker encendido antes de abrir el PR (tarda varios minutos). Si tocas endpoints o DTO, actualiza `docs/openapi/openapi.json` ([contrato-api.md](contrato-api.md)).
 - El merge no lo haces tú; la **Definition of Done** está en [CONTRIBUTING.md](../CONTRIBUTING.md#definition-of-done).
 
-Para el primer PR elige algo pequeño (una prueba que falta, un mensaje de error, un párrafo de documentación). Nunca subas secretos, contraseñas ni datos reales de personas.
+Nunca subas secretos, contraseñas ni datos reales de personas.
 
 ## 4. Problemas frecuentes
 
@@ -119,17 +119,19 @@ Para el primer PR elige algo pequeño (una prueba que falta, un mensaje de error
 
 ### 4.7 La API no autentica en PostgreSQL tras recrear los contenedores
 - **Síntoma**: la API falla con `password authentication failed for user "planilla360"` después de cambiar claves y recrear los contenedores.
-- **Causa**: compose y la API leen las credenciales por separado. Compose toma `POSTGRES_PASSWORD` de tu `.env`; la API en el host **no lee `.env`** y usa `DB_PASSWORD` (por defecto `planilla360`). Si copiaste `.env.example` entero, compose creó la base con la clave de ejemplo y la API sigue con la de por defecto. Además, el volumen `postgres-data` conserva la clave con la que se creó la primera vez.
+- **Causa**: compose y la API leen las credenciales por separado. Compose toma `POSTGRES_PASSWORD` de tu `.env`; la API en el host **no lee `.env`** y usa `DB_PASSWORD` (por defecto `planilla360`). Copiar `.env.example` tal cual es seguro (sus valores coinciden con los por defecto de la API), pero si cambiaste una clave solo en `.env`, compose creó la base con la nueva y la API sigue con la de por defecto. Además, el volumen `postgres-data` conserva la clave con la que se creó la primera vez.
 - **Cómo diagnosticarlo**: `docker compose --profile core config` (sin perfil no muestra servicios) muestra el valor efectivo de `POSTGRES_PASSWORD`; compáralo con el `DB_PASSWORD` con el que arrancas la API y revisa tu `.env`.
-- **Solución**: no copies `.env.example` completo: cada variable la lee uno solo, compose o la API, y se define en un sitio distinto.
-  - **Las lee compose, van en `.env`** (en la raíz del repo): `POSTGRES_PASSWORD`, `RABBITMQ_PASSWORD`, `MINIO_ROOT_PASSWORD`. Pon en el `.env` solo las que cambias.
-  - **Las lee la API en el host, NO van en `.env`**: se exportan en la consola donde haces `./mvnw spring-boot:run` (Git Bash: `export DB_PASSWORD=...`; PowerShell: `$env:DB_PASSWORD = "..."`) o en las variables de entorno de la configuración de ejecución de IntelliJ.
-  - **Cada clave que cambies debe tener el mismo valor en las dos partes**:
+- **Solución**: copiar `.env.example` entero es seguro en local. Lo que cambies de una pareja debe cambiarse en las dos puntas:
+  - **Compose lee `.env`** (en la raíz del repo).
+  - **La API en el host NO lee `.env`**: toma variables de entorno exportadas en la consola donde haces `./mvnw spring-boot:run` (Git Bash: `export DB_PASSWORD=...`; PowerShell: `$env:DB_PASSWORD = "..."`) o en las variables de entorno de la configuración de ejecución de IntelliJ. `RABBITMQ_USER` y `RABBITMQ_PASSWORD` las leen ambos, con el mismo nombre.
 
     | Servicio | Compose (`.env`) | API (consola o IntelliJ) |
     |---|---|---|
-    | PostgreSQL | `POSTGRES_PASSWORD` (y `POSTGRES_PORT`) | `DB_PASSWORD` (y `DB_URL` con el mismo puerto) |
-    | RabbitMQ | `RABBITMQ_PASSWORD` | `RABBITMQ_PASSWORD` |
+    | PostgreSQL | `POSTGRES_USER` | `DB_USER` |
+    | PostgreSQL | `POSTGRES_PASSWORD` | `DB_PASSWORD` |
+    | PostgreSQL | `POSTGRES_PORT` y `POSTGRES_DB` | `DB_URL` (mismo puerto y nombre de base) |
+    | RabbitMQ | `RABBITMQ_USER` y `RABBITMQ_PASSWORD` | `RABBITMQ_USER` y `RABBITMQ_PASSWORD` |
+    | MinIO | `MINIO_ROOT_USER` | `STORAGE_ACCESS_KEY` |
     | MinIO | `MINIO_ROOT_PASSWORD` | `STORAGE_SECRET_KEY` |
 
   Para volver al estado de fábrica, borra el `.env`, abre un terminal nuevo (sin esas variables exportadas) y sigue «Reiniciar la base local desde cero» del README (`docker compose --profile full down -v`, levantar de nuevo y arrancar la API). `down -v` borra la base local, las colas y los archivos de MinIO.

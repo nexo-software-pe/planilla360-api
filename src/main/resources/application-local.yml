@@ -1,5 +1,5 @@
 # Perfil local: PostgreSQL de docker-compose (perfil "core"). Los valores por defecto son solo para
-# desarrollo en tu máquina; cualquier valor se puede sobrescribir con variables de entorno o .env.
+# desarrollo en tu máquina; cualquier valor se puede sobrescribir con variables de entorno.
 spring:
   datasource:
     url: ${DB_URL:jdbc:postgresql://localhost:5432/planilla360}
