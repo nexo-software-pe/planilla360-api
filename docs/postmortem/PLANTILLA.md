@@ -31,7 +31,7 @@ Horas en hora de Lima, en orden. Una fila por hecho observable (detección, deci
 |---|---|
 | 08:35 | RRHH intenta cerrar la planilla y recibe 422. |
 | 08:50 | Soporte abre el ticket con el `traceId` de la petición. |
-| 09:20 | La guardia consulta `/validaciones`: 5 incidencias `VACACIONES_PENDIENTES`. |
+| 09:20 | La guardia consulta `/validaciones`: 1 incidencia `VACACIONES_PENDIENTES` (5 solicitudes). |
 | 11:15 | El jefe de área aprueba las solicitudes. |
 | 11:40 | Cierre exitoso; las boletas empiezan a generarse. |
 
@@ -71,6 +71,6 @@ Cada acción con un responsable (rol o nombre del equipo) y fecha límite. Prefi
 
 ## 9. Lecciones
 
-Lo aprendido que otras personas del equipo deberían saber. Si es una regla general, propón añadirla a `arquitectura/LECCIONES.md` (síntoma → causa → regla).
+Lo aprendido que otras personas del equipo deberían saber. Si es una regla general, propón convertirla en un check automático o en una regla del equipo (síntoma → causa → regla).
 
 *Ejemplo: las validaciones previas al cierre dependen de datos de otros equipos; un aviso anticipado cuesta menos que una guardia.*

@@ -41,7 +41,7 @@
    - Mensajes en una DLQ: abre la cola, sección *Get messages*, y lee la cabecera `x-exception-message` (usa *Nack message requeue true* para no consumirlo al mirar).
    - Colas inexistentes: la API nunca arrancó con `MESSAGING_ENABLED=true`; las colas las crea la API al conectarse.
 5. Busca el motivo en los logs de la API (`WARN`/`ERROR` de `ConsumidorBoletas` y `ConsumidorCorreos`); para seguir una petición concreta usa [logs-por-traceid.md](logs-por-traceid.md). Los mensajes de las colas corren en otro hilo y no heredan el `traceId` de la petición original.
-6. Causas habituales del fallo de la boleta: almacenamiento de archivos caído (MinIO, perfil `storage`), datos de la planilla inconsistentes. Del correo: servidor SMTP caído (Mailpit en local, `http://localhost:8025`) o `NOTIFICACIONES_HABILITADAS=false`.
+6. Causas habituales del fallo de la boleta: almacenamiento de archivos caído (MinIO, perfil `storage`), datos de la planilla inconsistentes. Del correo: servidor SMTP caído (Mailpit en local, `http://localhost:8025`) o `NOTIFICACIONES_HABILITADAS=false` (vale `false` por defecto fuera de `local`: se registra «Correos apagados» y no se avisa). Si el trabajador no tiene correo registrado, `EnvioCorreoService` deja un `WARN` y no se avisa. Si falla `PlanillaCerradaListener` (log `ERROR` «No se pudo iniciar la generación de boletas...»), el estado queda `SIN_INICIAR`: se arregla con `POST .../boletas/generar`.
 
 ## Mitigación y solución
 

@@ -6,7 +6,7 @@ El job `SonarCloud` del workflow `CI` termina en rojo con mensajes como `Not aut
 
 ## Contexto
 
-- `SONAR_TOKEN` es un **secreto de organización de GitHub** (organización `nexo-software-pe`), compartido por los repositorios `planilla360-api` y `planilla360-web`. Es un **token personal** de una cuenta de SonarCloud, creado con vencimiento «Never (if used)»: no caduca mientras se siga usando, pero deja de servir si se revoca o si su dueño pierde acceso a la organización.
+- `SONAR_TOKEN` está registrado como secreto de organización de GitHub (organización `nexo-software-pe`) y lo usan los CI de `planilla360-api` y `planilla360-web`; es un dato **a confirmar por el administrador de la organización** (paso 5 del diagnóstico). Es un **token personal** de una cuenta de SonarCloud, creado con vencimiento «Never (if used)»: no caduca mientras se siga usando, pero deja de servir si se revoca o si su dueño pierde acceso a la organización.
 - Organización en SonarCloud: `nexo-software-pe`. Proyectos: `nexo-software-pe_planilla360-api` y `nexo-software-pe_planilla360-web`.
 - El **análisis automático está desactivado**: el análisis solo corre desde GitHub Actions (job `sonar` de `.github/workflows/ci.yml`, con `-Dsonar.qualitygate.wait=true`).
 - Los PR de Dependabot **no ejecutan** el job: lleva `if: github.actor != 'dependabot[bot]'` porque Dependabot no recibe los secretos. Que el job aparezca como omitido (*skipped*) en un PR de Dependabot es lo esperado, no un fallo.
@@ -44,7 +44,7 @@ Hacen falta dos roles: un miembro de la organización en SonarCloud con permiso 
    gh run watch <id-de-la-corrida>
    ```
 2. El job `SonarCloud` debe terminar en verde y el proyecto en SonarCloud debe mostrar un análisis con la fecha de hoy.
-3. Repite la comprobación en `planilla360-web`: el secreto es compartido.
+3. Revisa también el job de SonarCloud de `planilla360-web`: si usa el mismo secreto debería quedar en verde; si no, confirma con el administrador de qué secreto lee ese repositorio.
 4. Un PR de Dependabot sigue mostrando el job omitido; es correcto.
 
 ## Escalar

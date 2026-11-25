@@ -27,4 +27,4 @@ Los runbooks nombran roles, no personas. Quién ocupa cada rol lo define el equi
 
 - Los comandos están escritos para Git Bash o una terminal POSIX; lo que va entre `<...>` lo reemplazas tú.
 - Ningún runbook contiene valores de secretos. Los tokens y contraseñas se leen de donde se guardan; nunca se pegan en tickets, chats ni en el repositorio.
-- Los puertos y servicios locales salen de `compose.yaml` (perfiles `messaging`, `storage` y `obs`). Todos están publicados solo en `127.0.0.1`.
+- Los puertos y servicios locales salen de `compose.yaml` (perfiles `core`, `messaging`, `storage`, `app`, `obs` y `full`). Todos están publicados solo en `127.0.0.1`.

@@ -6,7 +6,8 @@
 
 - **422** «Regla de negocio incumplida», con un detalle que empieza por «No se puede cerrar la planilla: ...» (validaciones pendientes) o con otra regla de la planilla (por ejemplo, la planilla ya está cerrada con otra clave o el estado no permite cerrar).
 - **409** «Conflicto con el estado actual»: la `Idempotency-Key` ya se usó para cerrar otra planilla de la misma empresa.
-- **422** por la cabecera: falta `Idempotency-Key`, está vacía o supera los 100 caracteres.
+- **400** si la petición **no trae** la cabecera `Idempotency-Key`: la rechaza Spring MVC antes de llegar al caso de uso («Required header 'Idempotency-Key' is not present»).
+- **422** si la cabecera viene **vacía** (por ejemplo `-H "Idempotency-Key;"`) o supera los 100 caracteres: lo responde `CierrePlanillaService` («Indique la clave de idempotencia...», «no puede superar los 100 caracteres»).
 
 ## Contexto (fuente: `ValidadorCierre`, `ValidadorDePlanilla`, `CierrePlanillaService`, `Planilla`)
 
@@ -16,7 +17,7 @@
 | Código | Causa | Aplica a |
 |---|---|---|
 | `SIN_REGIMEN_PENSIONARIO` | Un trabajador del periodo no tiene régimen pensionario (ONP o AFP) | todos los tipos |
-| `ASISTENCIA_INCOMPLETA` | La asistencia del mes no está consolidada | **solo planilla MENSUAL** |
+| `ASISTENCIA_INCOMPLETA` | La asistencia del mes no está completa: el **último día del mes** aún no está consolidado, o algún día del mes está en estado `INCOMPLETA` (falta una marcación) | **solo planilla MENSUAL** |
 | `VACACIONES_PENDIENTES` | Hay solicitudes de vacaciones por aprobar que se solapan con el periodo | **solo planilla MENSUAL** |
 | `PLANILLA_DUPLICADA` | Ya existe otra planilla **cerrada** del mismo periodo y tipo | todos los tipos |
 | `NETO_NEGATIVO` | Un trabajador tiene neto negativo en su línea | todos los tipos |
@@ -36,11 +37,15 @@
 2. Mira el estado de la planilla: `GET /api/v1/planillas/<planillaId>` (campo de estado).
 3. Según el código:
    - `SIN_REGIMEN_PENSIONARIO`: el mensaje trae el id del trabajador; abre su ficha/contrato (`/api/v1/empleados`) y registra su régimen (ONP o AFP).
-   - `ASISTENCIA_INCOMPLETA`: la consolidación diaria corre a las 00:30 (hora de Lima); revisa las consolidaciones del mes en `/api/v1/asistencia` y consolida lo que falte.
+   - `ASISTENCIA_INCOMPLETA` (`NovedadesMensualesService.mesCompleto` exige las dos condiciones):
+     - (a) El último día del mes debe estar consolidado. El job corre a las 00:30 (hora de Lima) del día siguiente, así que la planilla mensual no puede cerrarse antes de esa hora; si ya pasó, consolida el día a mano (ver abajo).
+     - (b) Ningún día puede estar `INCOMPLETA` (falta una marcación). Reconsolidar **no** lo arregla: primero corrige la marcación del trabajador y luego reconsolida ese día.
+     - Para ver los días `INCOMPLETA`: `GET /api/v1/asistencia?empleadoId=<uuid>&mes=AAAA-MM` (días de un trabajador) o `GET /api/v1/asistencia/resumen?mes=AAAA-MM` (resumen de todos). Ambos requieren RRHH o ADMIN_EMPRESA.
+     - Para reconsolidar un día: `POST /api/v1/asistencia/consolidaciones` con `{"fecha":"AAAA-MM-DD"}` (RRHH o ADMIN_EMPRESA).
    - `VACACIONES_PENDIENTES`: aprueba o rechaza las solicitudes en `/api/v1/vacaciones` que se solapen con el periodo.
-   - `PLANILLA_DUPLICADA`: busca la otra planilla cerrada con `GET /api/v1/planillas?periodo=<AAAA-MM>&tipo=<TIPO>&estado=CERRADA`. Si la cerrada es correcta, la que intentas cerrar sobra (anúlala); si la cerrada es errónea, hay que anularla antes (ver más abajo).
+   - `PLANILLA_DUPLICADA` (poco frecuente: crear una planilla ya impide dos vigentes del mismo periodo y tipo, con 409 en `PlanillaService.crear`): busca la otra planilla cerrada con `GET /api/v1/planillas?periodo=<AAAA-MM>&tipo=<TIPO>&estado=CERRADA`. Si la cerrada es correcta, la que intentas cerrar sobra (anúlala); si la cerrada es errónea, hay que anularla antes (ver más abajo).
    - `NETO_NEGATIVO`: revisa en `GET /api/v1/planillas/<planillaId>/lineas` las líneas de ese trabajador (descuentos o adelantos mayores que los ingresos) y corrige el dato de origen.
-4. Si no hay incidencias y aun así responde 409: la clave ya se usó para otra planilla. Genera una clave nueva (por ejemplo un UUID) y reintenta.
+4. Si responde 409 por la clave: ya se usó para cerrar otra planilla de la empresa. Esa comprobación ocurre **antes** de validar, así que sale haya o no incidencias (también puede salir por el índice `uq_planilla_clave` si dos cierres con la misma clave compiten a la vez). Genera una clave nueva (por ejemplo un UUID) y reintenta.
 
 ## Solución
 

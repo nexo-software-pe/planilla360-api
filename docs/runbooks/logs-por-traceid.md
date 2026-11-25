@@ -20,7 +20,7 @@ Un usuario o el equipo reporta un error («me salió un 500», «el cierre fall�
    ```
    Para marcar tú la petición desde el origen, envía tu propio identificador:
    ```bash
-   curl -i -H "X-Request-Id: incidente-0001-abcdef" http://localhost:8080/api/v1/planillas
+   curl -i -H "Authorization: Bearer <accessToken>" -H "X-Request-Id: incidente-0001-abcdef" http://localhost:8080/api/v1/planillas
    ```
    La respuesta traerá `X-Trace-Id: incidente-0001-abcdef`.
 2. **Busca en los logs**.
