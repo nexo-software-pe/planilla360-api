@@ -7,12 +7,12 @@ Cada ADR documenta una decisión relevante: contexto, decisión, consecuencias y
 | [0001](#adr-0001-reservado) | Reservado | Número reservado; no hay documento. |
 | [0002](0002-monolito-modular-con-spring-modulith.md) | Monolito modular con Spring Modulith | Una sola aplicación dividida en módulos con fronteras verificadas por pruebas. |
 | [0003](0003-hexagonal-solo-en-el-nucleo.md) | Arquitectura hexagonal solo en el núcleo | `asistencia`, `vacaciones` y `planilla` usan puertos y adaptadores; el resto, capas clásicas. |
-| [0004](0004-multi-tenant-por-columna.md) | Multi-tenant por columna (`tenant_id`) | Todas las empresas comparten tablas y cada fila lleva su `tenant_id`, filtrado por Hibernate. |
-| [0005](0005-reportes-sobre-base-compartida-solo-lectura.md) | Reportes sobre la base compartida, en solo lectura | El módulo `reporte` consulta con SQL nativo una vista de solo lectura, siempre filtrando por tenant. |
+| [0004](0004-multi-tenant-por-columna.md) | Multi-tenant por columna (`tenant_id`) | Todas las empresas comparten tablas y cada fila lleva su `tenant_id`, que Hibernate filtra solo en las entidades de negocio; `usuario` y `auditoria_cambio` (tenant anulable) y el SQL nativo filtran de forma explícita. |
+| [0005](0005-reportes-sobre-base-compartida-solo-lectura.md) | Reportes sobre la base compartida, en solo lectura | El módulo `reporte` lee la base compartida con SQL nativo de solo lectura (una vista para planilla y costo laboral, tablas para tardanzas y vacaciones), siempre filtrando por `tenant_id`. |
 | [0006](0006-cierre-de-planilla-idempotente.md) | Cierre de planilla idempotente | El cierre exige una clave de idempotencia y repetirlo devuelve la misma planilla sin duplicar efectos. |
 | [0007](0007-mensajeria-con-reintentos-y-dlq.md) | Mensajería con reintentos y cola de mensajes muertos | Boletas y correos se procesan de forma asíncrona con RabbitMQ, reintentos y una DLQ por cola. |
 | [0008](0008-observabilidad-traceid-propio-y-micrometer.md) | Observabilidad con traceId propio y Micrometer | Un `traceId` por petición en logs y cabecera, y métricas Prometheus con panel en Grafana. |
-| [0009](0009-contrato-openapi-versionado.md) | Contrato OpenAPI versionado | El contrato vive en el repositorio y el CI rechaza los cambios que rompen `/api/v1`. |
+| [0009](0009-contrato-openapi-versionado.md) | Contrato OpenAPI versionado | El contrato vive en el repositorio y el CI falla ante los cambios de nivel `ERR` que rompen a los clientes de `/api/v1`; lo incompatible va en `/api/v2`. |
 
 ## ADR 0001: reservado
 
