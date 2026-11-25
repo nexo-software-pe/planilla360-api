@@ -1,0 +1,78 @@
+# Runbook: la planilla no se puede cerrar (409 / 422)
+
+## Cuándo usarlo
+
+`POST /api/v1/planillas/{id}/cerrar` responde:
+
+- **422** «Regla de negocio incumplida», con un detalle que empieza por «No se puede cerrar la planilla: ...» (validaciones pendientes) o con otra regla de la planilla (por ejemplo, la planilla ya está cerrada con otra clave o el estado no permite cerrar).
+- **409** «Conflicto con el estado actual»: la `Idempotency-Key` ya se usó para cerrar otra planilla de la misma empresa.
+- **422** por la cabecera: falta `Idempotency-Key`, está vacía o supera los 100 caracteres.
+
+## Contexto (fuente: `ValidadorCierre`, `ValidadorDePlanilla`, `CierrePlanillaService`, `Planilla`)
+
+- Solo cierra una planilla en estado `CALCULADA` (BORRADOR → CALCULADA → CERRADA; ANULADA es salida definitiva). En `BORRADOR` primero hay que calcular.
+- La cadena `ValidadorCierre.estandar()` reúne **todas** las incidencias, no solo la primera. Cada una tiene un código:
+
+| Código | Causa | Aplica a |
+|---|---|---|
+| `SIN_REGIMEN_PENSIONARIO` | Un trabajador del periodo no tiene régimen pensionario (ONP o AFP) | todos los tipos |
+| `ASISTENCIA_INCOMPLETA` | La asistencia del mes no está consolidada | **solo planilla MENSUAL** |
+| `VACACIONES_PENDIENTES` | Hay solicitudes de vacaciones por aprobar que se solapan con el periodo | **solo planilla MENSUAL** |
+| `PLANILLA_DUPLICADA` | Ya existe otra planilla **cerrada** del mismo periodo y tipo | todos los tipos |
+| `NETO_NEGATIVO` | Un trabajador tiene neto negativo en su línea | todos los tipos |
+
+- Las validaciones de asistencia y vacaciones no condicionan la gratificación ni la CTS.
+- La `Idempotency-Key` es **única por empresa** (índice `uq_planilla_clave` sobre `tenant_id` + clave). Repetir el cierre con la misma clave sobre la misma planilla ya cerrada devuelve la misma planilla con la cabecera `Idempotent-Replayed: true` y no cierra de nuevo.
+- Crear una planilla ya está limitado: solo una planilla vigente (no anulada) por periodo y tipo.
+
+## Diagnóstico
+
+1. Consulta las incidencias (token de RRHH o ADMIN_EMPRESA):
+   ```bash
+   curl -s -H "Authorization: Bearer <accessToken>" \
+     http://localhost:8080/api/v1/planillas/<planillaId>/validaciones
+   ```
+   Responde `{"valida": false, "incidencias": [{"codigo": "...", "mensaje": "..."}]}`.
+2. Mira el estado de la planilla: `GET /api/v1/planillas/<planillaId>` (campo de estado).
+3. Según el código:
+   - `SIN_REGIMEN_PENSIONARIO`: el mensaje trae el id del trabajador; abre su ficha/contrato (`/api/v1/empleados`) y registra su régimen (ONP o AFP).
+   - `ASISTENCIA_INCOMPLETA`: la consolidación diaria corre a las 00:30 (hora de Lima); revisa las consolidaciones del mes en `/api/v1/asistencia` y consolida lo que falte.
+   - `VACACIONES_PENDIENTES`: aprueba o rechaza las solicitudes en `/api/v1/vacaciones` que se solapen con el periodo.
+   - `PLANILLA_DUPLICADA`: busca la otra planilla cerrada con `GET /api/v1/planillas?periodo=<AAAA-MM>&tipo=<TIPO>&estado=CERRADA`. Si la cerrada es correcta, la que intentas cerrar sobra (anúlala); si la cerrada es errónea, hay que anularla antes (ver más abajo).
+   - `NETO_NEGATIVO`: revisa en `GET /api/v1/planillas/<planillaId>/lineas` las líneas de ese trabajador (descuentos o adelantos mayores que los ingresos) y corrige el dato de origen.
+4. Si no hay incidencias y aun así responde 409: la clave ya se usó para otra planilla. Genera una clave nueva (por ejemplo un UUID) y reintenta.
+
+## Solución
+
+1. Corrige la causa en el módulo de origen (empleados, asistencia, vacaciones).
+2. Recalcula para que las líneas reflejen los datos corregidos:
+   ```bash
+   curl -s -X POST -H "Authorization: Bearer <accessToken>" \
+     http://localhost:8080/api/v1/planillas/<planillaId>/calcular
+   ```
+3. Revisa otra vez `/validaciones` hasta que `valida` sea `true`.
+4. Cierra con una clave de idempotencia **estable para esa operación**: si la petición se corta (timeout), repite con **la misma** clave; no generes otra.
+   ```bash
+   curl -s -X POST -H "Authorization: Bearer <accessToken>" \
+     -H "Idempotency-Key: <clave-unica-por-empresa>" \
+     http://localhost:8080/api/v1/planillas/<planillaId>/cerrar
+   ```
+5. **Anular** (solo `ADMIN_EMPRESA`; motivo obligatorio; solo si la planilla **no tiene pago registrado**, de lo contrario responde 409):
+   ```bash
+   curl -s -X POST -H "Authorization: Bearer <accessToken>" -H "Content-Type: application/json" \
+     -d '{"motivo":"<motivo de la anulación>"}' \
+     http://localhost:8080/api/v1/planillas/<planillaId>/anular
+   ```
+   Si quien intenta anular es RRHH, la respuesta es 403: pide a un administrador de la empresa.
+
+## Verificar
+
+- `POST .../cerrar` responde `200` con la planilla en estado `CERRADA`.
+- Repetir la misma petición con la misma clave responde `200` con `Idempotent-Replayed: true`.
+- Tras el cierre, `GET .../boletas/estado` empieza a avanzar (las boletas se generan al confirmarse el cierre); si no avanza, usa [dlq-rabbitmq.md](dlq-rabbitmq.md).
+
+## Escalar
+
+- Dato de origen que no sabes corregir (régimen, contrato, asistencia): **responsable de producto / soporte funcional**.
+- Planilla cerrada con error y pago ya registrado (no se puede anular): **responsable técnico del api** y **responsable de producto**; no se edita la base a mano.
+- Incidencias que no corresponden a la realidad (validación equivocada): **responsable técnico del api**, con el `traceId` de la petición (ver [logs-por-traceid.md](logs-por-traceid.md)).
