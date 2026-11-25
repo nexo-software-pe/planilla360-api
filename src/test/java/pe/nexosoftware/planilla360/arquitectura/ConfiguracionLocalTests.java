@@ -36,6 +36,7 @@ class ConfiguracionLocalTests {
           new Pareja("MINIO_ROOT_USER", "STORAGE_ACCESS_KEY"),
           new Pareja("MINIO_ROOT_PASSWORD", "STORAGE_SECRET_KEY"));
 
+  private static final String FUENTES_API = "application-local.yml / application.yml";
   private static final Pattern PLACEHOLDER_API = Pattern.compile("\\$\\{(\\w+):([^}]*)}");
   private static final Pattern PLACEHOLDER_COMPOSE = Pattern.compile("\\$\\{(\\w+):-([^}]*)}");
   private static final Pattern URL_DB = Pattern.compile("^jdbc:postgresql://[^:/]+:(\\d+)/(\\w+)$");
@@ -49,15 +50,15 @@ class ConfiguracionLocalTests {
   @DisplayName("Las parejas usuario/clave de compose y la API tienen el mismo valor en las tres fuentes")
   void parejasDeCredencialesAlineadas() {
     for (Pareja p : PAREJAS_DIRECTAS) {
-      String esperado = valor(compose, p.compose());
+      String esperado = valor(compose, "compose.yaml", p.compose());
       assertThat(env.get(p.compose()))
           .as(mensaje(p.compose(), ".env.example", esperado, "compose.yaml"))
           .isEqualTo(esperado);
       assertThat(env.get(p.api()))
           .as(mensaje(p.api(), ".env.example", esperado, "compose.yaml"))
           .isEqualTo(esperado);
-      assertThat(valor(api, p.api()))
-          .as(mensaje(p.api(), "la configuración de la API", esperado, "compose.yaml"))
+      assertThat(valor(api, FUENTES_API, p.api()))
+          .as(mensaje(p.api(), archivoDe(api, p.api()), esperado, "compose.yaml"))
           .isEqualTo(esperado);
     }
   }
@@ -65,18 +66,18 @@ class ConfiguracionLocalTests {
   @Test
   @DisplayName("POSTGRES_PORT y POSTGRES_DB coinciden con el puerto y el nombre de DB_URL")
   void puertoYNombreDeBaseAlineados() {
-    String puerto = valor(compose, "POSTGRES_PORT");
-    String base = valor(compose, "POSTGRES_DB");
+    String puerto = valor(compose, "compose.yaml", "POSTGRES_PORT");
+    String base = valor(compose, "compose.yaml", "POSTGRES_DB");
 
     Matcher enEnv = urlDb(env.get("DB_URL"), ".env.example");
-    Matcher enApi = urlDb(valor(api, "DB_URL"), "application-local.yml");
+    Matcher enApi = urlDb(valor(api, FUENTES_API, "DB_URL"), archivoDe(api, "DB_URL"));
 
     assertThat(env.get("POSTGRES_PORT")).as(mensaje("POSTGRES_PORT", ".env.example", puerto, "compose.yaml")).isEqualTo(puerto);
     assertThat(env.get("POSTGRES_DB")).as(mensaje("POSTGRES_DB", ".env.example", base, "compose.yaml")).isEqualTo(base);
     assertThat(enEnv.group(1)).as(mensaje("el puerto de DB_URL", ".env.example", puerto, "compose.yaml")).isEqualTo(puerto);
     assertThat(enEnv.group(2)).as(mensaje("la base de DB_URL", ".env.example", base, "compose.yaml")).isEqualTo(base);
-    assertThat(enApi.group(1)).as(mensaje("el puerto de DB_URL", "application-local.yml", puerto, "compose.yaml")).isEqualTo(puerto);
-    assertThat(enApi.group(2)).as(mensaje("la base de DB_URL", "application-local.yml", base, "compose.yaml")).isEqualTo(base);
+    assertThat(enApi.group(1)).as(mensaje("el puerto de DB_URL", archivoDe(api, "DB_URL"), puerto, "compose.yaml")).isEqualTo(puerto);
+    assertThat(enApi.group(2)).as(mensaje("la base de DB_URL", archivoDe(api, "DB_URL"), base, "compose.yaml")).isEqualTo(base);
   }
 
   @Test
@@ -93,7 +94,7 @@ class ConfiguracionLocalTests {
     assertThatThrownBy(
             () ->
                 valorUnico(
-                    reunir(contenido, PLACEHOLDER_COMPOSE, "compose.yaml"), "POSTGRES_PASSWORD"))
+                    reunir(contenido, PLACEHOLDER_COMPOSE, "compose.yaml"), "compose.yaml", "POSTGRES_PASSWORD"))
         .isInstanceOf(AssertionError.class)
         .hasMessageContaining("POSTGRES_PASSWORD")
         .hasMessageContaining("compose.yaml")
@@ -108,7 +109,7 @@ class ConfiguracionLocalTests {
   void variableConElMismoValorEnVariasApariciones() {
     String contenido = "a: ${X:-uno}\nb: ${X:-uno}\n";
 
-    assertThat(valorUnico(reunir(contenido, PLACEHOLDER_COMPOSE, "compose.yaml"), "X"))
+    assertThat(valorUnico(reunir(contenido, PLACEHOLDER_COMPOSE, "compose.yaml"), "compose.yaml", "X"))
         .isEqualTo("uno");
   }
 
@@ -117,7 +118,7 @@ class ConfiguracionLocalTests {
   void lineasComentadasSeIgnoran() {
     String contenido = "# ejemplo: ${X:-distinto}\n  # otro ${X:-raro}\nb: ${X:-bueno}\n";
 
-    assertThat(valorUnico(reunir(contenido, PLACEHOLDER_COMPOSE, "compose.yaml"), "X"))
+    assertThat(valorUnico(reunir(contenido, PLACEHOLDER_COMPOSE, "compose.yaml"), "compose.yaml", "X"))
         .isEqualTo("bueno");
   }
 
@@ -129,8 +130,8 @@ class ConfiguracionLocalTests {
     assertThat(env.get("METRICS_PASSWORD"))
         .as(mensaje("METRICS_PASSWORD", ".env.example", clavePrometheus, "docker/prometheus/metrics-password"))
         .isEqualTo(clavePrometheus);
-    assertThat(valor(api, "METRICS_PASSWORD"))
-        .as(mensaje("METRICS_PASSWORD", "application-local.yml", clavePrometheus, "docker/prometheus/metrics-password"))
+    assertThat(valor(api, FUENTES_API, "METRICS_PASSWORD"))
+        .as(mensaje("METRICS_PASSWORD", archivoDe(api, "METRICS_PASSWORD"), clavePrometheus, "docker/prometheus/metrics-password"))
         .isEqualTo(clavePrometheus);
   }
 
@@ -149,7 +150,7 @@ class ConfiguracionLocalTests {
     Map<String, List<Aparicion>> apariciones =
         reunir("a: ${X:uno}\nb: ${X:dos}\n", PLACEHOLDER_API, "application-local.yml");
 
-    assertThatThrownBy(() -> valorUnico(apariciones, "X"))
+    assertThatThrownBy(() -> valorUnico(apariciones, "application-local.yml", "X"))
         .isInstanceOf(AssertionError.class)
         .hasMessageContaining("application-local.yml")
         .hasMessageContaining("línea 1")
@@ -193,10 +194,10 @@ class ConfiguracionLocalTests {
 
   /** Exige que todas las apariciones de la variable tengan el mismo valor por defecto y lo devuelve. */
   private static String valorUnico(
-      Map<String, List<Aparicion>> apariciones, String variable) {
+      Map<String, List<Aparicion>> apariciones, String fuente, String variable) {
     List<Aparicion> lista = apariciones.get(variable);
     assertThat(lista)
-        .as("No hay un valor por defecto declarado para %s", variable)
+        .as("%s debe declarar un valor por defecto para %s", fuente, variable)
         .isNotNull()
         .isNotEmpty();
     long distintos = lista.stream().map(Aparicion::valor).distinct().count();
@@ -223,17 +224,18 @@ class ConfiguracionLocalTests {
       String variable, String fuente, String esperado, String referencia) {
     return "%s en %s debe valer «%s» (el valor de referencia en %s). Si cambias un valor por defecto,"
             .formatted(variable, fuente, esperado, referencia)
-        + " alinéalo en todas las fuentes que lo comparten (.env.example, compose.yaml,"
-        + " application-local.yml, docker/prometheus/metrics-password)";
+        + " alinéalo con el resto de fuentes que comparten esa variable"
+        + " (la de referencia es " + referencia + ")";
   }
 
-  private static String valorUnico(
+  private static String valor(
       Map<String, List<Aparicion>> apariciones, String fuente, String variable) {
-    return valorUnico(apariciones, variable);
+    return valorUnico(apariciones, fuente, variable);
   }
 
-  private static String valor(Map<String, List<Aparicion>> fuente, String variable) {
-    return valorUnico(fuente, variable);
+  /** Archivo donde se declara el valor por defecto de la variable (el que manda en la API). */
+  private static String archivoDe(Map<String, List<Aparicion>> apariciones, String variable) {
+    return apariciones.get(variable).get(0).archivo();
   }
 
   /** Valores por defecto de la API: el perfil local manda; application.yml completa lo que el local no redefine. */
