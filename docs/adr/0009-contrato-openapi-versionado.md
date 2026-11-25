@@ -1,7 +1,7 @@
 # ADR 0009: Contrato OpenAPI versionado
 
-- **Estado:** Aceptado. Decisión tomada en la Fase 6 (contrato); registrada en la Fase 10.
-- **Fecha de la decisión (según el historial de git y la bitácora):** 2026-11-09
+- **Estado**: Aceptado. Decisión tomada en la Fase 6 (contrato); registrada en la Fase 10
+- **Fecha de la decisión (según el historial de git y la bitácora)**: 2026-11-09
 
 ## Contexto
 
@@ -22,7 +22,7 @@ Procedimiento completo en `docs/contrato-api.md`.
 - Añadir endpoints o campos opcionales no rompe; quitar, renombrar o endurecer sí falla el CI.
 - Mantener dos versiones en paralelo tiene costo; se acepta a cambio de no romper clientes.
 - Actualizar oasdiff exige cambiar versión y hash en el workflow.
-- Para que el job bloquee la fusión debe ser un check requerido en la protección de ramas; eso es una decisión de gobierno del repositorio, aparte de este ADR.
+- El job es un check requerido en la protección de `staging` y `main` (ver CONTRIBUTING).
 - Si la rama destino no tiene el archivo (el primer PR que introdujo el contrato), el job avisa y termina en verde.
 
 ## Alternativas consideradas

@@ -1,7 +1,7 @@
 # ADR 0007: Mensajería con reintentos y cola de mensajes muertos
 
-- **Estado:** Aceptado. Decisión tomada en la Fase 5b; registrada en la Fase 10.
-- **Fecha de la decisión (según el historial de git y la bitácora):** 2026-11-08 a 2026-11-09
+- **Estado**: Aceptado. Decisión tomada en la Fase 5b; registrada en la Fase 10
+- **Fecha de la decisión (según el historial de git y la bitácora)**: 2026-11-08 a 2026-11-09
 
 ## Contexto
 
@@ -13,8 +13,8 @@ Los trabajos pesados se procesan de forma asíncrona con **RabbitMQ**:
 
 - **Un mensaje por trabajador.** `PlanillaCerradaListener` (módulo `boleta`) crea una boleta `PENDIENTE` por trabajador y encola un `TrabajoBoleta` en `boletas.generar`. Tras generar el PDF, el evento `BoletaGeneradaEvento` encola un `CorreoBoleta` en `notificaciones.correo`. Un fallo afecta a una boleta, no a la planilla.
 - **Reintentos y DLQ por cola.** `MensajeriaConfig` (`compartido/mensajeria`) declara un exchange de trabajo y otro de mensajes muertos, y para cada cola una DLQ propia (`boletas.generar.dlq`, `notificaciones.correo.dlq`). El contenedor reintenta con espera creciente (`spring.rabbitmq.listener.simple.retry`: 3 reintentos, 1 s, factor 2, máximo 10 s, sin reencolar) y al agotarlos un `RepublishMessageRecoverer` publica el mensaje en la DLQ con el motivo en la cabecera `x-exception-message`.
-- **Qué hace cada DLQ.** `ConsumidorBoletas` tiene un segundo listener sobre la DLQ que marca la boleta `FALLIDA`; `ConsumidorCorreos` registra el correo agotado. `POST /planillas/{id}/boletas/generar` relanza solo lo pendiente o fallido, y la generación es idempotente (`UNIQUE` planilla + empleado; no regenera si ya existe el PDF).
-- **Contexto de empresa.** Los consumidores corren en hilos del listener, sin petición HTTP: cada uno fija `TenantContext` con la empresa del mensaje y lo limpia en `finally`.
+- **Qué hace cada DLQ.** `ConsumidorBoletas` tiene un segundo listener sobre la DLQ que marca la boleta `FALLIDA`; `ConsumidorCorreos` deja el correo agotado en el log (ERROR). `POST /planillas/{id}/boletas/generar` relanza solo lo pendiente o fallido, y la generación es idempotente (`UNIQUE` planilla + empleado; no regenera si ya existe el PDF).
+- **Contexto de empresa.** Los consumidores corren en hilos del listener, sin petición HTTP. Los que tocan la base (`ConsumidorBoletas`, `ConsumidorCorreos.enviar`) fijan `TenantContext` con la empresa del mensaje y lo limpian en `finally` (ver ADR 0004, multi-tenant por columna). El listener de la DLQ de correos solo escribe en el log y no lo fija.
 - **Oyente posterior al commit.** `PlanillaCerradaListener` usa `@TransactionalEventListener(AFTER_COMMIT)`: el cierre ya está confirmado y un fallo aquí no lo revierte (se registra y RRHH puede relanzar). Como ese oyente sigue enlazado a la transacción terminada, todo lo que escriba en la base va con `REQUIRES_NEW` (`BoletaService`, `GeneracionBoletaService`).
 - **Degradación.** `app.messaging.enabled` (variable `MESSAGING_ENABLED`, `false` por defecto) controla la topología (`MensajeriaConfig`) y los consumidores. Con `false` se activan `EnProcesoColaBoletas` y `EnProcesoColaCorreos`, que procesan en el mismo proceso: sin reintentos ni DLQ; un fallo deja la boleta en `FALLIDA` y se reintenta con el endpoint de generación.
 

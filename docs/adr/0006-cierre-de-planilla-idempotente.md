@@ -1,7 +1,7 @@
 # ADR 0006: Cierre de planilla idempotente
 
-- **Estado:** Aceptado. Decisión tomada en la Fase 5a; registrada en la Fase 10.
-- **Fecha de la decisión (según el historial de git y la bitácora):** 2026-11-08
+- **Estado**: Aceptado. Decisión tomada en la Fase 5a; registrada en la Fase 10
+- **Fecha de la decisión (según el historial de git y la bitácora)**: 2026-11-08
 
 ## Contexto
 
@@ -11,7 +11,7 @@ Cerrar una planilla es la operación más sensible del sistema: congela los mont
 
 El cierre es idempotente y se garantiza en tres capas:
 
-1. **Clave obligatoria.** `POST /api/v1/planillas/{id}/cerrar` exige la cabecera `Idempotency-Key` (máximo 100 caracteres). Sin ella, `CierrePlanillaService` rechaza la petición con una regla de negocio.
+1. **Clave obligatoria.** `POST /api/v1/planillas/{id}/cerrar` exige la cabecera `Idempotency-Key` (máximo 100 caracteres). La declara obligatoria `PlanillaController` (`@RequestHeader`): sin la cabecera, Spring responde 400 (`MissingRequestHeaderException`, `application/problem+json`). Si llega vacía, en blanco o de más de 100 caracteres, `CierrePlanillaService.claveValida` lanza `ReglaDeNegocioException` y `GlobalExceptionHandler` responde 422.
 2. **Agregado.** `Planilla.cerrar(clave, validación, instante)` devuelve el evento `PlanillaCerrada` solo la primera vez. Si la planilla ya está cerrada con la misma clave devuelve `Optional.empty()` (no hay nada que hacer); si está cerrada con otra clave lanza una excepción de dominio.
 3. **Aplicación y base de datos.**
    - La fila se lee con bloqueo `PESSIMISTIC_WRITE` (`PlanillaJpaRepository`): dos peticiones simultáneas con la misma clave se serializan y la segunda ve la planilla ya cerrada.
