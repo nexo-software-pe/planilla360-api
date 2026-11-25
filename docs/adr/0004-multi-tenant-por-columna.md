@@ -1,7 +1,7 @@
 # ADR 0004: Multi-tenant por columna (`tenant_id`)
 
 - **Estado**: Aceptado
-- **Fecha**: 2026-11-07 (diseño aprobado, Fase 0)
+- **Fase**: decisión tomada en el diseño (Fase 0); implementada en la Fase 2 (contexto de tenant, filtro y pruebas de aislamiento); registrada en la Fase 10.
 
 ## Contexto
 

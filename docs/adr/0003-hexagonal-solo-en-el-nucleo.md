@@ -1,7 +1,8 @@
 # ADR 0003: Arquitectura hexagonal solo en el núcleo
 
 - **Estado**: Aceptado
-- **Fecha**: 2026-11-07 (diseño aprobado, Fase 0)
+- **Fase**: decisión tomada en el diseño (Fase 0); aplicada en `planilla` (Fase 3) y en `asistencia` y `vacaciones` (Fase 4); registrada en la Fase 10.
+- **Relación**: concreta, para la estructura interna de los módulos, lo decidido en el ADR 0002.
 
 ## Contexto
 

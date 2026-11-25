@@ -1,7 +1,8 @@
 # ADR 0005: Reportes sobre la base compartida, en solo lectura
 
 - **Estado**: Aceptado
-- **Fecha**: 2026-11-07 (diseño aprobado, Fase 0)
+- **Fase**: decisión tomada en el diseño (Fase 0); implementada en la Fase 5b (módulo `reporte` y vista de la migración V8); registrada en la Fase 10.
+- **Relación**: es la excepción acotada a la regla de fronteras del ADR 0002 y depende del filtro por tenant del ADR 0004.
 
 ## Contexto
 

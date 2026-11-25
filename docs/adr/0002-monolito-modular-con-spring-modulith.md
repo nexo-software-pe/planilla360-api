@@ -1,7 +1,7 @@
 # ADR 0002: Monolito modular con Spring Modulith
 
 - **Estado**: Aceptado
-- **Fecha**: 2026-11-07 (diseño aprobado, Fase 0)
+- **Fase**: decisión tomada en el diseño (Fase 0) y aplicada desde el esqueleto de la Fase 2; registrada en la Fase 10.
 
 ## Contexto
 
