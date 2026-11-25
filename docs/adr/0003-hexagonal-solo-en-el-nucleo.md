@@ -1,7 +1,7 @@
 # ADR 0003: Arquitectura hexagonal solo en el núcleo
 
 - **Estado**: Aceptado
-- **Fase**: decisión tomada en el diseño (Fase 0); aplicada en `planilla` (Fase 3) y en `asistencia` y `vacaciones` (Fase 4); registrada en la Fase 10.
+- **Fase**: decisión tomada en el diseño (Fase 0); aplicada en `planilla` (dominio en la Fase 3; aplicación e infraestructura en la Fase 5a) y en `asistencia` y `vacaciones` (Fase 4); registrada en la Fase 10.
 - **Relación**: concreta, para la estructura interna de los módulos, lo decidido en el ADR 0002.
 
 ## Contexto
@@ -20,14 +20,24 @@ integración o infraestructura, donde esa separación aporta poco.
   - `infrastructure`: persistencia JPA, web, adaptadores a otros módulos, planificación y eventos.
 - **Capas clásicas** (`controller / service / repository / dto / entity`) en los módulos de soporte.
 - Se hace cumplir con ArchUnit en cada build:
-  - `ArquitecturaTests`: el dominio no depende de Spring, JPA ni Hibernate; los controllers no usan
-    repositorios ni entidades; los servicios no conocen los controllers; los DTO no dependen de entidades;
-    las entidades JPA viven en paquetes `entity`; inyección solo por constructor.
-  - `ArquitecturaHexagonalTests` (`asistencia` y `vacaciones`) y `ArquitecturaPlanillaTests` (`planilla`):
-    el dominio solo usa Java y el kernel `compartido`; el dominio no conoce `application` ni
-    `infrastructure`; la aplicación no usa JPA, Spring Data ni la capa web, y no accede directamente a otros
-    módulos; la capa web no toca la persistencia; los adaptadores de persistencia implementan un puerto de
-    salida.
+  - `ArquitecturaTests` (todo el código): las clases de cualquier paquete `domain` no dependen de Spring,
+    JPA ni Hibernate; los controllers no usan repositorios ni entidades; los servicios no conocen los
+    controllers; los DTO no dependen de entidades ni repositorios; las entidades JPA viven en paquetes
+    `entity`; inyección solo por constructor.
+  - `ArquitecturaHexagonalTests` (`asistencia` y `vacaciones`): el dominio solo depende de su propio
+    paquete `domain`, de `compartido.dominio` y de `java..` (no de `compartido.tenant`, `seguridad` ni
+    `excepcion`) y no conoce `application` ni `infrastructure`; la aplicación no depende de
+    `infrastructure`, ni de JPA, Hibernate, Spring Data, Spring Web o HTTP, ni accede a `empleado`,
+    `empresa`, `catalogo` ni `identidad`; `infrastructure.web` no depende de `infrastructure.persistence`;
+    las clases de `infrastructure.persistence.adapter` implementan una interfaz de `port.out`.
+  - `ArquitecturaPlanillaTests` (`planilla`): el dominio solo depende de `planilla.domain`,
+    `compartido.dominio` y `java..`, y no conoce `application` ni `infrastructure`; el modelo y los
+    regímenes no dependen de las calculadoras (`domain.service`), que no guardan estado mutable; la
+    aplicación no depende de `infrastructure`, de JPA, Hibernate, Spring Data, Spring Web ni HTTP, ni de
+    `empleado`, `empresa`, `catalogo`, `identidad`, `asistencia` ni `vacaciones`; `infrastructure.web` no
+    depende de `infrastructure.persistence`; las clases de nivel superior de
+    `infrastructure.persistence.adapter`, `infrastructure.adapter` e `infrastructure.event` implementan
+    una interfaz de `port.out`.
 - Cuando el núcleo necesita datos de otro módulo, lo pide por un puerto de salida y un adaptador de
   `infrastructure` que llama a la API pública de ese módulo (capa anticorrupción ligera).
 
@@ -37,8 +47,9 @@ integración o infraestructura, donde esa separación aporta poco.
 - Cambiar cómo se guarda o se expone algo no toca las reglas.
 - Más clases y algo de mapeo (entidad de persistencia a modelo de dominio) en los tres módulos núcleo;
   se acepta porque ahí está el valor del negocio.
-- Hay dos estilos en el código. La regla es simple: núcleo hexagonal, soporte en capas; los tests de
-  arquitectura avisan si un módulo se sale de su estilo.
+- Hay dos estilos en el código. La regla es simple: núcleo hexagonal, soporte en capas. Los tests
+  de arquitectura protegen las fronteras del núcleo; nada obliga a que un módulo de soporte siga en capas,
+  es una convención del proyecto.
 - Un módulo de soporte que gane complejidad de dominio puede migrar a hexagonal más adelante, con el mismo
   criterio y los mismos tests.
 

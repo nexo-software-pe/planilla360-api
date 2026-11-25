@@ -1,7 +1,7 @@
 # ADR 0002: Monolito modular con Spring Modulith
 
 - **Estado**: Aceptado
-- **Fase**: decisión tomada en el diseño (Fase 0) y aplicada desde el esqueleto de la Fase 2; registrada en la Fase 10.
+- **Fase**: decisión tomada en el diseño (Fase 0) y aplicada desde el esqueleto inicial de la API (Fase 1, con `ModulithStructureTests`); registrada en la Fase 10.
 
 ## Contexto
 
@@ -28,7 +28,7 @@ Reglas de convivencia:
   `ApplicationModules.of(Planilla360ApiApplication.class).verify()`, que falla ante dependencias cíclicas
   o accesos a internos de otro módulo. Las reglas de capas están en `ArquitecturaTests` (ArchUnit).
 
-### Mapa de contextos
+### Mapa de contextos: relaciones principales (no exhaustivo)
 
 ```
  identidad  ──(conforme)──────────► empresa            (tenant)
@@ -40,8 +40,21 @@ Reglas de convivencia:
  reporte    ──lectura SQL en solo lectura (vista y tablas)──► datos de varios módulos   (ADR 0005)
  auditoria  ◄──eventos de cambio en entidades sensibles
  integracion: clientes de servicios externos (DNI/RUC/tipo de cambio) con Resilience4j
- importacion: carga masiva por Excel de empleados y asistencia
+ importacion: carga masiva por Excel de empleados
 ```
+
+Otras relaciones reales, siempre por la API pública del otro módulo (comprobadas con las importaciones del
+código):
+
+- `asistencia` → `empleado` y `catalogo` (`EmpleadoModuloAdapter` implementa `ConsultaEmpleadoPort` y
+  `ConsultaFeriadoPort`).
+- `vacaciones` → `empleado` y `empresa` (`EmpleadoEmpresaModuloAdapter`).
+- `boleta` → `planilla` (`PlanillaApi.datosParaBoletas`, además del evento), `empleado` y `empresa`.
+- `notificacion` → `boleta` (`BoletaApi`, además del evento), `empleado` y `empresa`.
+- `empleado` → `identidad` (`IdentidadApi`) y `catalogo`.
+- `importacion` → `empleado` y `catalogo`.
+- Los jobs de `asistencia`, `vacaciones` y `planilla` (en `infrastructure/scheduling`) → `empresa`
+  (`EmpresaApi`) para recorrer las empresas activas.
 
 | Módulo | Rol | Estructura interna |
 |---|---|---|
@@ -52,14 +65,16 @@ Reglas de convivencia:
 `planilla` consulta a los demás módulos por **puertos de salida** (`ConsultaAsistenciaPort`,
 `ConsultaVacacionesPort`, `ConsultaPersonalPort`, `ConsultaCatalogoPort`, `ConsultaEmpresaPort`) con
 adaptadores en su capa `infrastructure` que llaman a la API pública del otro módulo; así el modelo de
-planilla no se acopla a sus vecinos.
+planilla no se acopla a sus vecinos. La regla de puertos rige en `domain` y `application`; lo que vive en
+`infrastructure` (por ejemplo los jobs de `scheduling`) puede usar la API pública de otro módulo
+directamente.
 
 ## Consecuencias
 
 - Un solo artefacto, una sola base de datos y transacciones locales: despliegue y depuración simples.
 - Las fronteras no dependen de la disciplina: el build las comprueba. Romper una regla falla el CI.
 - La comunicación por eventos desacopla flujos (cierre de planilla, boletas, correos) sin que los módulos
-  se conozcan; el trabajo pesado o con reintentos va por mensajería aparte (ver ADR de plataforma).
+  se conozcan; el trabajo pesado o con reintentos va por mensajería aparte (ver ADR 0007, mensajería con reintentos y DLQ).
 - Si un módulo (por ejemplo `notificacion`) necesitara escalar solo, sus fronteras ya están definidas y se
   podría extraer; hoy no se justifica.
 - Costo: todo comparte proceso y ciclo de despliegue, y los módulos comparten la base de datos físicamente

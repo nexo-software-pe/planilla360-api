@@ -20,9 +20,12 @@ El módulo `reporte` lee directamente de la base compartida con **SQL nativo de 
 - **Vista de lectura** `vista_planilla_detalle` (migración `V8__boletas_y_reportes.sql`): una fila por
   trabajador de cada planilla en estado `CERRADA`, con área, cargo y los importes de la línea. Es el
   contrato de datos entre el cálculo y los reportes de planilla.
-- Los reportes de costo laboral (`GROUPING SETS`/`ROLLUP`) y de planilla consultan esa vista; el de
+- Los reportes de costo laboral (`ROLLUP` con `GROUPING()`) y de planilla consultan esa vista; el de
   tardanzas (CTE más `RANK() OVER (PARTITION BY ...)`) y el de saldos de vacaciones (CTE) consultan las
   tablas de asistencia y vacaciones con sus uniones a empleado y área.
+- Matiz respecto al diseño original, que hablaba de lectura «solo vistas SQL»: la implementación usa una
+  vista para planilla, pero tardanzas y vacaciones leen tablas directamente. La decisión de fondo (base
+  compartida en solo lectura) no cambia; lo que se amplió es el alcance de lo que se lee.
 - **Cada consulta filtra por `tenant_id`** (ADR 0004): la vista expone la columna y las consultas la piden
   como parámetro en cada tabla.
 - `reporte` no modifica datos de otros módulos; solo lee.

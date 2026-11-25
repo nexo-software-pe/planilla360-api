@@ -33,7 +33,7 @@ Una sola base de datos y un solo esquema, con la columna **`tenant_id`** en las 
 
 ## Consecuencias
 
-- Una sola migración Flyway y un solo pool de conexiones para todas las empresas; dar de alta una empresa
+- Un solo juego de migraciones Flyway y un solo pool de conexiones para todas las empresas; dar de alta una empresa
   no requiere infraestructura nueva.
 - El aislamiento depende de la aplicación, no de la base de datos: un olvido en una consulta nativa
   expondría datos de otra empresa. Por eso el SQL nativo tiene una regla explícita, está concentrado en el
