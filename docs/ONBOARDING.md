@@ -72,12 +72,12 @@ Tip: en IntelliJ, *Go to Implementation* (`Ctrl+Alt+B`) sobre un puerto te lleva
 El flujo completo (rama desde `staging`, Conventional Commits, PR hacia `staging`) está en [CONTRIBUTING.md](../CONTRIBUTING.md); léelo entero antes de empezar.
 
 Consejos propios:
-- Elige un primer issue pequeño y pregunta antes de programar si algo no está claro.
+- Elige un primer issue pequeño (una prueba que falta, un mensaje de error o un párrafo de documentación) y pregunta antes de programar si algo no está claro.
 - En lógica de dominio, **test primero**: un commit `test:` que falla y luego `feat:`/`fix:` en verde.
 - Corre `./mvnw verify` con JDK 21 y Docker encendido antes de abrir el PR (tarda varios minutos). Si tocas endpoints o DTO, actualiza `docs/openapi/openapi.json` ([contrato-api.md](contrato-api.md)).
 - El merge no lo haces tú; la **Definition of Done** está en [CONTRIBUTING.md](../CONTRIBUTING.md#definition-of-done).
 
-Un primer PR pequeño puede ser una prueba que falta, un mensaje de error o un párrafo de documentación. Nunca subas secretos, contraseñas ni datos reales de personas.
+Nunca subas secretos, contraseñas ni datos reales de personas.
 
 ## 4. Problemas frecuentes
 

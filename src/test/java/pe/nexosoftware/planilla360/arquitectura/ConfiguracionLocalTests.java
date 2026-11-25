@@ -7,11 +7,13 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
@@ -39,9 +41,9 @@ class ConfiguracionLocalTests {
   private static final Pattern URL_DB = Pattern.compile("^jdbc:postgresql://[^:/]+:(\\d+)/(\\w+)$");
 
   private final Map<String, String> env = leerEnv(Path.of(".env.example"));
-  private final Map<String, String> compose =
-      leerPlaceholders(Path.of("compose.yaml"), PLACEHOLDER_COMPOSE);
-  private final Map<String, String> api = leerApi();
+  private final Map<String, List<Aparicion>> compose =
+      reunir(leer(Path.of("compose.yaml")), PLACEHOLDER_COMPOSE);
+  private final Map<String, List<Aparicion>> api = leerApi();
 
   @Test
   @DisplayName("Las parejas usuario/clave de compose y la API tienen el mismo valor en las tres fuentes")
@@ -137,13 +139,41 @@ class ConfiguracionLocalTests {
 
   /** Reúne todas las apariciones de cada variable, ignorando las líneas comentadas con #. */
   private static Map<String, List<Aparicion>> reunir(String contenido, Pattern patron) {
-    throw new UnsupportedOperationException("pendiente");
+    Map<String, List<Aparicion>> resultado = new HashMap<>();
+    String[] lineas = contenido.split("\\R");
+    for (int i = 0; i < lineas.length; i++) {
+      if (lineas[i].strip().startsWith("#")) {
+        continue;
+      }
+      Matcher m = patron.matcher(lineas[i]);
+      while (m.find()) {
+        resultado
+            .computeIfAbsent(m.group(1), k -> new ArrayList<>())
+            .add(new Aparicion(m.group(2), i + 1));
+      }
+    }
+    return resultado;
   }
 
   /** Exige que todas las apariciones de la variable tengan el mismo valor por defecto y lo devuelve. */
   private static String valorUnico(
       Map<String, List<Aparicion>> apariciones, String fuente, String variable) {
-    throw new UnsupportedOperationException("pendiente");
+    List<Aparicion> lista = apariciones.get(variable);
+    assertThat(lista)
+        .as("%s debe declarar un valor por defecto para %s", fuente, variable)
+        .isNotNull()
+        .isNotEmpty();
+    long distintos = lista.stream().map(Aparicion::valor).distinct().count();
+    assertThat(distintos)
+        .as(
+            "%s tiene valores por defecto distintos para %s: %s. Deben ser el mismo en todas las apariciones",
+            fuente,
+            variable,
+            lista.stream()
+                .map(a -> "«" + a.valor() + "» (línea " + a.linea() + ")")
+                .collect(Collectors.joining(", ")))
+        .isEqualTo(1L);
+    return lista.get(0).valor();
   }
 
   private static Matcher urlDb(String url, String fuente) {
@@ -160,26 +190,17 @@ class ConfiguracionLocalTests {
         + " cámbialo igual en .env.example, compose.yaml y application-local.yml";
   }
 
-  private static String valor(Map<String, String> fuente, String nombreFuente, String variable) {
-    assertThat(fuente).as("%s debe declarar un valor por defecto para %s", nombreFuente, variable).containsKey(variable);
-    return fuente.get(variable);
+  private static String valor(
+      Map<String, List<Aparicion>> fuente, String nombreFuente, String variable) {
+    return valorUnico(fuente, nombreFuente, variable);
   }
 
   /** Valores por defecto de la API: el perfil local manda; application.yml completa lo que el local no redefine. */
-  private static Map<String, String> leerApi() {
-    Map<String, String> base =
-        leerPlaceholders(Path.of("src/main/resources/application.yml"), PLACEHOLDER_API);
-    base.putAll(leerPlaceholders(Path.of("src/main/resources/application-local.yml"), PLACEHOLDER_API));
+  private static Map<String, List<Aparicion>> leerApi() {
+    Map<String, List<Aparicion>> base =
+        reunir(leer(Path.of("src/main/resources/application.yml")), PLACEHOLDER_API);
+    base.putAll(reunir(leer(Path.of("src/main/resources/application-local.yml")), PLACEHOLDER_API));
     return base;
-  }
-
-  private static Map<String, String> leerPlaceholders(Path archivo, Pattern patron) {
-    Map<String, String> valores = new HashMap<>();
-    Matcher m = patron.matcher(leer(archivo));
-    while (m.find()) {
-      valores.putIfAbsent(m.group(1), m.group(2));
-    }
-    return valores;
   }
 
   private static Map<String, String> leerEnv(Path archivo) {
