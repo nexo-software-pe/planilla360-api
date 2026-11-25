@@ -1,6 +1,7 @@
 package pe.nexosoftware.planilla360.arquitectura;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -74,6 +75,75 @@ class ConfiguracionLocalTests {
     assertThat(enEnv.group(2)).as(mensaje("la base de DB_URL", ".env.example", base)).isEqualTo(base);
     assertThat(enApi.group(1)).as(mensaje("el puerto de DB_URL", "application-local.yml", puerto)).isEqualTo(puerto);
     assertThat(enApi.group(2)).as(mensaje("la base de DB_URL", "application-local.yml", base)).isEqualTo(base);
+  }
+
+  @Test
+  @DisplayName("Una variable con dos valores por defecto distintos en el mismo archivo hace fallar el check")
+  void variableConValoresDistintosEnUnArchivoFalla() {
+    String contenido =
+        """
+        postgres:
+          POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-planilla360}
+        api:
+          DB_PASSWORD: ${POSTGRES_PASSWORD:-otra-clave}
+        """;
+
+    assertThatThrownBy(
+            () ->
+                valorUnico(
+                    reunir(contenido, PLACEHOLDER_COMPOSE), "compose.yaml", "POSTGRES_PASSWORD"))
+        .isInstanceOf(AssertionError.class)
+        .hasMessageContaining("POSTGRES_PASSWORD")
+        .hasMessageContaining("compose.yaml")
+        .hasMessageContaining("línea 2")
+        .hasMessageContaining("línea 4")
+        .hasMessageContaining("planilla360")
+        .hasMessageContaining("otra-clave");
+  }
+
+  @Test
+  @DisplayName("Varias apariciones con el mismo valor por defecto devuelven ese valor")
+  void variableConElMismoValorEnVariasApariciones() {
+    String contenido = "a: ${X:-uno}\nb: ${X:-uno}\n";
+
+    assertThat(valorUnico(reunir(contenido, PLACEHOLDER_COMPOSE), "compose.yaml", "X"))
+        .isEqualTo("uno");
+  }
+
+  @Test
+  @DisplayName("Las líneas comentadas no cuentan como apariciones")
+  void lineasComentadasSeIgnoran() {
+    String contenido = "# ejemplo: ${X:-distinto}\n  # otro ${X:-raro}\nb: ${X:-bueno}\n";
+
+    assertThat(valorUnico(reunir(contenido, PLACEHOLDER_COMPOSE), "compose.yaml", "X"))
+        .isEqualTo("bueno");
+  }
+
+  @Test
+  @DisplayName("METRICS_PASSWORD coincide en .env.example, application-local.yml y la clave de Prometheus")
+  void claveDeMetricasAlineada() {
+    String clavePrometheus = leer(Path.of("docker/prometheus/metrics-password")).strip();
+
+    assertThat(env.get("METRICS_PASSWORD"))
+        .as(mensaje("METRICS_PASSWORD", ".env.example", clavePrometheus))
+        .isEqualTo(clavePrometheus);
+    assertThat(valor(api, "application-local.yml", "METRICS_PASSWORD"))
+        .as(mensaje("METRICS_PASSWORD", "application-local.yml", clavePrometheus))
+        .isEqualTo(clavePrometheus);
+  }
+
+  /** Una aparición de un valor por defecto: su valor y la línea (desde 1) donde está. */
+  private record Aparicion(String valor, int linea) {}
+
+  /** Reúne todas las apariciones de cada variable, ignorando las líneas comentadas con #. */
+  private static Map<String, List<Aparicion>> reunir(String contenido, Pattern patron) {
+    throw new UnsupportedOperationException("pendiente");
+  }
+
+  /** Exige que todas las apariciones de la variable tengan el mismo valor por defecto y lo devuelve. */
+  private static String valorUnico(
+      Map<String, List<Aparicion>> apariciones, String fuente, String variable) {
+    throw new UnsupportedOperationException("pendiente");
   }
 
   private static Matcher urlDb(String url, String fuente) {
