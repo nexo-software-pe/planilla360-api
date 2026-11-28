@@ -4,18 +4,18 @@ import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
 import java.nio.charset.StandardCharsets;
 import java.util.Map;
+import java.util.UUID;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.jdbc.core.simple.JdbcClient;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Service;
 import pe.nexosoftware.planilla360.boleta.BoletaApi;
 import pe.nexosoftware.planilla360.compartido.excepcion.RecursoNoEncontradoException;
 import pe.nexosoftware.planilla360.compartido.tenant.TenantContext;
-import pe.nexosoftware.planilla360.empleado.EmpleadoApi;
-import pe.nexosoftware.planilla360.empleado.FichaEmpleado;
 import pe.nexosoftware.planilla360.empresa.EmpresaApi;
 import pe.nexosoftware.planilla360.notificacion.mensajeria.CorreoBoleta;
 import pe.nexosoftware.planilla360.notificacion.plantilla.PlantillaCorreo;
@@ -29,8 +29,19 @@ public class EnvioCorreoService {
 
     private static final Logger LOG = LoggerFactory.getLogger(EnvioCorreoService.class);
 
+    /** Solo los datos que usa el aviso, en una única lectura. */
+    private static final String SQL_FICHA = """
+            SELECT e.id, e.apellidos || ', ' || e.nombres AS nombre_completo, e.email
+              FROM empleado e
+             WHERE e.id = :empleado
+               AND e.tenant_id = :tenant
+            """;
+
+    private record Ficha(UUID id, String nombreCompleto, String email) {
+    }
+
     private final ObjectProvider<JavaMailSender> correo;
-    private final EmpleadoApi empleados;
+    private final JdbcClient jdbc;
     private final EmpresaApi empresas;
     private final BoletaApi boletas;
     private final boolean habilitado;
@@ -39,13 +50,13 @@ public class EnvioCorreoService {
 
     public EnvioCorreoService(
             ObjectProvider<JavaMailSender> correo,
-            EmpleadoApi empleados,
+            JdbcClient jdbc,
             EmpresaApi empresas,
             BoletaApi boletas,
             @Value("${app.notificaciones.habilitadas:false}") boolean habilitado,
             @Value("${app.notificaciones.remitente:no-responder@planilla360.ejemplo.pe}") String remitente) {
         this.correo = correo;
-        this.empleados = empleados;
+        this.jdbc = jdbc;
         this.empresas = empresas;
         this.boletas = boletas;
         this.habilitado = habilitado;
@@ -58,8 +69,7 @@ public class EnvioCorreoService {
             LOG.info("Correos apagados: no se avisa de la boleta {}", aviso.boletaId());
             return;
         }
-        FichaEmpleado ficha = empleados.fichaDe(aviso.empleadoId())
-                .orElseThrow(() -> new RecursoNoEncontradoException("No existe el trabajador del aviso."));
+        Ficha ficha = leerFicha(aviso.empleadoId());
         if (ficha.email() == null || ficha.email().isBlank()) {
             LOG.warn("El trabajador {} no tiene correo: no se avisa de la boleta {}", ficha.id(), aviso.boletaId());
             return;
@@ -84,5 +94,15 @@ public class EnvioCorreoService {
             throw new IllegalStateException("No se pudo armar el correo", e);
         }
         boletas.marcarEnviada(aviso.boletaId());
+    }
+
+    private Ficha leerFicha(UUID empleadoId) {
+        return jdbc.sql(SQL_FICHA)
+                .param("empleado", empleadoId)
+                .param("tenant", TenantContext.requerido())
+                .query((rs, n) -> new Ficha(
+                        rs.getObject("id", UUID.class), rs.getString("nombre_completo"), rs.getString("email")))
+                .optional()
+                .orElseThrow(() -> new RecursoNoEncontradoException("No existe el trabajador del aviso."));
     }
 }
