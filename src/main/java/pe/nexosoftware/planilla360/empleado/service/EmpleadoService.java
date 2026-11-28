@@ -182,7 +182,7 @@ public class EmpleadoService implements EmpleadoApi {
     @Override
     public Optional<ContratoResumen> contratoVigenteEn(UUID empleadoId, LocalDate fecha) {
         return contratos.findByEmpleadoIdOrderByFechaInicioDesc(empleadoId).stream()
-                .filter(c -> !c.getFechaInicio().isAfter(fecha) && c.sigueVigenteEn(fecha))
+                .filter(c -> c.sigueVigenteEn(fecha))
                 .findFirst()
                 .map(EmpleadoService::aResumen);
     }
