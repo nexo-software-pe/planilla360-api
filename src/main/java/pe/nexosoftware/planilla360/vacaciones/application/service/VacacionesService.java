@@ -179,7 +179,6 @@ public class VacacionesService implements GestionarVacacionesUseCase {
         Guardado guardado = periodos.buscar(periodoId)
                 .orElseThrow(() -> new RecursoNoEncontradoException("No existe el periodo vacacional."));
         int reservados = solicitudes.activasDelEmpleado(guardado.empleadoId()).stream()
-                .filter(s -> s.periodoId().equals(periodoId))
                 .mapToInt(SolicitudVacaciones::dias)
                 .sum();
         PeriodoVacacional periodo = guardado.periodo();
