@@ -136,7 +136,6 @@ public class UsuarioService implements IdentidadApi {
     public void resetearPassword(UUID id, ResetPasswordRequest request) {
         Usuario usuario = buscar(id);
         usuario.cambiarPassword(encoder.encode(request.passwordNueva()));
-        refreshTokens.revocarTodosDelUsuario(usuario.getId());
         UsuarioResponse snapshot = mapper.aResponse(usuario);
         publicar(usuario, Accion.ACTUALIZAR, snapshot, snapshot);
     }
