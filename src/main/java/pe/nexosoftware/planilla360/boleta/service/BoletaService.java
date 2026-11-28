@@ -134,7 +134,7 @@ public class BoletaService implements BoletaApi {
         EmpleadoResumen empleado = empleados.deUsuario(UsuarioAutenticado.requerido().usuarioId())
                 .orElseThrow(() -> new RecursoNoEncontradoException("Tu cuenta no está vinculada a un empleado."));
         return Pagina.de(
-                boletas.findByEmpleadoIdOrderByCreatedAtDesc(empleado.id(), pageable), BoletaService::aRespuesta);
+                boletas.findByEmpleadoIdOrderByCreatedAtAsc(empleado.id(), pageable), BoletaService::aRespuesta);
     }
 
     /** PDF de la boleta. Un trabajador solo accede a las suyas; las ajenas se responden como inexistentes. */

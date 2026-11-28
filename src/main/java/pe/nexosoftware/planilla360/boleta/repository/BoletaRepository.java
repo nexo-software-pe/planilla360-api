@@ -19,7 +19,7 @@ public interface BoletaRepository extends JpaRepository<Boleta, UUID> {
 
     Page<Boleta> findByPlanillaId(UUID planillaId, Pageable pageable);
 
-    Page<Boleta> findByEmpleadoIdOrderByCreatedAtDesc(UUID empleadoId, Pageable pageable);
+    Page<Boleta> findByEmpleadoIdOrderByCreatedAtAsc(UUID empleadoId, Pageable pageable);
 
     @Query("select b.estado, count(b) from Boleta b where b.planillaId = :planillaId group by b.estado")
     List<Object[]> contarPorEstado(UUID planillaId);
