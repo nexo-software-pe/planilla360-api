@@ -155,7 +155,7 @@ public class VacacionesService implements GestionarVacacionesUseCase {
     @Override
     @Transactional(readOnly = true)
     public List<SolicitudVacaciones> listar(Actor actor, EstadoSolicitud estado, UUID empleadoId) {
-        if (actor.gestionaPersonal()) {
+        if (actor.gestionaPersonal() || empleadoId != null) {
             return solicitudes.listar(empleadoId == null ? null : List.of(empleadoId), estado);
         }
         EmpleadoInfo yo = acceso.empleadoDe(actor);
@@ -164,9 +164,6 @@ public class VacacionesService implements GestionarVacacionesUseCase {
         empleados.vigentesEn(HoraLima.hoy(reloj)).stream()
                 .filter(e -> yo.id().equals(e.jefeId()))
                 .forEach(e -> visibles.add(e.id()));
-        if (empleadoId != null) {
-            visibles.retainAll(Set.of(empleadoId));
-        }
         return solicitudes.listar(visibles, estado);
     }
 

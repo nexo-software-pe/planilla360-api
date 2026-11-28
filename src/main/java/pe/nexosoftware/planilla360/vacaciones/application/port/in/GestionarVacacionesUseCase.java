@@ -38,7 +38,7 @@ public interface GestionarVacacionesUseCase {
     /** Cancela el dueño de la solicitud o RRHH. */
     SolicitudVacaciones cancelar(Actor actor, UUID solicitudId);
 
-    /** RRHH ve todas; un empleado ve las propias y las de su equipo directo. */
+    /** Solicitudes de la empresa, con filtros opcionales por estado y por empleado. */
     List<SolicitudVacaciones> listar(Actor actor, EstadoSolicitud estado, UUID empleadoId);
 
     /** RRHH registra la venta de días de un periodo (solo régimen general, hasta 15 días). */
