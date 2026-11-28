@@ -11,6 +11,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 import pe.nexosoftware.planilla360.catalogo.CatalogoApi;
 import pe.nexosoftware.planilla360.compartido.dominio.ReglaDeDominioException;
@@ -26,8 +27,8 @@ import pe.nexosoftware.planilla360.importacion.lector.LectorHojaExcel.Fila;
 
 /**
  * Importa empleados desde un Excel. Cada fila se valida por separado y todos los errores se reportan juntos, con su
- * número de fila y columna. Con {@code simular} solo se valida; al confirmar, se guardan las filas válidas (cada una
- * con su contrato, en su propia transacción) y las inválidas se omiten.
+ * número de fila y columna. Con {@code simular} solo se valida; al confirmar, se guardan las filas que pasan la
+ * validación, cada una con su contrato.
  */
 @Service
 public class ImportacionEmpleadosService {
@@ -52,6 +53,7 @@ public class ImportacionEmpleadosService {
         this.catalogo = catalogo;
     }
 
+    @Transactional
     public ResultadoImportacion importar(MultipartFile archivo, boolean simular) {
         if (archivo == null || archivo.isEmpty()) {
             throw new ReglaDeNegocioException("Adjunta un archivo Excel (.xlsx).");
