@@ -53,7 +53,7 @@ public interface LineaPlanillaJpaRepository extends JpaRepository<LineaPlanillaE
 
     @Query("select l.empleadoId as empleadoId, p.periodo as periodo, l.horasExtra as monto "
             + "from LineaPlanillaEntity l join PlanillaEntity p on p.id = l.planillaId "
-            + "where p.estado = :estado and p.tipo = :tipo and p.periodo >= :desde and p.periodo <= :hasta "
+            + "where p.estado = :estado and p.tipo = :tipo and p.periodo >= :desde and p.periodo < :hasta "
             + "order by p.periodo")
     List<MontoDelPeriodo> horasExtraPagadas(
             @Param("estado") EstadoPlanilla estado,
