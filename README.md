@@ -29,7 +29,18 @@ Java 21 · Spring Boot 4.1 · Spring Modulith · Spring Security (JWT) · Spring
    - Git Bash: `./mvnw spring-boot:run`
    - PowerShell: `.\mvnw.cmd spring-boot:run` (si falla, usa Git Bash)
    - IntelliJ: abre la carpeta como proyecto Maven, *File → Project Structure → SDK* = 21 y ejecuta `Planilla360ApiApplication` (el perfil `local` se aplica solo).
-4. Abre http://localhost:8080/swagger-ui.html, ejecuta `POST /api/v1/auth/login` con un usuario de desarrollo (ver más abajo; por ejemplo `rrhh@textilesandinos.ejemplo.pe` y la contraseña común) y copia el `accessToken` de la respuesta. Pulsa *Authorize*, pégalo y ya puedes probar el resto de endpoints.
+4. Obtén un token. El login es `POST /api/v1/auth/login` con un JSON de dos campos, `email` y `password`, de un usuario de desarrollo (ver más abajo). Por ejemplo, RRHH de Textiles Andinos:
+   ```bash
+   curl -s -X POST http://localhost:8080/api/v1/auth/login \
+     -H "Content-Type: application/json" \
+     -d '{"email":"rrhh@textilesandinos.ejemplo.pe","password":"Planilla360-Local1"}'
+   ```
+   La respuesta (200) trae `accessToken` (JWT; `expiraEnSegundos` es 900), `refreshToken`, `tokenType` (`Bearer`) y los datos del `usuario`. Usa el `accessToken` en cada petición con la cabecera `Authorization: Bearer <accessToken>`:
+   ```bash
+   curl -s -H "Authorization: Bearer <accessToken>" "http://localhost:8080/api/v1/planillas?periodo=AAAA-MM&tipo=MENSUAL"
+   ```
+   Sustituye `AAAA-MM` por tu mes actual (el seed local se ancla a la fecha del primer arranque, así que el borrador del mes es el de ese día; por ejemplo `2026-11`).
+   También puedes hacerlo en http://localhost:8080/swagger-ui.html: ejecuta `POST /api/v1/auth/login` con ese mismo cuerpo, copia el `accessToken`, pulsa *Authorize*, pégalo y prueba el resto de endpoints.
 
 Salud de la aplicación: http://localhost:8080/actuator/health
 
@@ -58,8 +69,19 @@ docker compose --profile full up -d
 ```
 `down -v` borra **todo** lo local: no hay nada que conservar ahí. Sin la opción `-v` los datos se mantienen. Ojo: el `down` sin `--profile` no detiene los servicios que pertenecen a un perfil.
 
+### Dos copias del repositorio en la misma máquina
+`compose.yaml` fija `name: planilla360`, así que todas las copias del repositorio comparten el mismo proyecto de Docker Compose: los mismos contenedores, red y volúmenes (`planilla360_postgres-data`, etc.). Si ya levantaste la infraestructura desde otra copia, la base de la segunda ya tendrá los datos de la primera.
+
+Para aislar una segunda copia, dale otro nombre de proyecto: `docker compose -p otro --profile full up -d` (y el mismo `-p otro` en `down`, `ps`, etc.) o exporta `COMPOSE_PROJECT_NAME=otro` en la consola. Ambos prevalecen sobre el `name:` del archivo y los volúmenes pasan a llamarse `otro_postgres-data`, etc. Cambiar el nombre del proyecto no cambia los puertos publicados en `127.0.0.1`, y no todos se pueden cambiar. Según `compose.yaml`:
+- **Configurables por variable**: PostgreSQL (`POSTGRES_PORT`, 5432), Redis (`REDIS_PORT`, 6379), WireMock (`WIREMOCK_PORT`, 8099), Prometheus (`PROMETHEUS_PORT`, 9090), Grafana (`GRAFANA_PORT`, 3000) y la API en contenedor (`PORT`, 8080).
+- **Fijos, sin variable**: RabbitMQ (5672 y 15672), MinIO (9000 y 9001) y Mailpit (1025 y 8025). `RABBITMQ_PORT` y `MAIL_PORT` solo le dicen a la API a qué puerto conectarse; no cambian el puerto que publica compose.
+
+Por tanto, con los perfiles que incluyen RabbitMQ, MinIO o Mailpit (`messaging`, `storage` y `full`) la segunda copia no puede levantarse mientras la primera siga en marcha: la única salida es detener la primera (`docker compose --profile full down`, sin `-v`). Dos copias a la vez solo son posibles con el perfil `core`: en la segunda, `POSTGRES_PORT` distinto en su `.env` (y el mismo puerto en `DB_URL` al arrancar la API) y `PORT` distinto para la API (por ejemplo `PORT=8081 ./mvnw spring-boot:run`), con la mensajería apagada (`MESSAGING_ENABLED=false STORAGE_TIPO=memoria INTEGRACION_MODO=stub`).
+
+Ojo con `down -v`: borra los volúmenes del proyecto sobre el que actúa. En una copia con el nombre por defecto borra también los datos que comparte con la otra.
+
 ### Usuarios de desarrollo (solo perfil `local`)
-Contraseña común: `Planilla360-Local1`
+Contraseña común: `Planilla360-Local1`. Se envía con el correo en el cuerpo de `POST /api/v1/auth/login` (ejemplo en el paso 4 del inicio rápido).
 
 | Rol | Correo |
 |---|---|
