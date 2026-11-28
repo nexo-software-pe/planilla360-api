@@ -30,14 +30,14 @@ public class EnvioCorreoService {
     private static final Logger LOG = LoggerFactory.getLogger(EnvioCorreoService.class);
 
     /** Solo los datos que usa el aviso, en una única lectura. */
-    private static final String SQL_DESTINATARIO = """
-            SELECT e.apellidos || ', ' || e.nombres AS nombre, e.email
+    private static final String SQL_FICHA = """
+            SELECT e.id, e.apellidos || ', ' || e.nombres AS nombre_completo, e.email
               FROM empleado e
              WHERE e.id = :empleado
                AND e.tenant_id = :tenant
             """;
 
-    private record Destinatario(String nombre, String email) {
+    private record Ficha(UUID id, String nombreCompleto, String email) {
     }
 
     private final ObjectProvider<JavaMailSender> correo;
@@ -69,10 +69,9 @@ public class EnvioCorreoService {
             LOG.info("Correos apagados: no se avisa de la boleta {}", aviso.boletaId());
             return;
         }
-        Destinatario destinatario = destinatario(aviso.empleadoId());
-        if (destinatario.email() == null || destinatario.email().isBlank()) {
-            LOG.warn("El trabajador {} no tiene correo: no se avisa de la boleta {}",
-                    aviso.empleadoId(), aviso.boletaId());
+        Ficha ficha = leerFicha(aviso.empleadoId());
+        if (ficha.email() == null || ficha.email().isBlank()) {
+            LOG.warn("El trabajador {} no tiene correo: no se avisa de la boleta {}", ficha.id(), aviso.boletaId());
             return;
         }
         String empresa = empresas.buscarPorId(TenantContext.requerido()).map(e -> e.razonSocial()).orElse("Planilla360");
@@ -80,14 +79,14 @@ public class EnvioCorreoService {
                 : "CTS".equals(aviso.tipo()) ? "constancia de depósito de CTS" : "boleta de pago";
         String html = plantilla.renderizar(Map.of(
                 "empresa", empresa,
-                "nombre", destinatario.nombre(),
+                "nombre", ficha.nombreCompleto(),
                 "documento", documento,
                 "periodo", aviso.periodo()));
         try {
             MimeMessage mensaje = enviador.createMimeMessage();
             MimeMessageHelper ayudante = new MimeMessageHelper(mensaje, false, StandardCharsets.UTF_8.name());
             ayudante.setFrom(remitente);
-            ayudante.setTo(destinatario.email());
+            ayudante.setTo(ficha.email());
             ayudante.setSubject("Tu " + documento + " de " + aviso.periodo() + " está disponible");
             ayudante.setText(html, true);
             enviador.send(mensaje);
@@ -97,11 +96,12 @@ public class EnvioCorreoService {
         boletas.marcarEnviada(aviso.boletaId());
     }
 
-    private Destinatario destinatario(UUID empleadoId) {
-        return jdbc.sql(SQL_DESTINATARIO)
+    private Ficha leerFicha(UUID empleadoId) {
+        return jdbc.sql(SQL_FICHA)
                 .param("empleado", empleadoId)
                 .param("tenant", TenantContext.requerido())
-                .query((rs, n) -> new Destinatario(rs.getString("nombre"), rs.getString("email")))
+                .query((rs, n) -> new Ficha(
+                        rs.getObject("id", UUID.class), rs.getString("nombre_completo"), rs.getString("email")))
                 .optional()
                 .orElseThrow(() -> new RecursoNoEncontradoException("No existe el trabajador del aviso."));
     }
