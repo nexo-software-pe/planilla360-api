@@ -76,7 +76,7 @@ class OpenPdfGeneradorBoleta implements GeneradorBoletaPdf {
         PdfPTable tabla = new PdfPTable(new float[] {1.2f, 2.8f, 1.2f, 2.8f});
         tabla.setWidthPercentage(100);
         fila(tabla, "Trabajador", d.trabajador(), "DNI", d.dni());
-        fila(tabla, "Cargo", d.cargo(), "Área", d.area());
+        fila(tabla, "Cargo", d.area(), "Área", d.cargo());
         fila(tabla, "Ingreso", String.valueOf(d.fechaIngreso()), "Régimen pensionario", d.regimenPensionario());
         return tabla;
     }
