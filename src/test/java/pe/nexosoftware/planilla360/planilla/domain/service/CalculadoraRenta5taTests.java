@@ -77,18 +77,23 @@ class CalculadoraRenta5taTests {
                 .hasMessageContaining("remuneración mensual");
     }
 
+    @ParameterizedTest(name = "remuneración {0}, gratificaciones {1}, percibido {2}")
+    @CsvSource({"-1, 0, 0", "0, -1, 0", "0, 0, -1"})
+    void rechazaMontosNegativos(String remuneracion, String gratificaciones, String percibido) {
+        Dinero mensual = Dinero.de(remuneracion);
+        Dinero proyectadas = Dinero.de(gratificaciones);
+        Dinero acumulado = Dinero.de(percibido);
+
+        assertThatThrownBy(() -> calculadora.retencionMensual(mensual, 12, proyectadas, acumulado, referencia()))
+                .isInstanceOf(IllegalArgumentException.class);
+    }
+
     @Test
     void rechazaDatosInvalidos() {
         Dinero uno = Dinero.de("1");
         assertThatThrownBy(() -> calculadora.retencionMensual(uno, 0, uno, uno, referencia()))
                 .isInstanceOf(IllegalArgumentException.class);
         assertThatThrownBy(() -> calculadora.retencionMensual(uno, 13, uno, uno, referencia()))
-                .isInstanceOf(IllegalArgumentException.class);
-        assertThatThrownBy(() -> calculadora.retencionMensual(Dinero.de("-1"), 12, uno, uno, referencia()))
-                .isInstanceOf(IllegalArgumentException.class);
-        assertThatThrownBy(() -> calculadora.retencionMensual(uno, 12, Dinero.de("-1"), uno, referencia()))
-                .isInstanceOf(IllegalArgumentException.class);
-        assertThatThrownBy(() -> calculadora.retencionMensual(uno, 12, uno, Dinero.de("-1"), referencia()))
                 .isInstanceOf(IllegalArgumentException.class);
         assertThatThrownBy(() -> calculadora.impuestoAnual(Dinero.de("-1"), referencia()))
                 .isInstanceOf(IllegalArgumentException.class);
