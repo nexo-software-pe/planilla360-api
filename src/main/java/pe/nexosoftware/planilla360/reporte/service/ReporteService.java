@@ -33,7 +33,7 @@ public class ReporteService {
                        e.apellidos || ', ' || e.nombres AS trabajador,
                        e.area_id,
                        SUM(a.minutos_tardanza)                              AS minutos,
-                       COUNT(*) FILTER (WHERE a.minutos_tardanza > 0)       AS dias
+                       COUNT(*)                                             AS dias
                   FROM asistencia_diaria a
                   JOIN empleado e ON e.id = a.empleado_id AND e.tenant_id = :tenant
                  WHERE a.tenant_id = :tenant

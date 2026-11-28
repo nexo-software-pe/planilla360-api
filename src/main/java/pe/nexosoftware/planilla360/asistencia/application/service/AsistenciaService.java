@@ -78,7 +78,6 @@ public class AsistenciaService implements RegistrarMarcacionUseCase, ConsultarAs
     public List<ResumenMensual> resumen(YearMonth mes) {
         Map<UUID, String> nombres = new HashMap<>();
         empleados.vigentesEn(mes.atDay(1)).forEach(e -> nombres.put(e.id(), e.nombreCompleto()));
-        empleados.vigentesEn(mes.atEndOfMonth()).forEach(e -> nombres.put(e.id(), e.nombreCompleto()));
 
         Map<UUID, List<AsistenciaDiaria>> porEmpleado = new HashMap<>();
         for (Registro registro : asistencias.delPeriodo(mes.atDay(1), mes.atEndOfMonth())) {

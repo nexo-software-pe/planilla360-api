@@ -48,7 +48,7 @@ public class AuditoriaService {
             spec = spec.and((root, query, cb) -> cb.greaterThanOrEqualTo(root.get("instante"), inicio));
         }
         if (hasta != null) {
-            var fin = hasta.plusDays(1).atStartOfDay(LIMA).toInstant();
+            var fin = hasta.atStartOfDay(LIMA).toInstant();
             spec = spec.and((root, query, cb) -> cb.lessThan(root.get("instante"), fin));
         }
         return Pagina.de(repository.findAll(spec, pageable), this::aResponse);

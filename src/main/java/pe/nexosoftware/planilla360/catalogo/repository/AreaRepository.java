@@ -11,5 +11,5 @@ public interface AreaRepository extends JpaRepository<Area, UUID> {
 
     boolean existsByNombreIgnoreCase(String nombre);
 
-    boolean existsByNombreIgnoreCaseAndIdNot(String nombre, UUID id);
+    boolean existsByNombreAndIdNot(String nombre, UUID id);
 }

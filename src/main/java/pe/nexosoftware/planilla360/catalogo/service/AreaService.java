@@ -61,7 +61,7 @@ public class AreaService {
     public AreaResponse actualizar(UUID id, AreaRequest request) {
         UUID tenant = TenantContext.requerido();
         Area area = buscar(id);
-        if (areas.existsByNombreIgnoreCaseAndIdNot(request.nombre().trim(), id)) {
+        if (areas.existsByNombreAndIdNot(request.nombre().trim(), id)) {
             throw new ConflictoException("Ya existe un área con ese nombre.");
         }
         AreaResponse antes = mapper.aResponse(area);
